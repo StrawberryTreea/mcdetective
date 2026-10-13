@@ -1,0 +1,266 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>McTrace 回放</title><style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f6f8;color:#1b1f27;
+  font:14px/1.7 -apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.wrap{max-width:920px;margin:0 auto;padding:22px 20px 60px}
+
+.hero{background:#fff;border:1px solid #e5e8ee;border-radius:14px;padding:20px 22px;
+  margin-bottom:16px;box-shadow:0 1px 2px rgba(18,22,33,.05)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;margin-bottom:12px}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:#E4002B;
+  box-shadow:0 0 0 3px rgba(228,0,43,.12)}
+.brand .tid{font-weight:400;font-size:11.5px;color:#98a1af}
+.hero h1{margin:0 0 10px;font-size:19px;line-height:1.55}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{font-size:11.5px;padding:3px 10px;border-radius:999px;border:1px solid #e5e8ee;
+  background:#fafbfc;color:#6d7683}
+.chip.ok{color:#0a7d3c;border-color:#c6e8d3;background:#edfaf2}
+.chip.warn{color:#b3261e;border-color:#f3c2bd;background:#fdecea}
+.chip.mock{color:#b3261e;border-color:#f3c2bd;background:#fdecea}
+
+.notice{background:#fff;border:1px solid #e5e8ee;border-left:4px solid #FFC72C;
+  border-radius:11px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#5b5346}
+.notice b{color:#1b1f27}
+.notice.assumption{border-left-color:#2456c9}
+.notice.assumption b{color:#2456c9}
+
+.sec{margin:22px 0 12px;font-size:14px;font-weight:700;color:#1b1f27}
+.sec small{font-weight:400;color:#98a1af;font-size:12px;margin-left:8px}
+
+.ev{background:#fff;border:1px solid #e5e8ee;border-left-width:3px;border-radius:12px;
+  padding:13px 16px;margin-bottom:10px;box-shadow:0 1px 2px rgba(18,22,33,.05)}
+.ev.k-info{border-left-color:#d8dde5}
+.ev.k-warning{border-left-color:#c9820f}
+.ev.k-success{border-left-color:#1f9d55}
+.ev.k-error{border-left-color:#E4002B}
+.ev.k-degraded{border-left-color:#6f52b8}
+.ehead{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:7px}
+.seq{font-size:11px;font-weight:700;color:#fff;background:#98a1af;padding:1px 7px;border-radius:6px}
+.ev.k-warning .seq{background:#c9820f}.ev.k-success .seq{background:#1f9d55}
+.ev.k-error .seq{background:#E4002B}.ev.k-degraded .seq{background:#6f52b8}
+.etitle{font-size:14px;font-weight:700}
+.badge{font-size:11px;padding:1px 8px;border-radius:999px;border:1px solid #e5e8ee;
+  background:#fafbfc;color:#6d7683}
+.badge.warn{color:#b3261e;border-color:#f3c2bd;background:#fdecea}
+.badge.degraded{color:#6f52b8;border-color:#d9cdf0;background:#f6f2fd}
+.badge.error{color:#E4002B;border-color:#f3c2bd;background:#fdecea}
+.ts{margin-left:auto;font-size:11px;color:#98a1af}
+
+.toolbtn{cursor:pointer;border:1px dashed #b9c4d6;background:#f6f8fb;color:#2456c9;
+  padding:2px 9px;border-radius:8px;font:11.5px/1.6 ui-monospace,Menlo,Consolas,monospace;
+  margin:0 6px 8px 0;display:inline-block;transition:.14s}
+.toolbtn:hover{border-color:#2456c9;background:#eef3fe}
+.toolbtn.local{border-style:dotted;color:#6d7683;cursor:default}
+.toolbtn.local:hover{background:#f6f8fb;border-color:#b9c4d6}
+
+.say{color:#3c4450;margin-bottom:9px}
+.facts{display:flex;flex-direction:column;gap:5px;margin-top:4px}
+.f{display:flex;gap:9px;align-items:baseline;font-size:12.5px;flex-wrap:wrap}
+.f .k{color:#6d7683;min-width:118px}
+.f .v{font-weight:600;color:#1b1f27}
+.srcbtn{cursor:pointer;border:none;background:#f2f4f7;color:#5a6675;border-radius:5px;
+  padding:1px 6px;font:11px/1.6 ui-monospace,Menlo,Consolas,monospace;transition:.14s}
+.srcbtn:hover{background:#2456c9;color:#fff}
+.srcbtn.nosrc{cursor:default;color:#98a1af}
+.srcbtn.nosrc:hover{background:#f2f4f7;color:#98a1af}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px}
+.rcell{border:1px solid #e5e8ee;border-radius:10px;padding:10px 12px;background:#fff}
+.rcell .l{font-size:11px;color:#98a1af;margin-bottom:3px}
+.rcell .v{font-size:16px;font-weight:700;color:#1b1f27}
+.rcell.good .v{color:#1f9d55}.rcell.warn .v{color:#c9820f}
+
+details.raw{margin-top:7px}
+details.raw>summary{cursor:pointer;font-size:11.5px;color:#2456c9;outline:none}
+details.raw pre{margin:7px 0 0;background:#1b1f27;color:#e6eaf0;padding:11px 13px;
+  border-radius:9px;font-size:11.5px;line-height:1.6;overflow-x:auto;max-height:340px;
+  white-space:pre-wrap;word-break:break-all}
+
+.foot{margin-top:26px;padding-top:14px;border-top:1px solid #e5e8ee;
+  font-size:11.5px;color:#98a1af;line-height:1.8}
+.lens{position:fixed;top:0;right:0;width:min(520px,100%);height:100%;background:#fff;
+  box-shadow:-8px 0 28px rgba(18,22,33,.14);transform:translateX(100%);
+  transition:transform .22s;z-index:50;display:flex;flex-direction:column}
+.lens.on{transform:none}
+.lens .lh{display:flex;align-items:center;gap:10px;padding:14px 16px;
+  border-bottom:1px solid #e5e8ee}
+.lens .lh b{font-size:13.5px}
+.lens .x{margin-left:auto;cursor:pointer;border:1px solid #e5e8ee;background:#fff;
+  width:26px;height:26px;border-radius:7px;font-size:15px;color:#6d7683}
+.lens .x:hover{background:#f4f6f8}
+.lens .lb{padding:14px 16px;overflow:auto;flex:1;font-size:12.5px}
+.lens pre{background:#1b1f27;color:#e6eaf0;padding:11px 13px;border-radius:9px;
+  font-size:11.5px;line-height:1.6;overflow-x:auto;max-height:none;
+  white-space:pre-wrap;word-break:break-all;margin:7px 0}
+.ov{position:fixed;inset:0;background:rgba(18,22,33,.28);display:none;z-index:49}
+.ov.on{display:block}
+@media (max-width:600px){ .ts{margin-left:0} .f .k{min-width:auto} }
+</style></head><body>
+<div class="wrap">
+<div class="hero"><div class="brand"><span class="dot"></span>McTrace · 麦搭子<span class="tid mono">mctrace-20261010-d40e1240</span></div>
+<h1>搞定！可用 173.3 分、历史已过期 394.7 分、本月将过期 0.0 分；沉睡奖券 0 张；商城最值换「为随心配五大巨星“应援”1积分兑换活动」约 1.0 分。全部只读盘点，没动你账户～</h1>
+<div class="chips"><span class="chip ok">真实麦当劳 MCP 调用</span><span class="chip">11 步</span><span class="chip">2026-10-10T17:21:41</span></div></div>
+<div class="sec">执行过程<small>点工具名看原始请求/返回，点来源路径看字段取自哪里</small></div>
+<div class="ev k-info" data-req="{
+  "scope": "个人积分资产"
+}" data-res="{
+  "userRequest": "盘点我的麦当劳积分资产"
+}">
+<div class="ehead"><span class="seq">1</span><span class="etitle">先把要求记下来</span><span class="badge">成功</span><span class="ts mono">2026-10-10T17:21:37</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'user-request','req')">user-request</button><button class="toolbtn" onclick="mcShowRaw.call(this,'user-request','res')">解析你的要求<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">好嘞！帮你把麦当劳积分资产盘一遍：余额、临期积分、抽奖机会、沉睡奖券、积分商城最值兑换、可领券，都列清楚，每一笔都能点开看来源。</div>
+<div class="facts"><div class="f"><span class="k">scope</span><span class="v">个人积分资产</span><span class="srcbtn nosrc">user-request</span></div><div class="f"><span class="k">askExpiring</span><span class="v">True</span><span class="srcbtn nosrc">user-request</span></div></div>
+</div>
+<div class="ev k-info" data-req="" data-res="{
+  "success": true
+}">
+<div class="ehead"><span class="seq">2</span><span class="etitle">盘点积分余额</span><span class="badge">成功</span><span class="ts mono">2026-10-10T17:21:37</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'query-my-account','req')">query-my-account</button><button class="toolbtn" onclick="mcShowRaw.call(this,'query-my-account','res')">查积分余额<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">积分余额到手：可用 173.3 分，累计拿过 568.0 分。</div>
+<div style="margin:2px 0 8px"><button class="srcbtn" onclick="mcShowEnt('可用积分 173.3','余额 / availablePoint')">可用积分 173.3 ›</button></div>
+<div class="facts"><div class="f"><span class="k">availablePoint</span><span class="v">173.3</span><button class="srcbtn" onclick="mcShowPath('$.data.availablePoint','173.3')">$.data.availablePoint</button></div><div class="f"><span class="k">accumulativePoint</span><span class="v">568.0</span><button class="srcbtn" onclick="mcShowPath('$.data.accumulativePoint','568.0')">$.data.accumulativePoint</button></div><div class="f"><span class="k">expiredPoint</span><span class="v">394.7</span><button class="srcbtn" onclick="mcShowPath('$.data.expiredPoint','394.7')">$.data.expiredPoint</button></div><div class="f"><span class="k">currentMouthExpirePoint</span><span class="v">0.0</span><button class="srcbtn" onclick="mcShowPath('$.data.currentMouthExpirePoint','0.0')">$.data.currentMouthExpirePoint</button></div></div>
+</div>
+<div class="ev k-warning" data-req="{
+  "expiredPoint": 394.7
+}" data-res="{
+  "rule": "points.expired"
+}">
+<div class="ehead"><span class="seq">3</span><span class="etitle">发现资产流失</span><span class="badge">成功</span><span class="ts mono">2026-10-10T17:21:37</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'mctrace:rule','req')">mctrace:rule</button><button class="toolbtn" onclick="mcShowRaw.call(this,'mctrace:rule','res')">规则校验<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">等等，你历史上已经白白过期了 394.7 积分……这就是需要「资产管家」的理由。</div>
+<div class="facts"><div class="f"><span class="k">expiredPoint</span><span class="v">394.7</span><button class="srcbtn" onclick="mcShowPath('$.data.expiredPoint','394.7')">$.data.expiredPoint</button></div><div class="f"><span class="k">meaning</span><span class="v">历史上已白白过期的积分</span><span class="srcbtn nosrc">rule</span></div></div>
+</div>
+<div class="ev k-info" data-req="" data-res="{
+  "success": true
+}">
+<div class="ehead"><span class="seq">4</span><span class="etitle">查看抽奖机会</span><span class="badge">成功</span><span class="ts mono">2026-10-10T17:21:38</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'query-lottery-info','req')">query-lottery-info</button><button class="toolbtn" onclick="mcShowRaw.call(this,'query-lottery-info','res')">查抽奖<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">抽奖这边：进行中，单次 24.0 分，还能抽 — 次。</div>
+<div style="margin:2px 0 8px"><button class="srcbtn" onclick="mcShowEnt('抽奖：进行中','抽奖状态 / activityStatusText')">抽奖：进行中 ›</button></div>
+<div class="facts"><div class="f"><span class="k">activityStatusText</span><span class="v">进行中</span><button class="srcbtn" onclick="mcShowPath('$.data.activityStatusText','进行中')">$.data.activityStatusText</button></div><div class="f"><span class="k">drawPoint</span><span class="v">24.0</span><button class="srcbtn" onclick="mcShowPath('$.data.drawPoint','24.0')">$.data.drawPoint</button></div><div class="f"><span class="k">availableTimes</span><span class="v">—</span><button class="srcbtn" onclick="mcShowPath('$.data.availableTimes','—')">$.data.availableTimes</button></div></div>
+</div>
+<div class="ev k-info" data-req="" data-res="{
+  "success": true,
+  "prizeCount": 4
+}">
+<div class="ehead"><span class="seq">5</span><span class="etitle">翻中奖记录</span><span class="badge">成功</span><span class="ts mono">2026-10-10T17:21:39</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'query-my-prizes','req')">query-my-prizes</button><button class="toolbtn" onclick="mcShowRaw.call(this,'query-my-prizes','res')">查奖品<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">中奖记录：共 4 个（秋分测试、小暑、春分）。</div>
+<div style="margin:2px 0 8px"><button class="srcbtn" onclick="mcShowEnt('秋分测试','我的奖品 / prize.name')">秋分测试 ›</button><button class="srcbtn" onclick="mcShowEnt('小暑','我的奖品 / prize.name')">小暑 ›</button><button class="srcbtn" onclick="mcShowEnt('春分','我的奖品 / prize.name')">春分 ›</button></div>
+<div class="facts"><div class="f"><span class="k">prizeCount</span><span class="v">4</span><button class="srcbtn" onclick="mcShowPath('$.data.prizes','4')">$.data.prizes</button></div><div class="f"><span class="k">sample</span><span class="v">秋分测试、小暑、春分</span><button class="srcbtn" onclick="mcShowPath('$.data.prizes[].name','秋分测试、小暑、春分')">$.data.prizes[].name</button></div></div>
+</div>
+<div class="ev k-info" data-req="" data-res="{
+  "success": true,
+  "orderCount": 5
+}">
+<div class="ehead"><span class="seq">6</span><span class="etitle">翻历史订单</span><span class="badge">成功</span><span class="ts mono">2026-10-10T17:21:39</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'order-list','req')">order-list</button><button class="toolbtn" onclick="mcShowRaw.call(this,'order-list','res')">查历史订单<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">翻了下历史订单，共 5 笔，拿第一笔去查关联的满意度奖券。</div>
+<div class="facts"><div class="f"><span class="k">orderCount</span><span class="v">5</span><button class="srcbtn" onclick="mcShowPath('$.data.list','5')">$.data.list</button></div><div class="f"><span class="k">sampleOrderId</span><span class="v">1030831120000572715413578467</span><button class="srcbtn" onclick="mcShowPath('$.data.list[0].orderId','1030831120000572715413578467')">$.data.list[0].orderId</button></div></div>
+</div>
+<div class="ev k-info" data-req="{
+  "orderId": "1030831120000572715413578467"
+}" data-res="{
+  "success": false,
+  "sleepingCount": 0
+}">
+<div class="ehead"><span class="seq">7</span><span class="etitle">唤醒沉睡奖券</span><span class="badge error">失败</span><span class="ts mono">2026-10-10T17:21:40</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'query-survey-coupon','req')">query-survey-coupon</button><button class="toolbtn" onclick="mcShowRaw.call(this,'query-survey-coupon','res')">查奖券<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">遍历首笔订单，未发现未核销的满意度奖券。</div>
+<div class="facts"><div class="f"><span class="k">sleepingCount</span><span class="v">0</span><span class="srcbtn nosrc">survey-coupon</span></div><div class="f"><span class="k">sample</span><span class="v">未发现</span><span class="srcbtn nosrc">survey-coupon</span></div></div>
+</div>
+<div class="ev k-info" data-req="" data-res="{
+  "success": true,
+  "productCount": 50
+}">
+<div class="ehead"><span class="seq">8</span><span class="etitle">找积分商城最值</span><span class="badge">成功</span><span class="ts mono">2026-10-10T17:21:41</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'mall-points-products','req')">mall-points-products</button><button class="toolbtn" onclick="mcShowRaw.call(this,'mall-points-products','res')">查积分商城<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">积分商城逛了一圈：50 件可换，最值的一件是「为随心配五大巨星“应援”1积分兑换活动」约 1.0 分。</div>
+<div style="margin:2px 0 8px"><button class="srcbtn" onclick="mcShowEnt('为随心配五大巨星“应援”1积分兑换活动','商城商品 / spuName')">为随心配五大巨星“应援”1积分兑 ›</button></div>
+<div class="facts"><div class="f"><span class="k">productCount</span><span class="v">50</span><button class="srcbtn" onclick="mcShowPath('$.data','50')">$.data</button></div><div class="f"><span class="k">bestValue</span><span class="v">为随心配五大巨星“应援”1积分兑换活动（约 1.0 分）</span><button class="srcbtn" onclick="mcShowPath('$.data[].point','为随心配五大巨星“应援”1积分兑换活动（约 1.0 分）')">$.data[].point</button></div></div>
+</div>
+<div class="ev k-info" data-req="" data-res="{
+  "success": true,
+  "claimableCount": 0
+}">
+<div class="ehead"><span class="seq">9</span><span class="etitle">查可领券</span><span class="badge error">失败</span><span class="ts mono">2026-10-10T17:21:41</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'available-coupons','req')">available-coupons</button><button class="toolbtn" onclick="mcShowRaw.call(this,'available-coupons','res')">查账户券<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">当前没有可领的新券。</div>
+<div class="facts"><div class="f"><span class="k">claimableCount</span><span class="v">0</span><span class="srcbtn nosrc">available-coupons</span></div><div class="f"><span class="k">sample</span><span class="v">无</span><span class="srcbtn nosrc">available-coupons</span></div></div>
+</div>
+<div class="ev k-info" data-req="" data-res="{
+  "success": true,
+  "activityCount": 0
+}">
+<div class="ehead"><span class="seq">10</span><span class="etitle">查活动日历</span><span class="badge error">失败</span><span class="ts mono">2026-10-10T17:21:41</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'campaign-calendar','req')">campaign-calendar</button><button class="toolbtn" onclick="mcShowRaw.call(this,'campaign-calendar','res')">查活动<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">暂无进行中活动。</div>
+<div class="facts"><div class="f"><span class="k">activityCount</span><span class="v">0</span><span class="srcbtn nosrc">campaign-calendar</span></div><div class="f"><span class="k">sample</span><span class="v">无</span><span class="srcbtn nosrc">campaign-calendar</span></div></div>
+</div>
+<div class="ev k-success" data-req="" data-res="{
+  "result": {
+    "availablePoint": 173.3,
+    "expiredPoint": 394.7,
+    "expiringThisMonth": 0.0,
+    "sleepingCoupons": 0,
+    "bestRedeem": "为随心配五大巨星“应援”1积分兑换活动",
+    "bestRedeemPoint": 1.0,
+    "claimableCoupons": 0,
+    "activities": 0,
+    "checksPassed": true,
+    "orderCreated": false,
+    "summary": "可用 173.3 分 · 历史过期 394.7 分 · 本月过期 0.0 分 · 沉睡奖券 0 张"
+  }
+}">
+<div class="ehead"><span class="seq">11</span><span class="etitle">整理好结果与证据</span><span class="badge">成功</span><span class="ts mono">2026-10-10T17:21:41</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'summary-composer','req')">summary-composer</button><button class="toolbtn" onclick="mcShowRaw.call(this,'summary-composer','res')">整理结果<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">搞定！可用 173.3 分、历史已过期 394.7 分、本月将过期 0.0 分；沉睡奖券 0 张；商城最值换「为随心配五大巨星“应援”1积分兑换活动」约 1.0 分。全部只读盘点，没动你账户～</div>
+<div class="facts"><div class="f"><span class="k">availablePoint</span><span class="v">173.3</span><button class="srcbtn" onclick="mcShowPath('$.data.availablePoint','173.3')">$.data.availablePoint</button></div><div class="f"><span class="k">expiredPoint</span><span class="v">394.7</span><button class="srcbtn" onclick="mcShowPath('$.data.expiredPoint','394.7')">$.data.expiredPoint</button></div><div class="f"><span class="k">expiringThisMonth</span><span class="v">0.0</span><button class="srcbtn" onclick="mcShowPath('$.data.currentMouthExpirePoint','0.0')">$.data.currentMouthExpirePoint</button></div><div class="f"><span class="k">sleepingCoupons</span><span class="v">0</span><span class="srcbtn nosrc">survey-coupon</span></div><div class="f"><span class="k">bestRedeem</span><span class="v">为随心配五大巨星“应援”1积分兑换活动（约 1.0 分）</span><button class="srcbtn" onclick="mcShowPath('$.data[].point','为随心配五大巨星“应援”1积分兑换活动（约 1.0 分）')">$.data[].point</button></div><div class="f"><span class="k">orderCreated</span><span class="v">False</span><span class="srcbtn nosrc">mctrace</span></div></div>
+</div>
+<div class="foot">数据来自麦当劳 MCP 实时只读调用。算价接口未返回明细时，已标注来源为菜单标价，不假装算价成功；营养表未覆盖的在售单品不参与推荐；地址门牌已脱敏。<br>全程只读：未调用 create-order / draw-lottery / auto-bind-coupons 等任何下单、抽奖、领券、兑换写操作。<br>McTrace · 工具调用成功 ≠ 用户目标达成。追踪号 mctrace-20261010-d40e1240</div>
+</div>
+<div class="ov" id="ov"></div><aside class="lens" id="lens"><div class="lh"><b id="lensTitle">证据透镜</b><button class="x" id="lensClose">×</button></div><div class="lb" id="lensBody"></div></aside>
+<script>
+(function(){
+  function pretty(o){
+    try{ return JSON.stringify(o, null, 2); }
+    catch(e){ return String(o); }
+  }
+  var lens = document.getElementById("lens"), ov = document.getElementById("ov");
+  function openLens(title, html){
+    document.getElementById("lensTitle").textContent = title;
+    document.getElementById("lensBody").innerHTML = html;
+    lens.classList.add("on"); ov.classList.add("on");
+  }
+  function closeLens(){ lens.classList.remove("on"); ov.classList.remove("on"); }
+  document.getElementById("lensClose").onclick = closeLens;
+  ov.onclick = closeLens;
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape") closeLens(); });
+
+  window.mcShowRaw = function(tool, which){
+    var card = this;
+    var raw = card.getAttribute("data-" + which) || "（这一步没有原始返回：本机规则/叙述步骤）";
+    openLens(tool + " · " + (which === "req" ? "请求参数" : "原始返回"),
+             "<p style='color:#6d7683;margin:0 0 6px'>这部分是麦当劳 MCP 的真实返回，未经加工；"
+             + "地址等敏感字段已脱敏。</p><pre>" + raw.replace(/[<>&]/g, function(c){
+               return ({'<':"&lt;",'>':"&gt;",'&':"&amp;"})[c]; }) + "</pre>");
+  };
+  window.mcShowPath = function(path, val){
+    openLens("这个数字从哪来",
+      "<p style='margin:0 0 8px'>字段路径：<span class='mono' style='background:#f2f4f7;"
+      + "padding:2px 7px;border-radius:5px'>" + path + "</span></p>"
+      + "<p style='margin:0 0 6px;color:#6d7683'>取到的值</p>"
+      + "<pre>" + String(val).replace(/[<>&]/g, function(c){
+          return ({'<':"&lt;",'>':"&gt;",'&':"&amp;"})[c]; }) + "</pre>");
+  };
+  window.mcShowEnt = function(name, role){
+    openLens("实体 · " + name,
+      "<p style='margin:0 0 6px;color:#6d7683'>它在本次追踪中的角色</p>"
+      + "<pre>" + role + "</pre>");
+  };
+})();
+</script></body></html>

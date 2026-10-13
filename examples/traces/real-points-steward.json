@@ -1,0 +1,440 @@
+{
+  "traceId": "mctrace-20261010-d40e1240",
+  "generatedAt": "2026-10-10T17:21:41",
+  "isMock": false,
+  "eventCount": 11,
+  "events": [
+    {
+      "traceId": "mctrace-20261010-d40e1240",
+      "seq": 1,
+      "kind": "info",
+      "tool": "user-request",
+      "title": "先把要求记下来",
+      "status": "success",
+      "ts": "2026-10-10T17:21:37",
+      "facts": [
+        {
+          "key": "scope",
+          "value": "个人积分资产",
+          "source": "user-request"
+        },
+        {
+          "key": "askExpiring",
+          "value": true,
+          "source": "user-request"
+        }
+      ],
+      "entities": {},
+      "rule": null,
+      "say": {
+        "friendly": "好嘞！帮你把麦当劳积分资产盘一遍：余额、临期积分、抽奖机会、沉睡奖券、积分商城最值兑换、可领券，都列清楚，每一笔都能点开看来源。",
+        "pro": "解析用户目标：范围=个人积分资产；关注临期损耗、抽奖权益、沉睡满意度奖券、最值兑换与可领券。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-d40e1240/events/1",
+      "isMock": false,
+      "request": {
+        "scope": "个人积分资产"
+      },
+      "response": {
+        "userRequest": "盘点我的麦当劳积分资产"
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-d40e1240",
+      "seq": 2,
+      "kind": "info",
+      "tool": "query-my-account",
+      "title": "盘点积分余额",
+      "status": "success",
+      "ts": "2026-10-10T17:21:37",
+      "facts": [
+        {
+          "key": "availablePoint",
+          "value": 173.3,
+          "sourcePath": "$.data.availablePoint"
+        },
+        {
+          "key": "accumulativePoint",
+          "value": 568.0,
+          "sourcePath": "$.data.accumulativePoint"
+        },
+        {
+          "key": "expiredPoint",
+          "value": 394.7,
+          "sourcePath": "$.data.expiredPoint"
+        },
+        {
+          "key": "currentMouthExpirePoint",
+          "value": 0.0,
+          "sourcePath": "$.data.currentMouthExpirePoint"
+        }
+      ],
+      "entities": {
+        "可用积分 173.3": "余额 / availablePoint"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "积分余额到手：可用 173.3 分，累计拿过 568.0 分。",
+        "pro": "账户返回：可用=173.3，累计=568.0，历史已过期=394.7，本月将过期=0.0。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-d40e1240/events/2",
+      "isMock": false,
+      "request": {},
+      "response": {
+        "success": true
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-d40e1240",
+      "seq": 3,
+      "kind": "warning",
+      "tool": "mctrace:rule",
+      "title": "发现资产流失",
+      "status": "success",
+      "ts": "2026-10-10T17:21:37",
+      "facts": [
+        {
+          "key": "expiredPoint",
+          "value": 394.7,
+          "sourcePath": "$.data.expiredPoint"
+        },
+        {
+          "key": "meaning",
+          "value": "历史上已白白过期的积分",
+          "source": "rule"
+        }
+      ],
+      "entities": {},
+      "rule": null,
+      "say": {
+        "friendly": "等等，你历史上已经白白过期了 394.7 积分……这就是需要「资产管家」的理由。",
+        "pro": "历史已过期积分=394.7，构成资产流失，约束未通过。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-d40e1240/events/3",
+      "isMock": false,
+      "request": {
+        "expiredPoint": 394.7
+      },
+      "response": {
+        "rule": "points.expired"
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-d40e1240",
+      "seq": 4,
+      "kind": "info",
+      "tool": "query-lottery-info",
+      "title": "查看抽奖机会",
+      "status": "success",
+      "ts": "2026-10-10T17:21:38",
+      "facts": [
+        {
+          "key": "activityStatusText",
+          "value": "进行中",
+          "sourcePath": "$.data.activityStatusText"
+        },
+        {
+          "key": "drawPoint",
+          "value": 24.0,
+          "sourcePath": "$.data.drawPoint"
+        },
+        {
+          "key": "availableTimes",
+          "value": "—",
+          "sourcePath": "$.data.availableTimes"
+        }
+      ],
+      "entities": {
+        "抽奖：进行中": "抽奖状态 / activityStatusText"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "抽奖这边：进行中，单次 24.0 分，还能抽 — 次。",
+        "pro": "抽奖信息：状态=进行中，单次消耗=24.0，剩余次数=—。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-d40e1240/events/4",
+      "isMock": false,
+      "request": {},
+      "response": {
+        "success": true
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-d40e1240",
+      "seq": 5,
+      "kind": "info",
+      "tool": "query-my-prizes",
+      "title": "翻中奖记录",
+      "status": "success",
+      "ts": "2026-10-10T17:21:39",
+      "facts": [
+        {
+          "key": "prizeCount",
+          "value": 4,
+          "sourcePath": "$.data.prizes"
+        },
+        {
+          "key": "sample",
+          "value": "秋分测试、小暑、春分",
+          "sourcePath": "$.data.prizes[].name"
+        }
+      ],
+      "entities": {
+        "秋分测试": "我的奖品 / prize.name",
+        "小暑": "我的奖品 / prize.name",
+        "春分": "我的奖品 / prize.name"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "中奖记录：共 4 个（秋分测试、小暑、春分）。",
+        "pro": "我的奖品：数量=4，样本=秋分测试、小暑、春分。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-d40e1240/events/5",
+      "isMock": false,
+      "request": {},
+      "response": {
+        "success": true,
+        "prizeCount": 4
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-d40e1240",
+      "seq": 6,
+      "kind": "info",
+      "tool": "order-list",
+      "title": "翻历史订单",
+      "status": "success",
+      "ts": "2026-10-10T17:21:39",
+      "facts": [
+        {
+          "key": "orderCount",
+          "value": 5,
+          "sourcePath": "$.data.list"
+        },
+        {
+          "key": "sampleOrderId",
+          "value": "1030831120000572715413578467",
+          "sourcePath": "$.data.list[0].orderId"
+        }
+      ],
+      "entities": {},
+      "rule": null,
+      "say": {
+        "friendly": "翻了下历史订单，共 5 笔，拿第一笔去查关联的满意度奖券。",
+        "pro": "订单列表：数量=5；取 1030831120000572715413578467 作为沉睡奖券查询目标。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-d40e1240/events/6",
+      "isMock": false,
+      "request": {},
+      "response": {
+        "success": true,
+        "orderCount": 5
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-d40e1240",
+      "seq": 7,
+      "kind": "info",
+      "tool": "query-survey-coupon",
+      "title": "唤醒沉睡奖券",
+      "status": "error",
+      "ts": "2026-10-10T17:21:40",
+      "facts": [
+        {
+          "key": "sleepingCount",
+          "value": 0,
+          "source": "survey-coupon"
+        },
+        {
+          "key": "sample",
+          "value": "未发现",
+          "source": "survey-coupon"
+        }
+      ],
+      "entities": {},
+      "rule": null,
+      "say": {
+        "friendly": "遍历首笔订单，未发现未核销的满意度奖券。",
+        "pro": "沉睡奖券查询（orderId=1030831120000572715413578467）：命中 0 张。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-d40e1240/events/7",
+      "isMock": false,
+      "request": {
+        "orderId": "1030831120000572715413578467"
+      },
+      "response": {
+        "success": false,
+        "sleepingCount": 0
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-d40e1240",
+      "seq": 8,
+      "kind": "info",
+      "tool": "mall-points-products",
+      "title": "找积分商城最值",
+      "status": "success",
+      "ts": "2026-10-10T17:21:41",
+      "facts": [
+        {
+          "key": "productCount",
+          "value": 50,
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "bestValue",
+          "value": "为随心配五大巨星“应援”1积分兑换活动（约 1.0 分）",
+          "sourcePath": "$.data[].point"
+        }
+      ],
+      "entities": {
+        "为随心配五大巨星“应援”1积分兑换活动": "商城商品 / spuName"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "积分商城逛了一圈：50 件可换，最值的一件是「为随心配五大巨星“应援”1积分兑换活动」约 1.0 分。",
+        "pro": "积分商城：数量=50；最值推荐=为随心配五大巨星“应援”1积分兑换活动（1.0 分）。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-d40e1240/events/8",
+      "isMock": false,
+      "request": {},
+      "response": {
+        "success": true,
+        "productCount": 50
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-d40e1240",
+      "seq": 9,
+      "kind": "info",
+      "tool": "available-coupons",
+      "title": "查可领券",
+      "status": "error",
+      "ts": "2026-10-10T17:21:41",
+      "facts": [
+        {
+          "key": "claimableCount",
+          "value": 0,
+          "source": "available-coupons"
+        },
+        {
+          "key": "sample",
+          "value": "无",
+          "source": "available-coupons"
+        }
+      ],
+      "entities": {},
+      "rule": null,
+      "say": {
+        "friendly": "当前没有可领的新券。",
+        "pro": "可领券：0 张。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-d40e1240/events/9",
+      "isMock": false,
+      "request": {},
+      "response": {
+        "success": true,
+        "claimableCount": 0
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-d40e1240",
+      "seq": 10,
+      "kind": "info",
+      "tool": "campaign-calendar",
+      "title": "查活动日历",
+      "status": "error",
+      "ts": "2026-10-10T17:21:41",
+      "facts": [
+        {
+          "key": "activityCount",
+          "value": 0,
+          "source": "campaign-calendar"
+        },
+        {
+          "key": "sample",
+          "value": "无",
+          "source": "campaign-calendar"
+        }
+      ],
+      "entities": {},
+      "rule": null,
+      "say": {
+        "friendly": "暂无进行中活动。",
+        "pro": "活动日历：0 个。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-d40e1240/events/10",
+      "isMock": false,
+      "request": {},
+      "response": {
+        "success": true,
+        "activityCount": 0
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-d40e1240",
+      "seq": 11,
+      "kind": "success",
+      "tool": "summary-composer",
+      "title": "整理好结果与证据",
+      "status": "success",
+      "ts": "2026-10-10T17:21:41",
+      "facts": [
+        {
+          "key": "availablePoint",
+          "value": 173.3,
+          "sourcePath": "$.data.availablePoint"
+        },
+        {
+          "key": "expiredPoint",
+          "value": 394.7,
+          "sourcePath": "$.data.expiredPoint"
+        },
+        {
+          "key": "expiringThisMonth",
+          "value": 0.0,
+          "sourcePath": "$.data.currentMouthExpirePoint"
+        },
+        {
+          "key": "sleepingCoupons",
+          "value": 0,
+          "source": "survey-coupon"
+        },
+        {
+          "key": "bestRedeem",
+          "value": "为随心配五大巨星“应援”1积分兑换活动（约 1.0 分）",
+          "sourcePath": "$.data[].point"
+        },
+        {
+          "key": "orderCreated",
+          "value": false,
+          "source": "mctrace"
+        }
+      ],
+      "entities": {},
+      "rule": null,
+      "say": {
+        "friendly": "搞定！可用 173.3 分、历史已过期 394.7 分、本月将过期 0.0 分；沉睡奖券 0 张；商城最值换「为随心配五大巨星“应援”1积分兑换活动」约 1.0 分。全部只读盘点，没动你账户～",
+        "pro": "完成报告：可用=173.3；历史过期=394.7；本月过期=0.0；沉睡奖券=0；最值兑换=为随心配五大巨星“应援”1积分兑换活动(1.0分)；可领券=0；活动=0；全程只读。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-d40e1240/events/11",
+      "isMock": false,
+      "request": {},
+      "response": {
+        "result": {
+          "availablePoint": 173.3,
+          "expiredPoint": 394.7,
+          "expiringThisMonth": 0.0,
+          "sleepingCoupons": 0,
+          "bestRedeem": "为随心配五大巨星“应援”1积分兑换活动",
+          "bestRedeemPoint": 1.0,
+          "claimableCoupons": 0,
+          "activities": 0,
+          "checksPassed": true,
+          "orderCreated": false,
+          "summary": "可用 173.3 分 · 历史过期 394.7 分 · 本月过期 0.0 分 · 沉睡奖券 0 张"
+        }
+      }
+    }
+  ]
+}

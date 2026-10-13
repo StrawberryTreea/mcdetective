@@ -1,0 +1,26 @@
+# ---- 凭证与隐私（绝不出现在仓库）----
+token.txt
+*.token
+*.pem
+.env
+.env.*
+mcp.json
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ---- 系统与编辑器 ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# ---- 本地运行产物（可再生）----
+*.log
+MCTRACE_OUT_*/
+scratch/

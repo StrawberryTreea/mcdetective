@@ -1,0 +1,594 @@
+{
+  "traceId": "mcdetective-20261013-9e6ef1fe",
+  "generatedAt": "2026-10-13T21:02:52",
+  "isMock": false,
+  "eventCount": 10,
+  "events": [
+    {
+      "traceId": "mcdetective-20261013-9e6ef1fe",
+      "seq": 1,
+      "kind": "info",
+      "tool": "user-request",
+      "title": "接报案",
+      "status": "success",
+      "ts": "2026-10-13T21:02:48",
+      "facts": [
+        {
+          "key": "city",
+          "value": "黄冈市",
+          "source": "user-request"
+        },
+        {
+          "key": "keyword",
+          "value": "黄冈万达",
+          "source": "user-request"
+        },
+        {
+          "key": "target",
+          "value": "麦香鱼",
+          "source": "user-request"
+        },
+        {
+          "key": "radiusKm",
+          "value": 3.0,
+          "source": "user-request",
+          "note": "巡查半径；只查方圆该距离内的门店"
+        },
+        {
+          "key": "maxStores",
+          "value": 10,
+          "source": "user-request",
+          "note": "巡查门店数上限，防止商圈过大时无限扫店"
+        }
+      ],
+      "entities": {
+        "麦香鱼": "目标餐品 / target"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "接到报案：黄冈市黄冈万达附近，有人想查「麦香鱼」哪家卖得便宜。探长出动了，先按方圆 3 公里划定巡查范围。",
+        "pro": "解析报案：区域=黄冈市黄冈万达；目标餐品=麦香鱼；巡查半径=3km；门店上限=10。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/1",
+      "isMock": false,
+      "request": {
+        "city": "黄冈市",
+        "keyword": "黄冈万达",
+        "target": "麦香鱼",
+        "radiusKm": 3.0,
+        "maxStores": 10
+      },
+      "response": {
+        "case": "黄冈市黄冈万达 麦香鱼"
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-9e6ef1fe",
+      "seq": 2,
+      "kind": "info",
+      "tool": "query-nearby-stores",
+      "title": "划定巡查范围",
+      "status": "success",
+      "ts": "2026-10-13T21:02:49",
+      "facts": [
+        {
+          "key": "hitCount",
+          "value": 5,
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "withinRadius",
+          "value": 2,
+          "source": "mctrace",
+          "note": "方圆 3 km 内的门店数"
+        },
+        {
+          "key": "patrolCount",
+          "value": 2,
+          "source": "mctrace",
+          "note": "上限 10 家后的实际巡查数"
+        },
+        {
+          "key": "distanceRange",
+          "value": "95 m–1.8 km",
+          "sourcePath": "$.data[].distance",
+          "note": "接口返回距离为米"
+        },
+        {
+          "key": "patrolList",
+          "value": "麦当劳黄冈万达餐厅、麦当劳黄冈居然之家餐厅",
+          "sourcePath": "$.data[].storeName"
+        }
+      ],
+      "entities": {
+        "麦当劳黄冈万达餐厅": "巡查对象门店",
+        "麦当劳黄冈居然之家餐厅": "巡查对象门店"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "范围划定：黄冈万达方圆 3 公里命中 2 家（距离 95 m–1.8 km），逐家查，最多 10 家。",
+        "pro": "门店查询命中 5 家；方圆 3km 内 2 家（距离 95 m–1.8 km）；取前 2 家巡查。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/2",
+      "isMock": false,
+      "request": {
+        "beType": 1,
+        "searchType": 2,
+        "city": "黄冈市",
+        "keyword": "黄冈万达"
+      },
+      "response": {
+        "success": true,
+        "hitCount": 5,
+        "withinRadius": 2,
+        "distanceMissing": 0
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-9e6ef1fe",
+      "seq": 3,
+      "kind": "info",
+      "tool": "query-meals",
+      "title": "巡查门店菜单",
+      "status": "success",
+      "ts": "2026-10-13T21:02:49",
+      "facts": [
+        {
+          "key": "storeName",
+          "value": "麦当劳黄冈万达餐厅",
+          "sourcePath": "$.data.meals"
+        },
+        {
+          "key": "distance",
+          "value": "95 m",
+          "sourcePath": "$.data[].distance"
+        },
+        {
+          "key": "mealCount",
+          "value": 94,
+          "source": "mctrace"
+        },
+        {
+          "key": "targetHit",
+          "value": "发现目标「麦香鱼套餐」，标价 ¥33",
+          "source": "mctrace"
+        }
+      ],
+      "entities": {
+        "麦当劳黄冈万达餐厅": "巡查门店",
+        "麦香鱼": "目标餐品"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "第 1 站（95 m）：麦当劳黄冈万达餐厅，菜单 94 个单品，发现目标「麦香鱼套餐」，标价 ¥33。",
+        "pro": "门店「麦当劳黄冈万达餐厅」（距离 95 m）菜单返回 94 个单品；目标餐品状态：发现目标「麦香鱼套餐」，标价 ¥33。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/3",
+      "isMock": false,
+      "request": {
+        "storeCode": "1960134",
+        "orderType": 1,
+        "beType": 1
+      },
+      "response": {
+        "success": true,
+        "mealCount": 94
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-9e6ef1fe",
+      "seq": 4,
+      "kind": "info",
+      "tool": "query-store-coupons",
+      "title": "核查门店券",
+      "status": "success",
+      "ts": "2026-10-13T21:02:50",
+      "facts": [
+        {
+          "key": "storeName",
+          "value": "麦当劳黄冈万达餐厅",
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "couponCount",
+          "value": 2,
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "coupons",
+          "value": "中薯条买一送一、王牌小食拼",
+          "sourcePath": "$.data[].title"
+        }
+      ],
+      "entities": {
+        "中薯条买一送一": "门店券 / coupon",
+        "王牌小食拼": "门店券 / coupon"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "麦当劳黄冈万达餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。",
+        "pro": "门店「麦当劳黄冈万达餐厅」券查询返回 2 张。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/4",
+      "isMock": false,
+      "request": {
+        "orderType": 1,
+        "beType": 1,
+        "storeCode": "1960134"
+      },
+      "response": {
+        "success": true,
+        "couponCount": 2
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-9e6ef1fe",
+      "seq": 5,
+      "kind": "info",
+      "tool": "query-meals",
+      "title": "巡查门店菜单",
+      "status": "success",
+      "ts": "2026-10-13T21:02:51",
+      "facts": [
+        {
+          "key": "storeName",
+          "value": "麦当劳黄冈居然之家餐厅",
+          "sourcePath": "$.data.meals"
+        },
+        {
+          "key": "distance",
+          "value": "1.8 km",
+          "sourcePath": "$.data[].distance"
+        },
+        {
+          "key": "mealCount",
+          "value": 107,
+          "source": "mctrace"
+        },
+        {
+          "key": "targetHit",
+          "value": "发现目标「麦香鱼套餐」，标价 ¥33",
+          "source": "mctrace"
+        }
+      ],
+      "entities": {
+        "麦当劳黄冈居然之家餐厅": "巡查门店",
+        "麦香鱼": "目标餐品"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "第 2 站（1.8 km）：麦当劳黄冈居然之家餐厅，菜单 107 个单品，发现目标「麦香鱼套餐」，标价 ¥33。",
+        "pro": "门店「麦当劳黄冈居然之家餐厅」（距离 1.8 km）菜单返回 107 个单品；目标餐品状态：发现目标「麦香鱼套餐」，标价 ¥33。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/5",
+      "isMock": false,
+      "request": {
+        "storeCode": "1960179",
+        "orderType": 1,
+        "beType": 1
+      },
+      "response": {
+        "success": true,
+        "mealCount": 107
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-9e6ef1fe",
+      "seq": 6,
+      "kind": "info",
+      "tool": "query-store-coupons",
+      "title": "核查门店券",
+      "status": "success",
+      "ts": "2026-10-13T21:02:52",
+      "facts": [
+        {
+          "key": "storeName",
+          "value": "麦当劳黄冈居然之家餐厅",
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "couponCount",
+          "value": 2,
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "coupons",
+          "value": "中薯条买一送一、王牌小食拼",
+          "sourcePath": "$.data[].title"
+        }
+      ],
+      "entities": {
+        "中薯条买一送一": "门店券 / coupon",
+        "王牌小食拼": "门店券 / coupon"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "麦当劳黄冈居然之家餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。",
+        "pro": "门店「麦当劳黄冈居然之家餐厅」券查询返回 2 张。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/6",
+      "isMock": false,
+      "request": {
+        "orderType": 1,
+        "beType": 1,
+        "storeCode": "1960179"
+      },
+      "response": {
+        "success": true,
+        "couponCount": 2
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-9e6ef1fe",
+      "seq": 7,
+      "kind": "info",
+      "tool": "mctrace:rule",
+      "title": "比对发现线索",
+      "status": "success",
+      "ts": "2026-10-13T21:02:52",
+      "facts": [
+        {
+          "key": "comparedForm",
+          "value": "麦香鱼",
+          "source": "mctrace",
+          "note": "目标关键词可能命中多种形态（单品/套餐），只与同一形态比价"
+        },
+        {
+          "key": "lowest",
+          "value": "麦当劳黄冈万达餐厅 ¥22",
+          "source": "menu"
+        },
+        {
+          "key": "highest",
+          "value": "麦当劳黄冈居然之家餐厅 ¥22",
+          "source": "menu"
+        },
+        {
+          "key": "deltaYuan",
+          "value": 0.0,
+          "source": "mctrace"
+        },
+        {
+          "key": "comparedStores",
+          "value": 2,
+          "source": "mctrace"
+        },
+        {
+          "key": "otherForms",
+          "value": "「麦香鱼套餐」各店同价",
+          "source": "mctrace",
+          "note": "其他命中形态的结论，单独列示，不混入主对比"
+        }
+      ],
+      "entities": {
+        "麦当劳黄冈万达餐厅": "价差榜门店",
+        "麦当劳黄冈居然之家餐厅": "价差榜门店"
+      },
+      "rule": {
+        "id": "price.cross-store",
+        "pass": false,
+        "deltaYuan": 0.0
+      },
+      "say": {
+        "friendly": "线索比对完成：「麦香鱼」2 家在售。最低 麦当劳黄冈万达餐厅 ¥22，最高 麦当劳黄冈居然之家餐厅 ¥22。各店同价——本案无从比起，如实记录。另外还命中 1 种形态（「麦香鱼套餐」各店同价），没混进来一起比。",
+        "pro": "目标餐品跨店比价（限定同形态「麦香鱼」）：2 家门店在售；最低 麦当劳黄冈万达餐厅 ¥22，最高 麦当劳黄冈居然之家餐厅 ¥22，价差 ¥0。其他命中形态：「麦香鱼套餐」各店同价。价差为 0，结论：各店同价。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/7",
+      "isMock": false,
+      "request": {
+        "target": "麦香鱼",
+        "stores": 2
+      },
+      "response": {
+        "rows": [
+          {
+            "store": "麦当劳黄冈万达餐厅",
+            "storeCode": "",
+            "price": 22.0,
+            "distM": null
+          },
+          {
+            "store": "麦当劳黄冈居然之家餐厅",
+            "storeCode": "",
+            "price": 22.0,
+            "distM": null
+          }
+        ],
+        "deltaYuan": 0.0,
+        "primaryForm": "麦香鱼",
+        "groups": [
+          {
+            "name": "麦香鱼",
+            "delta": 0.0,
+            "stores": 2
+          },
+          {
+            "name": "麦香鱼套餐",
+            "delta": 0.0,
+            "stores": 2
+          }
+        ]
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-9e6ef1fe",
+      "seq": 8,
+      "kind": "info",
+      "tool": "mctrace:rule",
+      "title": "比对发现线索",
+      "status": "success",
+      "ts": "2026-10-13T21:02:52",
+      "facts": [
+        {
+          "key": "unionItems",
+          "value": 111,
+          "source": "mctrace"
+        },
+        {
+          "key": "commonItems",
+          "value": 90,
+          "source": "mctrace"
+        },
+        {
+          "key": "coveragePct",
+          "value": 81.1,
+          "source": "mctrace",
+          "note": "全部门店都有售的单品占比；其余为部分门店限定"
+        },
+        {
+          "key": "example",
+          "value": "「泷泷星愿四件套」仅黄冈万达有售；此类非全部巡查门店共有的单品共 21 款",
+          "source": "mctrace"
+        }
+      ],
+      "entities": {},
+      "rule": {
+        "id": "availability.coverage",
+        "pass": true,
+        "coveragePct": 81.1
+      },
+      "say": {
+        "friendly": "顺手记一笔：2 家店合起来 111 款单品，家家都有的只有 90 款（81.1%）。想吃限定款的话，门店选址比几块钱更要命：「泷泷星愿四件套」仅黄冈万达有售；此类非全部巡查门店共有的单品共 21 款。",
+        "pro": "餐品可得性：并集 111 款，交集 90 款（覆盖率 81.1%）。部分门店限定示例：「泷泷星愿四件套」仅黄冈万达有售；此类非全部巡查门店共有的单品共 21 款。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/8",
+      "isMock": false,
+      "request": {
+        "stores": 2
+      },
+      "response": {
+        "union": 111,
+        "common": 90,
+        "coveragePct": 81.1
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-9e6ef1fe",
+      "seq": 9,
+      "kind": "info",
+      "tool": "mctrace:rule",
+      "title": "比对发现线索",
+      "status": "success",
+      "ts": "2026-10-13T21:02:52",
+      "facts": [
+        {
+          "key": "uniqueCouponSets",
+          "value": 1,
+          "source": "mctrace"
+        },
+        {
+          "key": "verdict",
+          "value": "完全一致",
+          "source": "mctrace"
+        }
+      ],
+      "entities": {},
+      "rule": {
+        "id": "coupon.cross-store",
+        "pass": true,
+        "uniqueSets": 1
+      },
+      "say": {
+        "friendly": "券也核查完了：各家门店券完全一致——所以这单不比券，只比价和货。",
+        "pro": "门店券跨店比对：所有巡查门店券集合完全一致，券维度不存在跨店差异。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/9",
+      "isMock": false,
+      "request": {
+        "stores": 2
+      },
+      "response": {
+        "uniqueSets": 1
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-9e6ef1fe",
+      "seq": 10,
+      "kind": "success",
+      "tool": "summary-composer",
+      "title": "结案报告",
+      "status": "success",
+      "ts": "2026-10-13T21:02:52",
+      "facts": [
+        {
+          "key": "巡查门店",
+          "value": 2,
+          "source": "mctrace"
+        },
+        {
+          "key": "巡查半径",
+          "value": "方圆 3 km（实际 95 m–1.8 km）",
+          "source": "mctrace"
+        },
+        {
+          "key": "目标餐品",
+          "value": "麦香鱼",
+          "source": "user-request"
+        },
+        {
+          "key": "在售门店",
+          "value": 2,
+          "source": "mctrace"
+        },
+        {
+          "key": "最低价",
+          "value": "麦当劳黄冈万达餐厅 ¥22",
+          "source": "menu"
+        },
+        {
+          "key": "最高价",
+          "value": "麦当劳黄冈居然之家餐厅 ¥22",
+          "source": "menu"
+        },
+        {
+          "key": "比对形态",
+          "value": "麦香鱼",
+          "source": "mctrace",
+          "note": "只与同一形态比价；其他命中形态见价差线索"
+        },
+        {
+          "key": "结论",
+          "value": "无从比起（各店同价）",
+          "source": "mctrace"
+        },
+        {
+          "key": "可得性覆盖率",
+          "value": "81.1%",
+          "source": "mctrace"
+        },
+        {
+          "key": "是否下单",
+          "value": false,
+          "source": "mctrace"
+        }
+      ],
+      "entities": {
+        "麦香鱼": "目标餐品",
+        "麦当劳黄冈万达餐厅": "结论门店"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "结案！方圆 3 公里 2 家店巡查完毕：「麦香鱼」无从比起（各店同价）。每一步的原始调用都能点开核验。没下单，你定～",
+        "pro": "结案报告：巡查 2 家门店（半径 3km，实际覆盖 95 m–1.8 km）；目标「麦香鱼」主比对形态「麦香鱼」在售 2 家；结论：无从比起（各店同价）；可得性覆盖率 81.1%；未创建订单。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/10",
+      "isMock": false,
+      "request": {},
+      "response": {
+        "result": {
+          "patrolStores": 2,
+          "patrolRange": "95 m–1.8 km",
+          "target": "麦香鱼",
+          "primaryForm": "麦香鱼",
+          "inStockStores": 2,
+          "verdict": "无从比起（各店同价）",
+          "lowest": "麦当劳黄冈万达餐厅 ¥22",
+          "highest": "麦当劳黄冈居然之家餐厅 ¥22",
+          "deltaYuan": 0.0,
+          "coveragePct": 81.1,
+          "orderCreated": false
+        }
+      }
+    }
+  ]
+}

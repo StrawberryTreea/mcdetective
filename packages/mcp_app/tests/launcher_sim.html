@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<!--
+模拟「零参数入口 → 界面内交互 → 界面自己发起查询 → 事件逐条长出」的完整宿主。
+
+跑法（headless chrome）：
+  chrome --headless=new --no-sandbox --disable-gpu --allow-file-access-from-files \
+         --virtual-time-budget=40000 --dump-dom \
+         file:///.../tests/launcher_sim.html
+
+宿主行为：
+  1) 收到 mctrace_launch 的结果 → 送 structuredContent{view:"launcher"}
+  2) 收到界面发来的 tools/call（mctrace_start）→ 不弹授权，直接执行并回包
+  3) 收到 resources/read → 每次多放一条事件
+  4) 校验：界面是否在提交前就显示了启动台、是否拿到 traceId、事件是否逐条增长
+-->
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>McTrace · launcher host sim</title>
+<style>body{font:13px sans-serif;margin:0}#frame{width:920px;height:1500px;border:0}</style>
+</head>
+<body>
+<div id="probe">PENDING</div>
+<iframe id="frame"></iframe>
+<script>
+(function(){
+  var q = new URLSearchParams(location.search);
+  var appUrl = q.get("app") || "../assets/live_story_app.html";
+  var traceUrl = q.get("trace") || "../../../examples/traces/real-减脂晚餐.json";
+  var frame = document.getElementById("frame");
+  var out = {stage:"init", polls:0, toolCalls:0, sent:0, err:null, steps:[]};
+
+  // 抓 iframe 内的脚本报错，否则只能看到"什么都没发生"
+  function hookErrors(){
+    try{
+      var w = document.getElementById("frame").contentWindow;
+      w.addEventListener("error", function(e){
+        (out.jsErrors = out.jsErrors || []).push(String(e.message) + " @line " + e.lineno);
+      });
+    }catch(e){}
+  }
+
+  function snap(tag){
+    try{
+      var d = document.getElementById("frame").contentDocument;
+      if(!d) return;
+      var rec = {tag: tag,
+        launcherVisible: d.getElementById("launcher").style.display !== "none",
+        storyVisible:   d.getElementById("story").style.display !== "none",
+        events: d.querySelectorAll(".event").length,
+        mode: (d.getElementById("modechip")||{}).textContent || "",
+        note: (d.getElementById("livenote")||{}).textContent || ""};
+      out.steps.push(rec);
+    }catch(e){ out.domErr = String(e); }
+  }
+  function finish(stage){
+    out.stage = stage;
+    snap("final");
+    var p = document.getElementById("probe");
+    p.textContent = "RESULT " + JSON.stringify(out);
+    p.setAttribute("data-stage", stage);
+  }
+
+  var ready = window.__SIM_TRACE__
+    ? Promise.resolve(window.__SIM_TRACE__)
+    : fetch(traceUrl).then(function(r){ return r.json(); });
+
+  ready.then(function(trace){
+    var events = trace.events || [];
+    frame.src = appUrl;
+    var target = null, filled = false, launched = false;
+
+    frame.onload = function(){
+      hookErrors();
+      var win = frame.contentWindow;
+      // ① 零参数入口结果：只有 view=launcher，没有任何 trace
+      win.postMessage({jsonrpc:"2.0", method:"ui/notifications/tool-result", params:{
+        structuredContent:{view:"launcher", isMock:false,
+          scenarios:[{id:"order"},{id:"points"}], requiredFields:["city","keyword"]},
+        content:[{type:"text", text:"麦搭子已经打开了。"}]
+      }}, "*");
+      setTimeout(function(){
+        snap("after-launch");
+        // ② 模拟用户在界面里填表并点「开始查」
+        var d = document.getElementById("frame").contentDocument;
+        var w = document.getElementById("frame").contentWindow;
+        d.getElementById("fCity").value = "黄冈市";
+        d.getElementById("fKeyword").value = "黄冈";
+        d.getElementById("fGoal").value = "fatloss";
+        d.getElementById("btnGo").click();
+        filled = true;
+        setTimeout(function(){ snap("after-submit"); }, 900);
+      }, 700);
+    };
+
+    window.addEventListener("message", function(e){
+      var m = e.data;
+      if(!m || m.jsonrpc !== "2.0") return;
+      target = target || e.source;
+      var params = m.params || {};
+
+      if(m.method === "tools/call"){
+        out.toolCalls++;
+        var name = params.name || (params.arguments && params.arguments);
+        var args = params.arguments || {};
+        if(m.id && params.name){
+          var tid = "sim-" + Math.random().toString(16).slice(2,10);
+          (target||window).postMessage({jsonrpc:"2.0", id:m.id, result:{
+            structuredContent:{traceId:tid, status:"queued", isMock:false,
+              snapshotUri:"mctrace://runs/"+tid, scenario:args.scenario||"order", events:[]},
+            content:[{type:"text", text:"已启动："+tid}]
+          }}, "*");
+          out.traceId = tid;
+          out.calledWith = args;
+        }
+        return;
+      }
+
+      if(m.method === "resources/read"){
+        out.polls++;
+        var uri = params.uri || "";
+        var n = Math.min(out.polls, events.length);
+        var snapObj = {traceId: trace.traceId, status: (n>=events.length?"completed":"running"),
+          isMock:false, eventCount:n, events: events.slice(0,n), error:null};
+        out.sent = n;
+        (target||window).postMessage({jsonrpc:"2.0", id:m.id, result:{
+          contents:[{uri:uri, mimeType:"application/json", text:JSON.stringify(snapObj)}]
+        }}, "*");
+        if(n >= events.length){ setTimeout(function(){ finish("done"); }, 1800); }
+        return;
+      }
+    });
+
+    setTimeout(function(){ if(out.stage!=="done") finish("timeout"); }, 32000);
+  }).catch(function(err){ out.err=String(err); finish("load-error"); });
+})();
+</script>
+</body>
+</html>

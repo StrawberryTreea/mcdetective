@@ -1,0 +1,904 @@
+{
+  "traceId": "mcdetective-20261013-f6d7e7ce",
+  "generatedAt": "2026-10-13T21:02:47",
+  "isMock": false,
+  "eventCount": 16,
+  "events": [
+    {
+      "traceId": "mcdetective-20261013-f6d7e7ce",
+      "seq": 1,
+      "kind": "info",
+      "tool": "user-request",
+      "title": "接报案",
+      "status": "success",
+      "ts": "2026-10-13T21:02:39",
+      "facts": [
+        {
+          "key": "city",
+          "value": "上海市",
+          "source": "user-request"
+        },
+        {
+          "key": "keyword",
+          "value": "静安寺",
+          "source": "user-request"
+        },
+        {
+          "key": "target",
+          "value": "巨无霸三件套",
+          "source": "user-request"
+        },
+        {
+          "key": "radiusKm",
+          "value": 3.0,
+          "source": "user-request",
+          "note": "巡查半径；只查方圆该距离内的门店"
+        },
+        {
+          "key": "maxStores",
+          "value": 10,
+          "source": "user-request",
+          "note": "巡查门店数上限，防止商圈过大时无限扫店"
+        }
+      ],
+      "entities": {
+        "巨无霸三件套": "目标餐品 / target"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "接到报案：上海市静安寺附近，有人想查「巨无霸三件套」哪家卖得便宜。探长出动了，先按方圆 3 公里划定巡查范围。",
+        "pro": "解析报案：区域=上海市静安寺；目标餐品=巨无霸三件套；巡查半径=3km；门店上限=10。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/1",
+      "isMock": false,
+      "request": {
+        "city": "上海市",
+        "keyword": "静安寺",
+        "target": "巨无霸三件套",
+        "radiusKm": 3.0,
+        "maxStores": 10
+      },
+      "response": {
+        "case": "上海市静安寺 巨无霸三件套"
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-f6d7e7ce",
+      "seq": 2,
+      "kind": "info",
+      "tool": "query-nearby-stores",
+      "title": "划定巡查范围",
+      "status": "success",
+      "ts": "2026-10-13T21:02:39",
+      "facts": [
+        {
+          "key": "hitCount",
+          "value": 5,
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "withinRadius",
+          "value": 5,
+          "source": "mctrace",
+          "note": "方圆 3 km 内的门店数"
+        },
+        {
+          "key": "patrolCount",
+          "value": 5,
+          "source": "mctrace",
+          "note": "上限 10 家后的实际巡查数"
+        },
+        {
+          "key": "distanceRange",
+          "value": "134 m–791 m",
+          "sourcePath": "$.data[].distance",
+          "note": "接口返回距离为米"
+        },
+        {
+          "key": "patrolList",
+          "value": "麦当劳上海静安寺餐厅、麦当劳上海越洋广场餐厅、麦当劳上海南京西路Eco1788餐厅、麦当劳上海CP静安餐厅、麦当劳上海静安延平路德必餐厅",
+          "sourcePath": "$.data[].storeName"
+        }
+      ],
+      "entities": {
+        "麦当劳上海静安寺餐厅": "巡查对象门店",
+        "麦当劳上海越洋广场餐厅": "巡查对象门店",
+        "麦当劳上海南京西路Eco1788餐厅": "巡查对象门店",
+        "麦当劳上海CP静安餐厅": "巡查对象门店",
+        "麦当劳上海静安延平路德必餐厅": "巡查对象门店"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "范围划定：静安寺方圆 3 公里命中 5 家（距离 134 m–791 m），逐家查，最多 10 家。",
+        "pro": "门店查询命中 5 家；方圆 3km 内 5 家（距离 134 m–791 m）；取前 5 家巡查。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/2",
+      "isMock": false,
+      "request": {
+        "beType": 1,
+        "searchType": 2,
+        "city": "上海市",
+        "keyword": "静安寺"
+      },
+      "response": {
+        "success": true,
+        "hitCount": 5,
+        "withinRadius": 5,
+        "distanceMissing": 0
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-f6d7e7ce",
+      "seq": 3,
+      "kind": "info",
+      "tool": "query-meals",
+      "title": "巡查门店菜单",
+      "status": "success",
+      "ts": "2026-10-13T21:02:40",
+      "facts": [
+        {
+          "key": "storeName",
+          "value": "麦当劳上海静安寺餐厅",
+          "sourcePath": "$.data.meals"
+        },
+        {
+          "key": "distance",
+          "value": "134 m",
+          "sourcePath": "$.data[].distance"
+        },
+        {
+          "key": "mealCount",
+          "value": 113,
+          "source": "mctrace"
+        },
+        {
+          "key": "targetHit",
+          "value": "发现目标「巨无霸三件套」，标价 ¥37",
+          "source": "mctrace"
+        }
+      ],
+      "entities": {
+        "麦当劳上海静安寺餐厅": "巡查门店",
+        "巨无霸三件套": "目标餐品"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "第 1 站（134 m）：麦当劳上海静安寺餐厅，菜单 113 个单品，发现目标「巨无霸三件套」，标价 ¥37。",
+        "pro": "门店「麦当劳上海静安寺餐厅」（距离 134 m）菜单返回 113 个单品；目标餐品状态：发现目标「巨无霸三件套」，标价 ¥37。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/3",
+      "isMock": false,
+      "request": {
+        "storeCode": "1450002",
+        "orderType": 1,
+        "beType": 1
+      },
+      "response": {
+        "success": true,
+        "mealCount": 113
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-f6d7e7ce",
+      "seq": 4,
+      "kind": "info",
+      "tool": "query-store-coupons",
+      "title": "核查门店券",
+      "status": "success",
+      "ts": "2026-10-13T21:02:41",
+      "facts": [
+        {
+          "key": "storeName",
+          "value": "麦当劳上海静安寺餐厅",
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "couponCount",
+          "value": 2,
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "coupons",
+          "value": "中薯条买一送一、王牌小食拼",
+          "sourcePath": "$.data[].title"
+        }
+      ],
+      "entities": {
+        "中薯条买一送一": "门店券 / coupon",
+        "王牌小食拼": "门店券 / coupon"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "麦当劳上海静安寺餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。",
+        "pro": "门店「麦当劳上海静安寺餐厅」券查询返回 2 张。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/4",
+      "isMock": false,
+      "request": {
+        "orderType": 1,
+        "beType": 1,
+        "storeCode": "1450002"
+      },
+      "response": {
+        "success": true,
+        "couponCount": 2
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-f6d7e7ce",
+      "seq": 5,
+      "kind": "info",
+      "tool": "query-meals",
+      "title": "巡查门店菜单",
+      "status": "success",
+      "ts": "2026-10-13T21:02:42",
+      "facts": [
+        {
+          "key": "storeName",
+          "value": "麦当劳上海越洋广场餐厅",
+          "sourcePath": "$.data.meals"
+        },
+        {
+          "key": "distance",
+          "value": "194 m",
+          "sourcePath": "$.data[].distance"
+        },
+        {
+          "key": "mealCount",
+          "value": 116,
+          "source": "mctrace"
+        },
+        {
+          "key": "targetHit",
+          "value": "发现目标「巨无霸三件套」，标价 ¥36.5",
+          "source": "mctrace"
+        }
+      ],
+      "entities": {
+        "麦当劳上海越洋广场餐厅": "巡查门店",
+        "巨无霸三件套": "目标餐品"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "第 2 站（194 m）：麦当劳上海越洋广场餐厅，菜单 116 个单品，发现目标「巨无霸三件套」，标价 ¥36.5。",
+        "pro": "门店「麦当劳上海越洋广场餐厅」（距离 194 m）菜单返回 116 个单品；目标餐品状态：发现目标「巨无霸三件套」，标价 ¥36.5。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/5",
+      "isMock": false,
+      "request": {
+        "storeCode": "1450133",
+        "orderType": 1,
+        "beType": 1
+      },
+      "response": {
+        "success": true,
+        "mealCount": 116
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-f6d7e7ce",
+      "seq": 6,
+      "kind": "info",
+      "tool": "query-store-coupons",
+      "title": "核查门店券",
+      "status": "success",
+      "ts": "2026-10-13T21:02:42",
+      "facts": [
+        {
+          "key": "storeName",
+          "value": "麦当劳上海越洋广场餐厅",
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "couponCount",
+          "value": 2,
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "coupons",
+          "value": "中薯条买一送一、王牌小食拼",
+          "sourcePath": "$.data[].title"
+        }
+      ],
+      "entities": {
+        "中薯条买一送一": "门店券 / coupon",
+        "王牌小食拼": "门店券 / coupon"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "麦当劳上海越洋广场餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。",
+        "pro": "门店「麦当劳上海越洋广场餐厅」券查询返回 2 张。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/6",
+      "isMock": false,
+      "request": {
+        "orderType": 1,
+        "beType": 1,
+        "storeCode": "1450133"
+      },
+      "response": {
+        "success": true,
+        "couponCount": 2
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-f6d7e7ce",
+      "seq": 7,
+      "kind": "info",
+      "tool": "query-meals",
+      "title": "巡查门店菜单",
+      "status": "success",
+      "ts": "2026-10-13T21:02:43",
+      "facts": [
+        {
+          "key": "storeName",
+          "value": "麦当劳上海南京西路Eco1788餐厅",
+          "sourcePath": "$.data.meals"
+        },
+        {
+          "key": "distance",
+          "value": "221 m",
+          "sourcePath": "$.data[].distance"
+        },
+        {
+          "key": "mealCount",
+          "value": 117,
+          "source": "mctrace"
+        },
+        {
+          "key": "targetHit",
+          "value": "发现目标「巨无霸三件套」，标价 ¥36.5",
+          "source": "mctrace"
+        }
+      ],
+      "entities": {
+        "麦当劳上海南京西路Eco1788餐厅": "巡查门店",
+        "巨无霸三件套": "目标餐品"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "第 3 站（221 m）：麦当劳上海南京西路Eco1788餐厅，菜单 117 个单品，发现目标「巨无霸三件套」，标价 ¥36.5。",
+        "pro": "门店「麦当劳上海南京西路Eco1788餐厅」（距离 221 m）菜单返回 117 个单品；目标餐品状态：发现目标「巨无霸三件套」，标价 ¥36.5。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/7",
+      "isMock": false,
+      "request": {
+        "storeCode": "1450224",
+        "orderType": 1,
+        "beType": 1
+      },
+      "response": {
+        "success": true,
+        "mealCount": 117
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-f6d7e7ce",
+      "seq": 8,
+      "kind": "info",
+      "tool": "query-store-coupons",
+      "title": "核查门店券",
+      "status": "success",
+      "ts": "2026-10-13T21:02:44",
+      "facts": [
+        {
+          "key": "storeName",
+          "value": "麦当劳上海南京西路Eco1788餐厅",
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "couponCount",
+          "value": 2,
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "coupons",
+          "value": "中薯条买一送一、王牌小食拼",
+          "sourcePath": "$.data[].title"
+        }
+      ],
+      "entities": {
+        "中薯条买一送一": "门店券 / coupon",
+        "王牌小食拼": "门店券 / coupon"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "麦当劳上海南京西路Eco1788餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。",
+        "pro": "门店「麦当劳上海南京西路Eco1788餐厅」券查询返回 2 张。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/8",
+      "isMock": false,
+      "request": {
+        "orderType": 1,
+        "beType": 1,
+        "storeCode": "1450224"
+      },
+      "response": {
+        "success": true,
+        "couponCount": 2
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-f6d7e7ce",
+      "seq": 9,
+      "kind": "info",
+      "tool": "query-meals",
+      "title": "巡查门店菜单",
+      "status": "success",
+      "ts": "2026-10-13T21:02:45",
+      "facts": [
+        {
+          "key": "storeName",
+          "value": "麦当劳上海CP静安餐厅",
+          "sourcePath": "$.data.meals"
+        },
+        {
+          "key": "distance",
+          "value": "258 m",
+          "sourcePath": "$.data[].distance"
+        },
+        {
+          "key": "mealCount",
+          "value": 110,
+          "source": "mctrace"
+        },
+        {
+          "key": "targetHit",
+          "value": "发现目标「巨无霸三件套」，标价 ¥36.5",
+          "source": "mctrace"
+        }
+      ],
+      "entities": {
+        "麦当劳上海CP静安餐厅": "巡查门店",
+        "巨无霸三件套": "目标餐品"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "第 4 站（258 m）：麦当劳上海CP静安餐厅，菜单 110 个单品，发现目标「巨无霸三件套」，标价 ¥36.5。",
+        "pro": "门店「麦当劳上海CP静安餐厅」（距离 258 m）菜单返回 110 个单品；目标餐品状态：发现目标「巨无霸三件套」，标价 ¥36.5。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/9",
+      "isMock": false,
+      "request": {
+        "storeCode": "1450400",
+        "orderType": 1,
+        "beType": 1
+      },
+      "response": {
+        "success": true,
+        "mealCount": 110
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-f6d7e7ce",
+      "seq": 10,
+      "kind": "info",
+      "tool": "query-store-coupons",
+      "title": "核查门店券",
+      "status": "success",
+      "ts": "2026-10-13T21:02:45",
+      "facts": [
+        {
+          "key": "storeName",
+          "value": "麦当劳上海CP静安餐厅",
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "couponCount",
+          "value": 2,
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "coupons",
+          "value": "中薯条买一送一、王牌小食拼",
+          "sourcePath": "$.data[].title"
+        }
+      ],
+      "entities": {
+        "中薯条买一送一": "门店券 / coupon",
+        "王牌小食拼": "门店券 / coupon"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "麦当劳上海CP静安餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。",
+        "pro": "门店「麦当劳上海CP静安餐厅」券查询返回 2 张。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/10",
+      "isMock": false,
+      "request": {
+        "orderType": 1,
+        "beType": 1,
+        "storeCode": "1450400"
+      },
+      "response": {
+        "success": true,
+        "couponCount": 2
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-f6d7e7ce",
+      "seq": 11,
+      "kind": "info",
+      "tool": "query-meals",
+      "title": "巡查门店菜单",
+      "status": "success",
+      "ts": "2026-10-13T21:02:46",
+      "facts": [
+        {
+          "key": "storeName",
+          "value": "麦当劳上海静安延平路德必餐厅",
+          "sourcePath": "$.data.meals"
+        },
+        {
+          "key": "distance",
+          "value": "791 m",
+          "sourcePath": "$.data[].distance"
+        },
+        {
+          "key": "mealCount",
+          "value": 105,
+          "source": "mctrace"
+        },
+        {
+          "key": "targetHit",
+          "value": "发现目标「巨无霸三件套」，标价 ¥36.5",
+          "source": "mctrace"
+        }
+      ],
+      "entities": {
+        "麦当劳上海静安延平路德必餐厅": "巡查门店",
+        "巨无霸三件套": "目标餐品"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "第 5 站（791 m）：麦当劳上海静安延平路德必餐厅，菜单 105 个单品，发现目标「巨无霸三件套」，标价 ¥36.5。",
+        "pro": "门店「麦当劳上海静安延平路德必餐厅」（距离 791 m）菜单返回 105 个单品；目标餐品状态：发现目标「巨无霸三件套」，标价 ¥36.5。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/11",
+      "isMock": false,
+      "request": {
+        "storeCode": "1450650",
+        "orderType": 1,
+        "beType": 1
+      },
+      "response": {
+        "success": true,
+        "mealCount": 105
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-f6d7e7ce",
+      "seq": 12,
+      "kind": "info",
+      "tool": "query-store-coupons",
+      "title": "核查门店券",
+      "status": "success",
+      "ts": "2026-10-13T21:02:47",
+      "facts": [
+        {
+          "key": "storeName",
+          "value": "麦当劳上海静安延平路德必餐厅",
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "couponCount",
+          "value": 2,
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "coupons",
+          "value": "中薯条买一送一、王牌小食拼",
+          "sourcePath": "$.data[].title"
+        }
+      ],
+      "entities": {
+        "中薯条买一送一": "门店券 / coupon",
+        "王牌小食拼": "门店券 / coupon"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "麦当劳上海静安延平路德必餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。",
+        "pro": "门店「麦当劳上海静安延平路德必餐厅」券查询返回 2 张。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/12",
+      "isMock": false,
+      "request": {
+        "orderType": 1,
+        "beType": 1,
+        "storeCode": "1450650"
+      },
+      "response": {
+        "success": true,
+        "couponCount": 2
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-f6d7e7ce",
+      "seq": 13,
+      "kind": "success",
+      "tool": "mctrace:rule",
+      "title": "比对发现线索",
+      "status": "success",
+      "ts": "2026-10-13T21:02:47",
+      "facts": [
+        {
+          "key": "comparedForm",
+          "value": "巨无霸三件套",
+          "source": "mctrace",
+          "note": "目标关键词可能命中多种形态（单品/套餐），只与同一形态比价"
+        },
+        {
+          "key": "lowest",
+          "value": "麦当劳上海越洋广场餐厅 ¥36.5",
+          "source": "menu"
+        },
+        {
+          "key": "highest",
+          "value": "麦当劳上海静安寺餐厅 ¥37",
+          "source": "menu"
+        },
+        {
+          "key": "deltaYuan",
+          "value": 0.5,
+          "source": "mctrace"
+        },
+        {
+          "key": "comparedStores",
+          "value": 5,
+          "source": "mctrace"
+        },
+        {
+          "key": "otherForms",
+          "value": "无",
+          "source": "mctrace",
+          "note": "其他命中形态的结论，单独列示，不混入主对比"
+        }
+      ],
+      "entities": {
+        "麦当劳上海越洋广场餐厅": "价差榜门店",
+        "麦当劳上海南京西路Eco1788餐厅": "价差榜门店",
+        "麦当劳上海CP静安餐厅": "价差榜门店",
+        "麦当劳上海静安延平路德必餐厅": "价差榜门店",
+        "麦当劳上海静安寺餐厅": "价差榜门店"
+      },
+      "rule": {
+        "id": "price.cross-store",
+        "pass": true,
+        "deltaYuan": 0.5
+      },
+      "say": {
+        "friendly": "线索比对完成：「巨无霸三件套」5 家在售。最低 麦当劳上海越洋广场餐厅 ¥36.5，最高 麦当劳上海静安寺餐厅 ¥37。",
+        "pro": "目标餐品跨店比价（限定同形态「巨无霸三件套」）：5 家门店在售；最低 麦当劳上海越洋广场餐厅 ¥36.5，最高 麦当劳上海静安寺餐厅 ¥37，价差 ¥0.5。其他命中形态：无。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/13",
+      "isMock": false,
+      "request": {
+        "target": "巨无霸三件套",
+        "stores": 5
+      },
+      "response": {
+        "rows": [
+          {
+            "store": "麦当劳上海越洋广场餐厅",
+            "storeCode": "",
+            "price": 36.5,
+            "distM": null
+          },
+          {
+            "store": "麦当劳上海南京西路Eco1788餐厅",
+            "storeCode": "",
+            "price": 36.5,
+            "distM": null
+          },
+          {
+            "store": "麦当劳上海CP静安餐厅",
+            "storeCode": "",
+            "price": 36.5,
+            "distM": null
+          },
+          {
+            "store": "麦当劳上海静安延平路德必餐厅",
+            "storeCode": "",
+            "price": 36.5,
+            "distM": null
+          },
+          {
+            "store": "麦当劳上海静安寺餐厅",
+            "storeCode": "",
+            "price": 37.0,
+            "distM": null
+          }
+        ],
+        "deltaYuan": 0.5,
+        "primaryForm": "巨无霸三件套",
+        "groups": [
+          {
+            "name": "巨无霸三件套",
+            "delta": 0.5,
+            "stores": 5
+          }
+        ]
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-f6d7e7ce",
+      "seq": 14,
+      "kind": "info",
+      "tool": "mctrace:rule",
+      "title": "比对发现线索",
+      "status": "success",
+      "ts": "2026-10-13T21:02:47",
+      "facts": [
+        {
+          "key": "unionItems",
+          "value": 136,
+          "source": "mctrace"
+        },
+        {
+          "key": "commonItems",
+          "value": 89,
+          "source": "mctrace"
+        },
+        {
+          "key": "coveragePct",
+          "value": 65.4,
+          "source": "mctrace",
+          "note": "全部门店都有售的单品占比；其余为部分门店限定"
+        },
+        {
+          "key": "example",
+          "value": "「鱼排堡开心乐园餐」仅上海静安寺有售；此类非全部巡查门店共有的单品共 47 款",
+          "source": "mctrace"
+        }
+      ],
+      "entities": {},
+      "rule": {
+        "id": "availability.coverage",
+        "pass": true,
+        "coveragePct": 65.4
+      },
+      "say": {
+        "friendly": "顺手记一笔：5 家店合起来 136 款单品，家家都有的只有 89 款（65.4%）。想吃限定款的话，门店选址比几块钱更要命：「鱼排堡开心乐园餐」仅上海静安寺有售；此类非全部巡查门店共有的单品共 47 款。",
+        "pro": "餐品可得性：并集 136 款，交集 89 款（覆盖率 65.4%）。部分门店限定示例：「鱼排堡开心乐园餐」仅上海静安寺有售；此类非全部巡查门店共有的单品共 47 款。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/14",
+      "isMock": false,
+      "request": {
+        "stores": 5
+      },
+      "response": {
+        "union": 136,
+        "common": 89,
+        "coveragePct": 65.4
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-f6d7e7ce",
+      "seq": 15,
+      "kind": "info",
+      "tool": "mctrace:rule",
+      "title": "比对发现线索",
+      "status": "success",
+      "ts": "2026-10-13T21:02:47",
+      "facts": [
+        {
+          "key": "uniqueCouponSets",
+          "value": 1,
+          "source": "mctrace"
+        },
+        {
+          "key": "verdict",
+          "value": "完全一致",
+          "source": "mctrace"
+        }
+      ],
+      "entities": {},
+      "rule": {
+        "id": "coupon.cross-store",
+        "pass": true,
+        "uniqueSets": 1
+      },
+      "say": {
+        "friendly": "券也核查完了：各家门店券完全一致——所以这单不比券，只比价和货。",
+        "pro": "门店券跨店比对：所有巡查门店券集合完全一致，券维度不存在跨店差异。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/15",
+      "isMock": false,
+      "request": {
+        "stores": 5
+      },
+      "response": {
+        "uniqueSets": 1
+      }
+    },
+    {
+      "traceId": "mcdetective-20261013-f6d7e7ce",
+      "seq": 16,
+      "kind": "success",
+      "tool": "summary-composer",
+      "title": "结案报告",
+      "status": "success",
+      "ts": "2026-10-13T21:02:47",
+      "facts": [
+        {
+          "key": "巡查门店",
+          "value": 5,
+          "source": "mctrace"
+        },
+        {
+          "key": "巡查半径",
+          "value": "方圆 3 km（实际 134 m–791 m）",
+          "source": "mctrace"
+        },
+        {
+          "key": "目标餐品",
+          "value": "巨无霸三件套",
+          "source": "user-request"
+        },
+        {
+          "key": "在售门店",
+          "value": 5,
+          "source": "mctrace"
+        },
+        {
+          "key": "最低价",
+          "value": "麦当劳上海越洋广场餐厅 ¥36.5",
+          "source": "menu"
+        },
+        {
+          "key": "最高价",
+          "value": "麦当劳上海静安寺餐厅 ¥37",
+          "source": "menu"
+        },
+        {
+          "key": "比对形态",
+          "value": "巨无霸三件套",
+          "source": "mctrace",
+          "note": "只与同一形态比价；其他命中形态见价差线索"
+        },
+        {
+          "key": "结论",
+          "value": "差价 ¥0.5：麦当劳上海越洋广场餐厅 最便宜",
+          "source": "mctrace"
+        },
+        {
+          "key": "可得性覆盖率",
+          "value": "65.4%",
+          "source": "mctrace"
+        },
+        {
+          "key": "是否下单",
+          "value": false,
+          "source": "mctrace"
+        }
+      ],
+      "entities": {
+        "巨无霸三件套": "目标餐品",
+        "麦当劳上海越洋广场餐厅": "结论门店"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "结案！方圆 3 公里 5 家店巡查完毕：「巨无霸三件套」差价 ¥0.5：麦当劳上海越洋广场餐厅 最便宜。每一步的原始调用都能点开核验。没下单，你定～",
+        "pro": "结案报告：巡查 5 家门店（半径 3km，实际覆盖 134 m–791 m）；目标「巨无霸三件套」主比对形态「巨无霸三件套」在售 5 家；结论：差价 ¥0.5：麦当劳上海越洋广场餐厅 最便宜；可得性覆盖率 65.4%；未创建订单。"
+      },
+      "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/16",
+      "isMock": false,
+      "request": {},
+      "response": {
+        "result": {
+          "patrolStores": 5,
+          "patrolRange": "134 m–791 m",
+          "target": "巨无霸三件套",
+          "primaryForm": "巨无霸三件套",
+          "inStockStores": 5,
+          "verdict": "差价 ¥0.5：麦当劳上海越洋广场餐厅 最便宜",
+          "lowest": "麦当劳上海越洋广场餐厅 ¥36.5",
+          "highest": "麦当劳上海静安寺餐厅 ¥37",
+          "deltaYuan": 0.5,
+          "coveragePct": 65.4,
+          "orderCreated": false
+        }
+      }
+    }
+  ]
+}

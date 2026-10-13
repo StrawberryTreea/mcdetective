@@ -1,0 +1,306 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>McTrace 回放</title><style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f6f8;color:#1b1f27;
+  font:14px/1.7 -apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.wrap{max-width:920px;margin:0 auto;padding:22px 20px 60px}
+
+.hero{background:#fff;border:1px solid #e5e8ee;border-radius:14px;padding:20px 22px;
+  margin-bottom:16px;box-shadow:0 1px 2px rgba(18,22,33,.05)}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;margin-bottom:12px}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:#E4002B;
+  box-shadow:0 0 0 3px rgba(228,0,43,.12)}
+.brand .tid{font-weight:400;font-size:11.5px;color:#98a1af}
+.hero h1{margin:0 0 10px;font-size:19px;line-height:1.55}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{font-size:11.5px;padding:3px 10px;border-radius:999px;border:1px solid #e5e8ee;
+  background:#fafbfc;color:#6d7683}
+.chip.ok{color:#0a7d3c;border-color:#c6e8d3;background:#edfaf2}
+.chip.warn{color:#b3261e;border-color:#f3c2bd;background:#fdecea}
+.chip.mock{color:#b3261e;border-color:#f3c2bd;background:#fdecea}
+
+.notice{background:#fff;border:1px solid #e5e8ee;border-left:4px solid #FFC72C;
+  border-radius:11px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#5b5346}
+.notice b{color:#1b1f27}
+.notice.assumption{border-left-color:#2456c9}
+.notice.assumption b{color:#2456c9}
+
+.sec{margin:22px 0 12px;font-size:14px;font-weight:700;color:#1b1f27}
+.sec small{font-weight:400;color:#98a1af;font-size:12px;margin-left:8px}
+
+.ev{background:#fff;border:1px solid #e5e8ee;border-left-width:3px;border-radius:12px;
+  padding:13px 16px;margin-bottom:10px;box-shadow:0 1px 2px rgba(18,22,33,.05)}
+.ev.k-info{border-left-color:#d8dde5}
+.ev.k-warning{border-left-color:#c9820f}
+.ev.k-success{border-left-color:#1f9d55}
+.ev.k-error{border-left-color:#E4002B}
+.ev.k-degraded{border-left-color:#6f52b8}
+.ehead{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:7px}
+.seq{font-size:11px;font-weight:700;color:#fff;background:#98a1af;padding:1px 7px;border-radius:6px}
+.ev.k-warning .seq{background:#c9820f}.ev.k-success .seq{background:#1f9d55}
+.ev.k-error .seq{background:#E4002B}.ev.k-degraded .seq{background:#6f52b8}
+.etitle{font-size:14px;font-weight:700}
+.badge{font-size:11px;padding:1px 8px;border-radius:999px;border:1px solid #e5e8ee;
+  background:#fafbfc;color:#6d7683}
+.badge.warn{color:#b3261e;border-color:#f3c2bd;background:#fdecea}
+.badge.degraded{color:#6f52b8;border-color:#d9cdf0;background:#f6f2fd}
+.badge.error{color:#E4002B;border-color:#f3c2bd;background:#fdecea}
+.ts{margin-left:auto;font-size:11px;color:#98a1af}
+
+.toolbtn{cursor:pointer;border:1px dashed #b9c4d6;background:#f6f8fb;color:#2456c9;
+  padding:2px 9px;border-radius:8px;font:11.5px/1.6 ui-monospace,Menlo,Consolas,monospace;
+  margin:0 6px 8px 0;display:inline-block;transition:.14s}
+.toolbtn:hover{border-color:#2456c9;background:#eef3fe}
+.toolbtn.local{border-style:dotted;color:#6d7683;cursor:default}
+.toolbtn.local:hover{background:#f6f8fb;border-color:#b9c4d6}
+
+.say{color:#3c4450;margin-bottom:9px}
+.facts{display:flex;flex-direction:column;gap:5px;margin-top:4px}
+.f{display:flex;gap:9px;align-items:baseline;font-size:12.5px;flex-wrap:wrap}
+.f .k{color:#6d7683;min-width:118px}
+.f .v{font-weight:600;color:#1b1f27}
+.srcbtn{cursor:pointer;border:none;background:#f2f4f7;color:#5a6675;border-radius:5px;
+  padding:1px 6px;font:11px/1.6 ui-monospace,Menlo,Consolas,monospace;transition:.14s}
+.srcbtn:hover{background:#2456c9;color:#fff}
+.srcbtn.nosrc{cursor:default;color:#98a1af}
+.srcbtn.nosrc:hover{background:#f2f4f7;color:#98a1af}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px}
+.rcell{border:1px solid #e5e8ee;border-radius:10px;padding:10px 12px;background:#fff}
+.rcell .l{font-size:11px;color:#98a1af;margin-bottom:3px}
+.rcell .v{font-size:16px;font-weight:700;color:#1b1f27}
+.rcell.good .v{color:#1f9d55}.rcell.warn .v{color:#c9820f}
+
+details.raw{margin-top:7px}
+details.raw>summary{cursor:pointer;font-size:11.5px;color:#2456c9;outline:none}
+details.raw pre{margin:7px 0 0;background:#1b1f27;color:#e6eaf0;padding:11px 13px;
+  border-radius:9px;font-size:11.5px;line-height:1.6;overflow-x:auto;max-height:340px;
+  white-space:pre-wrap;word-break:break-all}
+
+.foot{margin-top:26px;padding-top:14px;border-top:1px solid #e5e8ee;
+  font-size:11.5px;color:#98a1af;line-height:1.8}
+.lens{position:fixed;top:0;right:0;width:min(520px,100%);height:100%;background:#fff;
+  box-shadow:-8px 0 28px rgba(18,22,33,.14);transform:translateX(100%);
+  transition:transform .22s;z-index:50;display:flex;flex-direction:column}
+.lens.on{transform:none}
+.lens .lh{display:flex;align-items:center;gap:10px;padding:14px 16px;
+  border-bottom:1px solid #e5e8ee}
+.lens .lh b{font-size:13.5px}
+.lens .x{margin-left:auto;cursor:pointer;border:1px solid #e5e8ee;background:#fff;
+  width:26px;height:26px;border-radius:7px;font-size:15px;color:#6d7683}
+.lens .x:hover{background:#f4f6f8}
+.lens .lb{padding:14px 16px;overflow:auto;flex:1;font-size:12.5px}
+.lens pre{background:#1b1f27;color:#e6eaf0;padding:11px 13px;border-radius:9px;
+  font-size:11.5px;line-height:1.6;overflow-x:auto;max-height:none;
+  white-space:pre-wrap;word-break:break-all;margin:7px 0}
+.ov{position:fixed;inset:0;background:rgba(18,22,33,.28);display:none;z-index:49}
+.ov.on{display:block}
+@media (max-width:600px){ .ts{margin-left:0} .f .k{min-width:auto} }
+</style></head><body>
+<div class="wrap">
+<div class="hero"><div class="brand"><span class="dot"></span>McTrace · 麦搭子<span class="tid mono">mctrace-20261010-e62db40e</span></div>
+<h1>搞定！「麦当劳黄冈万达餐厅」的减脂晚餐：麦香鱼。22.0 元、325 千卡 —— 减脂目标下热量最低的单品。同规则的备选：培根蔬萃双层牛堡 442kcal/¥24.5；双层吉士汉堡 429kcal/¥23；板烧鸡腿堡 391kcal/¥23.5。没下单，你定～</h1>
+<div class="chips"><span class="chip ok">真实麦当劳 MCP 调用</span><span class="chip">目标：减脂低卡</span><span class="chip">10 步</span><span class="chip">2026-10-10T17:48:14</span></div></div>
+<div class="notice assumption"><b>「减脂」是我替你理解的，不是你原话。</b>我的做法是：在预算和热量上限都通过的前提下，取热量最低的正餐单品。如果理解偏了（比如你想吃热的、不想要汉堡、想吃饱），说一声我按你的重来。下面的备选都来自本次菜单里真实存在的单品。</div>
+<div class="sec">关键结论<small>数字均可点下方「过程」核对来源</small></div>
+<div class="grid"><div class="rcell "><div class="l">门店</div><div class="v">麦当劳黄冈万达餐厅</div></div><div class="rcell "><div class="l">推荐</div><div class="v">麦香鱼</div></div><div class="rcell good"><div class="l">总价</div><div class="v">22.0</div></div><div class="rcell good"><div class="l">热量 kcal</div><div class="v">325</div></div><div class="rcell "><div class="l">选品规则</div><div class="v">减脂目标：预算与热量两条硬约束都通过后，取热…</div></div><div class="rcell "><div class="l">备选</div><div class="v">培根蔬萃双层牛堡、双层吉士汉堡、板烧鸡腿堡</div></div></div>
+<div class="sec">执行过程<small>点工具名看原始请求/返回，点来源路径看字段取自哪里</small></div>
+<div class="ev k-info" data-req="{
+  "keyword": "黄冈",
+  "budgetYuan": 50.0,
+  "maxKcal": 500,
+  "goal": "fatloss"
+}" data-res="{
+  "userRequest": "帮我在黄冈附近点份减脂餐：预算不超过 50 元、热量不超 500 千卡，要低卡。"
+}">
+<div class="ehead"><span class="seq">1</span><span class="etitle">先把要求记下来</span><span class="badge">成功</span><span class="ts mono">2026-10-10T17:48:11</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'user-request','req')">user-request</button><button class="toolbtn" onclick="mcShowRaw.call(this,'user-request','res')">解析你的要求<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">好嘞！黄冈市黄冈附近，想点份减脂餐：价格不超过 50.0 元、热量不超 500 千卡，要低卡。我从找门店开始。</div>
+<div class="facts"><div class="f"><span class="k">keyword</span><span class="v">黄冈</span><span class="srcbtn nosrc">user-request</span></div><div class="f"><span class="k">budgetYuan</span><span class="v">50.0</span><span class="srcbtn nosrc">user-request</span></div><div class="f"><span class="k">maxKcal</span><span class="v">500</span><span class="srcbtn nosrc">user-request</span></div><div class="f"><span class="k">goal</span><span class="v">减脂（低卡）</span><span class="srcbtn nosrc">user-request</span></div></div>
+</div>
+<div class="ev k-info" data-req="{
+  "beType": 1,
+  "searchType": 2,
+  "city": "黄冈市",
+  "keyword": "黄冈"
+}" data-res="{
+  "success": true,
+  "storeCount": 1
+}">
+<div class="ehead"><span class="seq">2</span><span class="etitle">找到具体门店</span><span class="badge">成功</span><span class="ts mono">2026-10-10T17:48:12</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'query-nearby-stores','req')">query-nearby-stores</button><button class="toolbtn" onclick="mcShowRaw.call(this,'query-nearby-stores','res')">找门店<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">找到了！先看「麦当劳黄冈万达餐厅」，位置正合适。我就从它的菜单开始查。</div>
+<div style="margin:2px 0 8px"><button class="srcbtn" onclick="mcShowEnt('麦当劳黄冈万达餐厅','门店名称 / storeName')">麦当劳黄冈万达餐厅 ›</button></div>
+<div class="facts"><div class="f"><span class="k">storeName</span><span class="v">麦当劳黄冈万达餐厅</span><button class="srcbtn" onclick="mcShowPath('$.data[0].storeName','麦当劳黄冈万达餐厅')">$.data[0].storeName</button></div><div class="f"><span class="k">storeCode</span><span class="v">1960134</span><button class="srcbtn" onclick="mcShowPath('$.data[0].storeCode','1960134')">$.data[0].storeCode</button></div><div class="f"><span class="k">address</span><span class="v">赤壁二路**号</span><button class="srcbtn" onclick="mcShowPath('$.data[0].address','赤壁二路**号')">$.data[0].address</button></div></div>
+</div>
+<div class="ev k-info" data-req="{
+  "storeCode": "1960134",
+  "orderType": 1,
+  "beType": 1
+}" data-res="{
+  "success": true,
+  "mealCount": 109
+}">
+<div class="ehead"><span class="seq">3</span><span class="etitle">认真翻了菜单</span><span class="badge">成功</span><span class="ts mono">2026-10-10T17:48:12</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'query-meals','req')">query-meals</button><button class="toolbtn" onclick="mcShowRaw.call(this,'query-meals','res')">拉菜单<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">菜单里看了不少单品，先记几个带热量的候选：麦辣鸡腿汉堡三件套、培根安格斯厚牛堡、玫瑰红糖糍粑风味派……</div>
+<div style="margin:2px 0 8px"><button class="srcbtn" onclick="mcShowEnt('麦辣鸡腿汉堡三件套','菜单餐品 / item.name')">麦辣鸡腿汉堡三件套 ›</button><button class="srcbtn" onclick="mcShowEnt('培根安格斯厚牛堡','菜单餐品 / item.name')">培根安格斯厚牛堡 ›</button><button class="srcbtn" onclick="mcShowEnt('玫瑰红糖糍粑风味派','菜单餐品 / item.name')">玫瑰红糖糍粑风味派 ›</button><button class="srcbtn" onclick="mcShowEnt('阳光橙麦炫酷','菜单餐品 / item.name')">阳光橙麦炫酷 ›</button></div>
+<div class="facts"><div class="f"><span class="k">itemCount</span><span class="v">109</span><button class="srcbtn" onclick="mcShowPath('$.data.meals','109')">$.data.meals</button></div><div class="f"><span class="k">sample</span><span class="v">麦辣鸡腿汉堡三件套、培根安格斯厚牛堡、玫瑰红糖糍粑风味派</span><button class="srcbtn" onclick="mcShowPath('$.data.meals','麦辣鸡腿汉堡三件套、培根安格斯厚牛堡、玫瑰红糖糍粑风味派')">$.data.meals</button></div></div>
+</div>
+<div class="ev k-info" data-req="" data-res="{
+  "menuItems": 109,
+  "matched": 19,
+  "coveragePct": 17.4
+}">
+<div class="ehead"><span class="seq">4</span><span class="etitle">核对候选热量</span><span class="badge">成功</span><span class="ts mono">2026-10-10T17:48:13</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'list-nutrition-foods','req')">list-nutrition-foods</button><button class="toolbtn" onclick="mcShowRaw.call(this,'list-nutrition-foods','res')">核热量<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">核对了候选的热量：培根安格斯厚牛堡 707千卡，芝士安格斯厚牛堡 696千卡，培根蔬萃双层牛堡 442千卡……不过菜单里 109 个单品，营养表只对得上 19 个（17.4%），剩下那些我没法判断热量，不瞎推荐。</div>
+<div style="margin:2px 0 8px"><button class="srcbtn" onclick="mcShowEnt('培根安格斯厚牛堡','营养餐品 / nutrition')">培根安格斯厚牛堡 ›</button><button class="srcbtn" onclick="mcShowEnt('芝士安格斯厚牛堡','营养餐品 / nutrition')">芝士安格斯厚牛堡 ›</button><button class="srcbtn" onclick="mcShowEnt('培根蔬萃双层牛堡','营养餐品 / nutrition')">培根蔬萃双层牛堡 ›</button><button class="srcbtn" onclick="mcShowEnt('巨无霸','营养餐品 / nutrition')">巨无霸 ›</button></div>
+<div class="facts"><div class="f"><span class="k">menuItems</span><span class="v">109</span><button class="srcbtn" onclick="mcShowPath('$.data.meals','109')">$.data.meals</button></div><div class="f"><span class="k">nutritionMatched</span><span class="v">19</span><span class="srcbtn nosrc">nutrition-table</span></div><div class="f"><span class="k">coveragePct</span><span class="v">17.4</span><span class="srcbtn nosrc">mctrace</span></div><div class="f"><span class="k">sample</span><span class="v">培根安格斯厚牛堡 707kcal、芝士安格斯厚牛堡 696kcal、培根蔬萃双层牛堡 442kcal</span><span class="srcbtn nosrc">nutrition-table</span></div></div>
+<div style="margin-top:7px;font-size:12px;color:#c9820f">规则 nutrition.coverage：未通过（超出 None）</div>
+</div>
+<div class="ev k-warning" data-req="{
+  "item": "培根安格斯厚牛堡",
+  "kcal": 707,
+  "maxKcal": 500
+}" data-res="{
+  "rule": "nutrition.max"
+}">
+<div class="ehead"><span class="seq">5</span><span class="etitle">发现约束冲突</span><span class="badge">成功</span><span class="ts mono">2026-10-10T17:48:13</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'mctrace:rule','req')">mctrace:rule</button><button class="toolbtn" onclick="mcShowRaw.call(this,'mctrace:rule','res')">规则校验<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">等等……「培根安格斯厚牛堡」约 707 千卡，比 500 的目标多了 207。看来得收敛一点！</div>
+<div style="margin:2px 0 8px"><button class="srcbtn" onclick="mcShowEnt('培根安格斯厚牛堡','初始方案餐品')">培根安格斯厚牛堡 ›</button></div>
+<div class="facts"><div class="f"><span class="k">item</span><span class="v">培根安格斯厚牛堡</span><span class="srcbtn nosrc">menu+nutrition</span></div><div class="f"><span class="k">kcal</span><span class="v">707</span><button class="srcbtn" onclick="mcShowPath('$.nutrition','707')">$.nutrition</button></div><div class="f"><span class="k">maxKcal</span><span class="v">500</span><span class="srcbtn nosrc">user-request</span></div><div class="f"><span class="k">deltaKcal</span><span class="v">207</span><span class="srcbtn nosrc">rule</span></div></div>
+</div>
+<div class="ev k-info" data-req="{
+  "storeCode": "1960134",
+  "orderType": 1,
+  "beType": 1,
+  "code": "1600"
+}" data-res="{
+  "success": true,
+  "parsedParts": 1
+}">
+<div class="ehead"><span class="seq">6</span><span class="etitle">拆开看它有什么</span><span class="badge">成功</span><span class="ts mono">2026-10-10T17:48:13</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'query-meal-detail','req')">query-meal-detail</button><button class="toolbtn" onclick="mcShowRaw.call(this,'query-meal-detail','res')">拆餐品构成<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">顺手拆开看了一眼「麦香鱼」：麦香鱼。</div>
+<div style="margin:2px 0 8px"><button class="srcbtn" onclick="mcShowEnt('麦香鱼','餐品构成 / meal-detail')">麦香鱼 ›</button></div>
+<div class="facts"><div class="f"><span class="k">item</span><span class="v">麦香鱼</span><button class="srcbtn" onclick="mcShowPath('$.request.code','麦香鱼')">$.request.code</button></div><div class="f"><span class="k">composition</span><span class="v">麦香鱼</span><button class="srcbtn" onclick="mcShowPath('$.data','麦香鱼')">$.data</button></div></div>
+</div>
+<div class="ev k-info" data-req="{
+  "orderType": 1,
+  "beType": 1,
+  "storeCode": "1960134"
+}" data-res="{
+  "success": false,
+  "couponCount": 0
+}">
+<div class="ehead"><span class="seq">7</span><span class="etitle">查看门店券</span><span class="badge">信息</span><span class="ts mono">2026-10-10T17:48:13</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'query-store-coupons','req')">query-store-coupons</button><button class="toolbtn" onclick="mcShowRaw.call(this,'query-store-coupons','res')">查门店券<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">这家门店券接口这次没返回可用券 —— 但这不等于你没券，账户券是另一套，接着查。</div>
+<div class="facts"><div class="f"><span class="k">couponCount</span><span class="v">0</span><button class="srcbtn" onclick="mcShowPath('$.data','0')">$.data</button></div><div class="f"><span class="k">coupons</span><span class="v">无</span><button class="srcbtn" onclick="mcShowPath('$.data[].title','无')">$.data[].title</button></div><div class="f"><span class="k">applicableToPick</span><span class="v">否</span><span class="srcbtn nosrc">match</span></div></div>
+</div>
+<div class="ev k-info" data-req="" data-res="{
+  "format": "markdown",
+  "parsed": 6,
+  "usable": 3
+}">
+<div class="ehead"><span class="seq">8</span><span class="etitle">available-coupons</span><span class="badge">成功</span><span class="ts mono">2026-10-10T17:48:13</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'available-coupons','req')">available-coupons</button><button class="toolbtn" onclick="mcShowRaw.call(this,'available-coupons','res')">查账户券<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">账户里还有 3 张能直接领的券：免费脆薯饼、人气麦旋风买一送一、9.9元中杯冰美式。</div>
+<div style="margin:2px 0 8px"><button class="srcbtn" onclick="mcShowEnt('免费脆薯饼','可领取优惠券 / coupon')">免费脆薯饼 ›</button><button class="srcbtn" onclick="mcShowEnt('人气麦旋风买一送一','可领取优惠券 / coupon')">人气麦旋风买一送一 ›</button><button class="srcbtn" onclick="mcShowEnt('9.9元中杯冰美式','可领取优惠券 / coupon')">9.9元中杯冰美式 ›</button></div>
+<div class="facts"><div class="f"><span class="k">parsedCoupons</span><span class="v">6</span><span class="srcbtn nosrc">markdown-parse</span></div><div class="f"><span class="k">usableCoupons</span><span class="v">3</span><span class="srcbtn nosrc">markdown-parse</span></div><div class="f"><span class="k">usableList</span><span class="v">免费脆薯饼、人气麦旋风买一送一、9.9元中杯冰美式</span><span class="srcbtn nosrc">markdown-parse</span></div><div class="f"><span class="k">format</span><span class="v">markdown（非 JSON）</span><span class="srcbtn nosrc">mctrace</span></div></div>
+<div style="margin-top:7px;font-size:12px;color:#c9820f">规则 coupon.available：通过</div>
+</div>
+<div class="ev k-warning" data-req="{
+  "storeCode": "1960134",
+  "orderType": 1,
+  "beType": 1,
+  "items": [
+    {
+      "code": "1600",
+      "quantity": 1
+    }
+  ]
+}" data-res="{
+  "success": true,
+  "priceSource": "menu"
+}">
+<div class="ehead"><span class="seq">9</span><span class="etitle">核算价格</span><span class="badge degraded">降级</span><span class="ts mono">2026-10-10T17:48:14</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'calculate-price','req')">calculate-price</button><button class="toolbtn" onclick="mcShowRaw.call(this,'calculate-price','res')">算价<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">算价接口这次没返回明细，我就用菜单标价：「麦香鱼」22.0 元（来源：菜单）。</div>
+<div style="margin:2px 0 8px"><button class="srcbtn" onclick="mcShowEnt('麦香鱼','算价餐品 / item.name')">麦香鱼 ›</button><button class="srcbtn" onclick="mcShowEnt('22.0','应付金额 / payableYuan')">22.0 ›</button></div>
+<div class="facts"><div class="f"><span class="k">payableYuan</span><span class="v">22.0</span><button class="srcbtn" onclick="mcShowPath('$.data.meals','22.0')">$.data.meals</button></div><div class="f"><span class="k">budgetYuan</span><span class="v">50.0</span><span class="srcbtn nosrc">user-request</span></div><div class="f"><span class="k">priceSource</span><span class="v">menu</span><span class="srcbtn nosrc">mctrace</span></div></div>
+<div style="margin-top:7px;font-size:12px;color:#c9820f">规则 budget.max：通过</div>
+</div>
+<div class="ev k-success" data-req="" data-res="{
+  "result": {
+    "store": "麦当劳黄冈万达餐厅",
+    "item": "麦香鱼",
+    "payableYuan": 22.0,
+    "kcal": 325,
+    "goal": "fatloss",
+    "rule": "减脂目标：预算与热量两条硬约束都通过后，取热量最低的正餐单品",
+    "alternatives": [
+      "培根蔬萃双层牛堡",
+      "双层吉士汉堡",
+      "板烧鸡腿堡"
+    ],
+    "nutritionCoveragePct": 17.4,
+    "checksPassed": true,
+    "orderCreated": false,
+    "summary": "麦香鱼 325kcal/¥22（减脂目标下热量最低的单品）"
+  }
+}">
+<div class="ehead"><span class="seq">10</span><span class="etitle">整理好结果与证据</span><span class="badge">成功</span><span class="ts mono">2026-10-10T17:48:14</span></div>
+<button class="toolbtn" onclick="mcShowRaw.call(this,'summary-composer','req')">summary-composer</button><button class="toolbtn" onclick="mcShowRaw.call(this,'summary-composer','res')">整理结果<span style="font-family:inherit;margin-left:6px">查看原始调用 ›</span></button>
+<div class="say">搞定！「麦当劳黄冈万达餐厅」的减脂晚餐：麦香鱼。22.0 元、325 千卡 —— 减脂目标下热量最低的单品。同规则的备选：培根蔬萃双层牛堡 442kcal/¥24.5；双层吉士汉堡 429kcal/¥23；板烧鸡腿堡 391kcal/¥23.5。没下单，你定～</div>
+<div style="margin:2px 0 8px"><button class="srcbtn" onclick="mcShowEnt('麦当劳黄冈万达餐厅','最终门店')">麦当劳黄冈万达餐厅 ›</button><button class="srcbtn" onclick="mcShowEnt('麦香鱼','最终餐品')">麦香鱼 ›</button></div>
+<div class="facts"><div class="f"><span class="k">store</span><span class="v">麦当劳黄冈万达餐厅</span><button class="srcbtn" onclick="mcShowPath('$.data[0].storeName','麦当劳黄冈万达餐厅')">$.data[0].storeName</button></div><div class="f"><span class="k">推荐单品</span><span class="v">麦香鱼</span><span class="srcbtn nosrc">menu+nutrition</span></div><div class="f"><span class="k">总价</span><span class="v">22.0</span><span class="srcbtn nosrc">menu</span></div><div class="f"><span class="k">热量</span><span class="v">325</span><span class="srcbtn nosrc">nutrition-table</span></div><div class="f"><span class="k">选品规则</span><span class="v">减脂目标：预算与热量两条硬约束都通过后，取热量最低的正餐单品</span><span class="srcbtn nosrc">mctrace</span></div><div class="f"><span class="k">备选</span><span class="v">培根蔬萃双层牛堡 442kcal/¥24.5；双层吉士汉堡 429kcal/¥23；板烧鸡腿堡 391kcal/¥23.5</span><span class="srcbtn nosrc">menu+nutrition</span></div><div class="f"><span class="k">营养覆盖率</span><span class="v">17.4%（菜单 109 个在售单品中 19 个有热量数据）</span><span class="srcbtn nosrc">mctrace</span></div><div class="f"><span class="k">是否下单</span><span class="v">False</span><span class="srcbtn nosrc">mctrace</span></div></div>
+</div>
+<div class="foot">数据来自麦当劳 MCP 实时只读调用。算价接口未返回明细时，已标注来源为菜单标价，不假装算价成功；营养表未覆盖的在售单品不参与推荐；地址门牌已脱敏。<br>全程只读：未调用 create-order / draw-lottery / auto-bind-coupons 等任何下单、抽奖、领券、兑换写操作。<br>McTrace · 工具调用成功 ≠ 用户目标达成。追踪号 mctrace-20261010-e62db40e</div>
+</div>
+<div class="ov" id="ov"></div><aside class="lens" id="lens"><div class="lh"><b id="lensTitle">证据透镜</b><button class="x" id="lensClose">×</button></div><div class="lb" id="lensBody"></div></aside>
+<script>
+(function(){
+  function pretty(o){
+    try{ return JSON.stringify(o, null, 2); }
+    catch(e){ return String(o); }
+  }
+  var lens = document.getElementById("lens"), ov = document.getElementById("ov");
+  function openLens(title, html){
+    document.getElementById("lensTitle").textContent = title;
+    document.getElementById("lensBody").innerHTML = html;
+    lens.classList.add("on"); ov.classList.add("on");
+  }
+  function closeLens(){ lens.classList.remove("on"); ov.classList.remove("on"); }
+  document.getElementById("lensClose").onclick = closeLens;
+  ov.onclick = closeLens;
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape") closeLens(); });
+
+  window.mcShowRaw = function(tool, which){
+    var card = this;
+    var raw = card.getAttribute("data-" + which) || "（这一步没有原始返回：本机规则/叙述步骤）";
+    openLens(tool + " · " + (which === "req" ? "请求参数" : "原始返回"),
+             "<p style='color:#6d7683;margin:0 0 6px'>这部分是麦当劳 MCP 的真实返回，未经加工；"
+             + "地址等敏感字段已脱敏。</p><pre>" + raw.replace(/[<>&]/g, function(c){
+               return ({'<':"&lt;",'>':"&gt;",'&':"&amp;"})[c]; }) + "</pre>");
+  };
+  window.mcShowPath = function(path, val){
+    openLens("这个数字从哪来",
+      "<p style='margin:0 0 8px'>字段路径：<span class='mono' style='background:#f2f4f7;"
+      + "padding:2px 7px;border-radius:5px'>" + path + "</span></p>"
+      + "<p style='margin:0 0 6px;color:#6d7683'>取到的值</p>"
+      + "<pre>" + String(val).replace(/[<>&]/g, function(c){
+          return ({'<':"&lt;",'>':"&gt;",'&':"&amp;"})[c]; }) + "</pre>");
+  };
+  window.mcShowEnt = function(name, role){
+    openLens("实体 · " + name,
+      "<p style='margin:0 0 6px;color:#6d7683'>它在本次追踪中的角色</p>"
+      + "<pre>" + role + "</pre>");
+  };
+})();
+</script></body></html>

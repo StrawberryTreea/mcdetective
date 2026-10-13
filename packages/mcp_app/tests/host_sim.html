@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<!--
+模拟 MCP Apps 宿主：把 App 界面塞进 iframe，按协议喂数据，验证「边跑边长」。
+
+跑法（headless chrome）：
+  chrome --headless=new --no-sandbox --disable-gpu \
+         --virtual-time-budget=20000 --dump-dom \
+         file:///.../host_sim.html?app=../assets/live_story_app.html&trace=../../../examples/traces/real-jingan-breakfast.json
+
+宿主行为：
+  1) 工具立即返回 traceId（events 为空）→ 送 ui/notifications/tool-result
+  2) 每收到一次 resources/read，就多放回一条事件（模拟后台在跑）
+  3) 全部发完后 status=completed
+  4) 把结果写进 window.__RESULT__ 并渲染到 #probe 供 --dump-dom 断言
+-->
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>McTrace · host simulator</title>
+<style>body{font:13px sans-serif;margin:0}#frame{width:900px;height:1400px;border:0}</style>
+</head>
+<body>
+<div id="probe">PENDING</div>
+<iframe id="frame"></iframe>
+<script>
+(function(){
+  var q = new URLSearchParams(location.search);
+  var appUrl = q.get("app") || "../assets/live_story_app.html";
+  var traceUrl = q.get("trace") || "../../../examples/traces/real-jingan-breakfast.json";
+  var frame = document.getElementById("frame");
+  var out = {stage:"init", polls:0, sent:0, err:null};
+
+  function finish(stage){
+    out.stage = stage;
+    // 顺手把 iframe 里的渲染结果也摘出来，作为「界面真的长出来了」的证据
+    try{
+      var d = document.getElementById("frame").contentDocument;
+      if(d){
+        out.events = d.querySelectorAll(".event").length;
+        out.shown = d.querySelectorAll(".event.show").length;
+        out.toolbtn = d.querySelectorAll(".toolbtn, .tbtn, [data-tool]").length;
+        var mc = d.getElementById("modechip");
+        out.mode = mc ? mc.textContent : "";
+        var ln = d.getElementById("livenote");
+        out.note = ln ? ln.textContent : "";
+        out.fallback = d.getElementById("fallback") &&
+                       d.getElementById("fallback").style.display !== "none" ? 1 : 0;
+        var rg = d.getElementById("resultGrid");
+        out.rcell = rg ? rg.querySelectorAll(".rcell").length : 0;
+      }
+    }catch(e){ out.domErr = String(e); }
+    var p = document.getElementById("probe");
+    p.textContent = "RESULT " + JSON.stringify(out);
+    p.setAttribute("data-stage", stage);
+    window.__RESULT__ = out;
+  }
+
+  // 有内联样例就直接用（离线双击可跑），否则才去 fetch
+  var ready = window.__SIM_TRACE__
+    ? Promise.resolve(window.__SIM_TRACE__)
+    : fetch(traceUrl).then(function(r){ return r.json(); });
+
+  ready.then(function(trace){
+    var events = trace.events || [];
+    if(window.__SIM_APP_HTML__){ frame.srcdoc = window.__SIM_APP_HTML__; } else { frame.src = appUrl; }
+
+    var target = null;
+    function onMsg(e){
+      var m = e.data;
+      if(!m || m.jsonrpc !== "2.0") return;
+      target = target || e.source;
+      if(m.method === "resources/read"){
+        out.polls++;
+        var uri = (m.params || {}).uri || "";
+        // 每次轮询多吐一条事件：模拟后台 Runner 的进度
+        var n = Math.min(out.polls, events.length);
+        var snap = {
+          traceId: trace.traceId, scenario: "order", status: (n >= events.length ? "completed" : "running"),
+          isMock: false, eventCount: n, events: events.slice(0, n), error: null
+        };
+        out.sent = n;
+        (target || window).postMessage({jsonrpc:"2.0", id:m.id,
+          result:{contents:[{uri:uri, mimeType:"application/json", text:JSON.stringify(snap)}]}}, "*");
+        // 中途快照：证明「任务还没跑完，界面已经有内容了」
+        if(out.polls === 3){
+          setTimeout(function(){
+            try{
+              var dd = document.getElementById("frame").contentDocument;
+              out.midSent = 3;
+              out.midEvents = dd.querySelectorAll(".event").length;
+              var mc = dd.getElementById("modechip");
+              out.midMode = mc ? mc.textContent : "";
+              var ln = dd.getElementById("livenote");
+              out.midNote = ln ? ln.textContent : "";
+            }catch(e){ out.midErr = String(e); }
+          }, 60);
+        }
+        if(n >= events.length){ setTimeout(function(){ finish("done"); }, 1500); }
+      }
+    }
+    window.addEventListener("message", onMsg);
+
+    frame.onload = function(){
+      var win = frame.contentWindow;
+      // ① 工具立即返回：events 为空，只给 traceId + snapshotUri
+      win.postMessage({jsonrpc:"2.0", method:"ui/notifications/tool-result", params:{
+        structuredContent:{traceId: trace.traceId, status:"queued", isMock:false,
+                           snapshotUri:"mctrace://runs/" + trace.traceId, scenario:"order", events:[]},
+        content:[{type:"text", text:"McTrace 已启动：" + trace.traceId}]
+      }}, "*");
+      setTimeout(function(){
+        if(out.stage !== "done") finish("timeout");
+      }, 14000);
+    };
+  }).catch(function(err){
+    out.err = String(err);
+    finish("load-error");
+  });
+})();
+</script>
+</body>
+</html>

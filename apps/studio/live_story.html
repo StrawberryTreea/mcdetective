@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>McTrace · Live Story Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFBF4; --card:#FFFFFF; --ink:#27251F; --muted:#6E6A62; --faint:#9A948A;
+  --line:#F0E2CE; --line2:#F7EFE2;
+  --red:#DA291C; --red-deep:#B21D12; --red-soft:#FBE9E7;
+  --amber:#FFC72C; --amber-deep:#F2A900; --amber-soft:#FFF4D6;
+  --green:#1F9D55; --green-soft:#E7F6EE;
+  --warn:#E0820C; --warn-soft:#FDF0DD;
+  --blue:#DA291C; --blue-soft:#FBE9E7;
+  --degraded:#8A4FB0; --degraded-soft:#F3EAFB;
+  --shadow:0 1px 2px rgba(39,37,31,.05), 0 10px 28px rgba(39,37,31,.07);
+  --shadow-hi:0 3px 8px rgba(39,37,31,.08), 0 20px 44px rgba(39,37,31,.13);
+  --r:18px;
+  --arch:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M17.243 3.006c2.066 0 3.742 8.714 3.742 19.478H24c0-11.588-3.042-20.968-6.766-20.968-2.127 0-4.007 2.81-5.248 7.227-1.241-4.416-3.121-7.227-5.231-7.227C3.031 1.516 0 10.888 0 22.476h3.014c0-10.763 1.658-19.47 3.724-19.47 2.066 0 3.741 8.05 3.741 17.98h2.997c0-9.93 1.684-17.98 3.75-17.98Z'/%3E%3C/svg%3E");
+}
+*{box-sizing:border-box}
+.mctr{color:var(--ink);
+  font:14px/1.65 -apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.mctr mono,.mctr code,.mctr .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+.mlogo{width:30px;height:30px;flex:0 0 30px;display:inline-block;vertical-align:middle}
+.mlogo svg{width:100%;height:100%;display:block}
+
+.progress{height:6px;border-radius:999px;background:var(--amber-soft);overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(242,169,0,.25)}
+.progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--red),#F2543B);
+  transition:width .35s ease;border-radius:999px}
+
+.timeline{display:flex;flex-direction:column;gap:12px}
+.event{display:none;background:var(--card);border:1px solid var(--line);border-left-width:5px;
+  border-radius:var(--r);box-shadow:var(--shadow);padding:14px 17px;animation:rise .32s ease both;
+  transition:transform .16s ease,box-shadow .16s ease}
+.event.show{display:block}
+.event:hover{transform:translateY(-2px);box-shadow:0 0 0 1px rgba(242,169,0,.28),var(--shadow-hi)}
+.event.k-info{border-left-color:#C9C2B6}
+.event.k-warning{border-left-color:var(--warn)}
+.event.k-success{border-left-color:var(--green)}
+.event.k-error{border-left-color:var(--red)}
+.event.k-degraded{border-left-color:var(--degraded)}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.ehead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.seq{width:24px;height:24px;flex:0 0 24px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:12px;color:#fff;background:#C9C2B6;font-family:"Fredoka",-apple-system,sans-serif;
+  box-shadow:0 0 0 2px var(--amber-soft),0 1px 2px rgba(39,37,31,.18)}
+.seq.warning{background:var(--warn)}.seq.success{background:var(--green)}
+.seq.error{background:var(--red)}.seq.degraded{background:var(--degraded)}
+.etitle{font-weight:800;font-size:15.5px;margin:0;letter-spacing:.1px}
+.badge{font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px;letter-spacing:.3px}
+.badge.success{background:var(--green-soft);color:#0a7d3c}
+.badge.warning{background:var(--warn-soft);color:#9a5a08}
+.badge.degraded{background:var(--degraded-soft);color:#5a3ea8}
+.badge.error{background:var(--red-soft);color:var(--red-deep)}
+.ts{margin-left:auto;color:var(--faint);font-size:11.5px;font-variant-numeric:tabular-nums}
+
+.toolrow{margin:10px 0 0}
+.toolbtn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-family:inherit;
+  border:1.5px solid var(--line);background:#FFFDF9;color:var(--ink);border-radius:11px;
+  padding:6px 11px;font-size:12.5px;line-height:1.4;transition:.14s;text-align:left;font-weight:600}
+.toolbtn:hover{border-color:var(--red);background:var(--red-soft);color:var(--red-deep);
+  box-shadow:0 2px 8px rgba(218,41,28,.12)}
+.toolbtn:focus-visible{outline:2px solid var(--amber);outline-offset:1px}
+.toolbtn .ticon{position:relative;width:16px;height:16px;flex:0 0 16px;border-radius:6px;
+  background:linear-gradient(135deg,#DA291C,#E8432F);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 1px 2px rgba(218,41,28,.4)}
+.toolbtn .ticon::before{content:"";position:absolute;inset:13%;
+  background:var(--amber);-webkit-mask:var(--arch) center/contain no-repeat;mask:var(--arch) center/contain no-repeat}
+.toolbtn:hover .ticon{background:linear-gradient(135deg,#C8231A,#DA291C)}
+.toolbtn .tname{font-weight:800}
+.toolbtn .tcode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11px;color:var(--faint);background:#FBF5EA;border-radius:6px;padding:1px 6px}
+.toolbtn .tlook{margin-left:2px;color:var(--red);font-weight:800}
+.toolbtn .tlook::after{content:" ›"}
+.toolbtn.internal{border-style:dashed;background:#FFFBF2}
+.toolbtn.internal .tlook{color:var(--muted)}
+.toolbtn.internal .ticon{background:linear-gradient(135deg,#EFE7D8,#E0D2BC);box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+.toolbtn.internal .ticon::before{background:#B7AC99}
+.toolbtn.internal:hover{border-color:#E0D5C2;background:#FFFBF2;color:var(--ink);box-shadow:none}
+.toolbtn.internal:hover .ticon{background:linear-gradient(135deg,#E8DDCA,#D8C7AC)}
+
+.narr{margin:11px 0 0;padding:11px 14px;border-radius:12px;background:var(--amber-soft);
+  border:1px solid #F6E3B0;font-size:14px;color:#4a3a12}
+.narr.pro{background:#F8F6F1;border:1px solid var(--line2);font-size:13.5px;color:#4b4640}
+.narr .who{font-size:11px;font-weight:800;letter-spacing:.4px;color:var(--red);display:block;margin-bottom:3px}
+.narr.pro .who{color:var(--muted)}
+
+.facts{margin-top:11px;display:flex;flex-direction:column;gap:6px}
+.fact{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;font-size:13px}
+.fact .k{color:var(--muted);min-width:92px}
+.fact .v{font-weight:800;color:var(--ink)}
+.srcbtn{cursor:pointer;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:11px;color:#8a5a00;background:#FFF7E3;border:1px dashed #E9CE84;
+  border-radius:6px;padding:1px 7px;transition:.14s}
+.srcbtn:hover{border-style:solid;border-color:var(--red);background:var(--amber-soft);color:var(--red-deep)}
+.srcbtn::after{content:" ↗";color:var(--faint)}
+.srcbtn:hover::after{color:var(--red)}
+
+.ents{margin-top:11px;display:flex;gap:7px;flex-wrap:wrap}
+.ent{font-size:12px;font-weight:800;color:#8A4B00;background:var(--amber-soft);border:1px solid #F2D98E;
+  padding:4px 11px;border-radius:999px;cursor:pointer;transition:.14s;display:inline-flex;align-items:center;gap:5px}
+.ent:hover{background:var(--amber);border-color:var(--amber-deep);color:#5a3800;box-shadow:0 2px 8px rgba(242,169,0,.35)}
+.ent .role{font-weight:600;color:#b07c11;font-size:11px}
+.ent::after{content:" ›";color:#C99A1E;font-weight:700}
+.rule{margin-top:9px;font-size:12.5px;font-weight:800;padding:5px 11px;border-radius:9px;display:inline-flex;gap:8px;align-items:center}
+.rule.pass{background:var(--green-soft);color:#0a7d3c}
+.rule.fail{background:var(--warn-soft);color:#9a5a08}
+.rule .id{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700}
+
+.result{display:none;margin-top:18px;border:1px solid var(--line);border-radius:18px;
+  box-shadow:var(--shadow);overflow:hidden;animation:rise .4s ease both;background:#fff}
+.result.show{display:block}
+.result h3{margin:0;font-size:15px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--red),#E8432F);
+  padding:13px 18px;display:flex;align-items:center;gap:8px;letter-spacing:.3px}
+.result h3::before{content:"";width:16px;height:13px;flex:0 0 auto;background:var(--amber);
+  -webkit-mask:var(--arch) center/contain no-repeat;mask:var(--arch) center/contain no-repeat}
+.result .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px;padding:16px 18px 0}
+.rcell{background:#FFFBF4;border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+.rcell .l{font-size:11.5px;color:var(--muted)}
+.rcell .n{font-size:18px;font-weight:800;margin-top:3px;line-height:1.35;font-family:"Fredoka",-apple-system,sans-serif;letter-spacing:.3px}
+.rcell.ok .n{color:var(--green)}
+.rcell.no .n{color:var(--red)}
+.note{margin-top:0;font-size:12.5px;color:var(--muted);border-top:1px dashed var(--line);padding:12px 18px 16px;line-height:1.7}
+
+.lens{position:fixed;top:0;right:0;height:100%;width:440px;max-width:94vw;background:#221E1A;color:#EDE6DA;
+  box-shadow:-16px 0 50px rgba(0,0,0,.34);transform:translateX(100%);transition:transform .26s ease;z-index:50;
+  display:flex;flex-direction:column}
+.lens.open{transform:none}
+.lens .lh{padding:14px 17px;border-bottom:1px solid #3A332B;display:flex;align-items:center;gap:9px;
+  background:linear-gradient(135deg,#2A241F,#322a23)}
+.lens .lh b{font-size:15px;color:#fff;font-weight:800}
+.lens .lh .x{margin-left:auto;cursor:pointer;color:#C9BFAE;font-size:22px;line-height:1;background:none;border:0;font-family:inherit;transition:.14s}
+.lens .lh .x:hover{color:var(--amber)}
+.lens .lb{padding:15px 17px;overflow:auto}
+.lens .lv{font-size:13px;margin-bottom:10px}
+.lens .lv .l{color:#A89C8A;font-size:11.5px;letter-spacing:.3px}
+.lens .lv .v{color:#fff;font-weight:700;word-break:break-all}
+.lens pre{background:#15120F;border:1px solid #3A332B;border-radius:11px;padding:12px;font-size:11.5px;
+  color:#F0D9A8;overflow:auto;max-height:46vh;white-space:pre-wrap;word-break:break-word;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.lens .hint{color:#A89C8A;font-size:11.5px;margin:13px 0 6px}
+.overlay{position:fixed;inset:0;background:rgba(34,30,26,.42);opacity:0;pointer-events:none;transition:.25s;z-index:40}
+.overlay.show{opacity:1;pointer-events:auto}
+
+.empty{text-align:center;color:var(--muted);padding:26px 8px}
+.stat{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+.stat b{color:var(--ink)}
+@media (max-width:640px){.fact .k{min-width:80px}.lens{width:100%}.result .grid{padding:14px 14px 0}.note{padding:12px 14px 14px}}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);
+  font:14px/1.65 -apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:18px 18px 56px}
+header.top{display:flex;align-items:center;gap:11px;flex-wrap:wrap;
+  padding:13px 17px;border-radius:16px;position:sticky;top:10px;z-index:20;overflow:hidden;
+  background:linear-gradient(135deg,var(--red),#E8432F);
+  box-shadow:0 8px 24px rgba(218,41,28,.28)}
+header.top::after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;
+  background:repeating-linear-gradient(90deg, rgba(255,255,255,.92) 0 13px, var(--amber) 13px 26px)}
+.brand{font-weight:800;font-size:18px;letter-spacing:.2px;display:flex;align-items:center;gap:9px;color:#fff;
+  font-family:"Fredoka",-apple-system,sans-serif}
+.brand .dot{display:none}
+.brand small{font-weight:600;color:rgba(255,255,255,.82);font-size:12px;font-family:-apple-system,"PingFang SC",sans-serif}
+.chip{font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.4);
+  color:#fff;background:rgba(255,255,255,.14);font-weight:700;font-family:ui-monospace,monospace}
+.chip.real{color:#5a3a00;background:var(--amber);border-color:var(--amber)}
+.chip.mock{color:#fff;background:rgba(0,0,0,.22);border-color:rgba(255,255,255,.3)}
+.spacer{flex:1}
+.controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+button.btn{cursor:pointer;border:1.5px solid rgba(255,255,255,.55);background:#fff;color:var(--red);
+  padding:6px 12px;border-radius:10px;font-weight:800;font-size:13px;transition:.15s;font-family:inherit}
+button.btn:hover{background:var(--amber-soft);border-color:#fff;transform:translateY(-1px)}
+button.btn.primary{background:var(--amber);border-color:var(--amber);color:#5a3a00;box-shadow:0 3px 10px rgba(242,169,0,.4)}
+button.btn.primary:hover{filter:brightness(1.05);transform:translateY(-1px)}
+.seg{display:inline-flex;border:1.5px solid rgba(255,255,255,.55);border-radius:10px;overflow:hidden;background:#fff}
+.seg button{border:0;background:#fff;padding:6px 12px;font-weight:800;font-size:13px;cursor:pointer;color:var(--muted);font-family:inherit}
+.seg button.on{background:var(--amber);color:#5a3a00}
+select{padding:6px 10px;border-radius:10px;border:1.5px solid rgba(255,255,255,.55);background:#fff;font-weight:700;font-size:13px;color:var(--ink);font-family:inherit;cursor:pointer}
+.scnbox{display:inline-flex;align-items:center;gap:6px}
+.scnbox label{font-size:12px;color:rgba(255,255,255,.85);font-weight:700}
+.tipbar{margin:14px 0 0;padding:10px 14px;background:#fff;border:1px solid var(--line);
+  border-left:4px solid var(--amber);border-radius:11px;color:#5b5346;font-size:12.5px;box-shadow:var(--shadow)}
+.tipbar b{color:var(--red-deep)}
+.progresswrap{margin-top:13px}
+footer{margin-top:26px;color:var(--faint);font-size:12px;text-align:center;line-height:1.7}
+.timeline{margin-top:14px}
+.stat{margin-top:20px}
+@media (max-width:640px){.fact .k{min-width:80px}}
+</style>
+</head>
+<body class="mctr">
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="mlogo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#DA291C"/><path d="M17.243 3.006c2.066 0 3.742 8.714 3.742 19.478H24c0-11.588-3.042-20.968-6.766-20.968-2.127 0-4.007 2.81-5.248 7.227-1.241-4.416-3.121-7.227-5.231-7.227C3.031 1.516 0 10.888 0 22.476h3.014c0-10.763 1.658-19.47 3.724-19.47 2.066 0 3.741 8.05 3.741 17.98h2.997c0-9.93 1.684-17.98 3.75-17.98Z" fill="#FFC72C"/></svg></span>McTrace <small>Live Story Studio</small></div>
+    <span class="chip" id="tid">trace…</span>
+    <span class="chip real" id="mockchip">真实数据</span>
+    <div class="spacer"></div>
+    <div class="controls">
+      <div class="scnbox"><label>场景</label><select id="scn"></select></div>
+      <button class="btn primary" id="play">▶ 播放</button>
+      <button class="btn" id="step">下一步</button>
+      <button class="btn" id="replay">重播</button>
+      <div class="seg" id="narrseg">
+        <button data-n="friendly" class="on">俏皮</button>
+        <button data-n="pro">专业</button>
+      </div>
+      <select id="speed" title="播放速度">
+        <option value="1100">1×</option>
+        <option value="650" selected>1.6×</option>
+        <option value="350">3×</option>
+      </select>
+      <label class="btn" title="载入其他 trace.json">载入…<input id="file" type="file" accept=".json" hidden /></label>
+    </div>
+  </header>
+
+  <div class="progresswrap"><div class="progress"><i id="bar"></i></div></div>
+  <div class="tipbar">每一步都可以点：<b>点工具名</b>看它到底调了什么、返回了什么；<b>点来源路径</b>看这个数字取自返回结果里的哪个字段。</div>
+  <div class="timeline" id="timeline"></div>
+
+  <div class="result" id="result">
+    <h3>结果与证据</h3>
+    <div class="grid" id="resultGrid"></div>
+    <div class="note" id="resultNote"></div>
+  </div>
+
+  <div class="stat" id="stat"></div>
+  <footer>McTrace · 把「工具调用成功」还原成「用户目标是否真的达成」。事实是一等公民，拟人化 ≠ 编造。</footer>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<aside class="lens" id="lens">
+  <div class="lh"><b id="lensTitle">证据透镜</b><button class="x" id="lensClose">×</button></div>
+  <div class="lb" id="lensBody"></div>
+</aside>
+
+<script id="embedded-traces" type="application/json">{"scenarios": {"detective-huanggang": {"traceId": "mcdetective-20261013-9e6ef1fe", "generatedAt": "2026-10-13T21:02:52", "isMock": false, "eventCount": 10, "events": [{"traceId": "mcdetective-20261013-9e6ef1fe", "seq": 1, "kind": "info", "tool": "user-request", "title": "接报案", "status": "success", "ts": "2026-10-13T21:02:48", "facts": [{"key": "city", "value": "黄冈市", "source": "user-request"}, {"key": "keyword", "value": "黄冈万达", "source": "user-request"}, {"key": "target", "value": "麦香鱼", "source": "user-request"}, {"key": "radiusKm", "value": 3.0, "source": "user-request", "note": "巡查半径；只查方圆该距离内的门店"}, {"key": "maxStores", "value": 10, "source": "user-request", "note": "巡查门店数上限，防止商圈过大时无限扫店"}], "entities": {"麦香鱼": "目标餐品 / target"}, "rule": null, "say": {"friendly": "接到报案：黄冈市黄冈万达附近，有人想查「麦香鱼」哪家卖得便宜。探长出动了，先按方圆 3 公里划定巡查范围。", "pro": "解析报案：区域=黄冈市黄冈万达；目标餐品=麦香鱼；巡查半径=3km；门店上限=10。"}, "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/1", "isMock": false, "request": {"city": "黄冈市", "keyword": "黄冈万达", "target": "麦香鱼", "radiusKm": 3.0, "maxStores": 10}, "response": {"case": "黄冈市黄冈万达 麦香鱼"}}, {"traceId": "mcdetective-20261013-9e6ef1fe", "seq": 2, "kind": "info", "tool": "query-nearby-stores", "title": "划定巡查范围", "status": "success", "ts": "2026-10-13T21:02:49", "facts": [{"key": "hitCount", "value": 5, "sourcePath": "$.data"}, {"key": "withinRadius", "value": 2, "source": "mctrace", "note": "方圆 3 km 内的门店数"}, {"key": "patrolCount", "value": 2, "source": "mctrace", "note": "上限 10 家后的实际巡查数"}, {"key": "distanceRange", "value": "95 m–1.8 km", "sourcePath": "$.data[].distance", "note": "接口返回距离为米"}, {"key": "patrolList", "value": "麦当劳黄冈万达餐厅、麦当劳黄冈居然之家餐厅", "sourcePath": "$.data[].storeName"}], "entities": {"麦当劳黄冈万达餐厅": "巡查对象门店", "麦当劳黄冈居然之家餐厅": "巡查对象门店"}, "rule": null, "say": {"friendly": "范围划定：黄冈万达方圆 3 公里命中 2 家（距离 95 m–1.8 km），逐家查，最多 10 家。", "pro": "门店查询命中 5 家；方圆 3km 内 2 家（距离 95 m–1.8 km）；取前 2 家巡查。"}, "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/2", "isMock": false, "request": {"beType": 1, "searchType": 2, "city": "黄冈市", "keyword": "黄冈万达"}, "response": {"success": true, "hitCount": 5, "withinRadius": 2, "distanceMissing": 0}}, {"traceId": "mcdetective-20261013-9e6ef1fe", "seq": 3, "kind": "info", "tool": "query-meals", "title": "巡查门店菜单", "status": "success", "ts": "2026-10-13T21:02:49", "facts": [{"key": "storeName", "value": "麦当劳黄冈万达餐厅", "sourcePath": "$.data.meals"}, {"key": "distance", "value": "95 m", "sourcePath": "$.data[].distance"}, {"key": "mealCount", "value": 94, "source": "mctrace"}, {"key": "targetHit", "value": "发现目标「麦香鱼套餐」，标价 ¥33", "source": "mctrace"}], "entities": {"麦当劳黄冈万达餐厅": "巡查门店", "麦香鱼": "目标餐品"}, "rule": null, "say": {"friendly": "第 1 站（95 m）：麦当劳黄冈万达餐厅，菜单 94 个单品，发现目标「麦香鱼套餐」，标价 ¥33。", "pro": "门店「麦当劳黄冈万达餐厅」（距离 95 m）菜单返回 94 个单品；目标餐品状态：发现目标「麦香鱼套餐」，标价 ¥33。"}, "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/3", "isMock": false, "request": {"storeCode": "1960134", "orderType": 1, "beType": 1}, "response": {"success": true, "mealCount": 94}}, {"traceId": "mcdetective-20261013-9e6ef1fe", "seq": 4, "kind": "info", "tool": "query-store-coupons", "title": "核查门店券", "status": "success", "ts": "2026-10-13T21:02:50", "facts": [{"key": "storeName", "value": "麦当劳黄冈万达餐厅", "sourcePath": "$.data"}, {"key": "couponCount", "value": 2, "sourcePath": "$.data"}, {"key": "coupons", "value": "中薯条买一送一、王牌小食拼", "sourcePath": "$.data[].title"}], "entities": {"中薯条买一送一": "门店券 / coupon", "王牌小食拼": "门店券 / coupon"}, "rule": null, "say": {"friendly": "麦当劳黄冈万达餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。", "pro": "门店「麦当劳黄冈万达餐厅」券查询返回 2 张。"}, "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/4", "isMock": false, "request": {"orderType": 1, "beType": 1, "storeCode": "1960134"}, "response": {"success": true, "couponCount": 2}}, {"traceId": "mcdetective-20261013-9e6ef1fe", "seq": 5, "kind": "info", "tool": "query-meals", "title": "巡查门店菜单", "status": "success", "ts": "2026-10-13T21:02:51", "facts": [{"key": "storeName", "value": "麦当劳黄冈居然之家餐厅", "sourcePath": "$.data.meals"}, {"key": "distance", "value": "1.8 km", "sourcePath": "$.data[].distance"}, {"key": "mealCount", "value": 107, "source": "mctrace"}, {"key": "targetHit", "value": "发现目标「麦香鱼套餐」，标价 ¥33", "source": "mctrace"}], "entities": {"麦当劳黄冈居然之家餐厅": "巡查门店", "麦香鱼": "目标餐品"}, "rule": null, "say": {"friendly": "第 2 站（1.8 km）：麦当劳黄冈居然之家餐厅，菜单 107 个单品，发现目标「麦香鱼套餐」，标价 ¥33。", "pro": "门店「麦当劳黄冈居然之家餐厅」（距离 1.8 km）菜单返回 107 个单品；目标餐品状态：发现目标「麦香鱼套餐」，标价 ¥33。"}, "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/5", "isMock": false, "request": {"storeCode": "1960179", "orderType": 1, "beType": 1}, "response": {"success": true, "mealCount": 107}}, {"traceId": "mcdetective-20261013-9e6ef1fe", "seq": 6, "kind": "info", "tool": "query-store-coupons", "title": "核查门店券", "status": "success", "ts": "2026-10-13T21:02:52", "facts": [{"key": "storeName", "value": "麦当劳黄冈居然之家餐厅", "sourcePath": "$.data"}, {"key": "couponCount", "value": 2, "sourcePath": "$.data"}, {"key": "coupons", "value": "中薯条买一送一、王牌小食拼", "sourcePath": "$.data[].title"}], "entities": {"中薯条买一送一": "门店券 / coupon", "王牌小食拼": "门店券 / coupon"}, "rule": null, "say": {"friendly": "麦当劳黄冈居然之家餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。", "pro": "门店「麦当劳黄冈居然之家餐厅」券查询返回 2 张。"}, "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/6", "isMock": false, "request": {"orderType": 1, "beType": 1, "storeCode": "1960179"}, "response": {"success": true, "couponCount": 2}}, {"traceId": "mcdetective-20261013-9e6ef1fe", "seq": 7, "kind": "info", "tool": "mctrace:rule", "title": "比对发现线索", "status": "success", "ts": "2026-10-13T21:02:52", "facts": [{"key": "comparedForm", "value": "麦香鱼", "source": "mctrace", "note": "目标关键词可能命中多种形态（单品/套餐），只与同一形态比价"}, {"key": "lowest", "value": "麦当劳黄冈万达餐厅 ¥22", "source": "menu"}, {"key": "highest", "value": "麦当劳黄冈居然之家餐厅 ¥22", "source": "menu"}, {"key": "deltaYuan", "value": 0.0, "source": "mctrace"}, {"key": "comparedStores", "value": 2, "source": "mctrace"}, {"key": "otherForms", "value": "「麦香鱼套餐」各店同价", "source": "mctrace", "note": "其他命中形态的结论，单独列示，不混入主对比"}], "entities": {"麦当劳黄冈万达餐厅": "价差榜门店", "麦当劳黄冈居然之家餐厅": "价差榜门店"}, "rule": {"id": "price.cross-store", "pass": false, "deltaYuan": 0.0}, "say": {"friendly": "线索比对完成：「麦香鱼」2 家在售。最低 麦当劳黄冈万达餐厅 ¥22，最高 麦当劳黄冈居然之家餐厅 ¥22。各店同价——本案无从比起，如实记录。另外还命中 1 种形态（「麦香鱼套餐」各店同价），没混进来一起比。", "pro": "目标餐品跨店比价（限定同形态「麦香鱼」）：2 家门店在售；最低 麦当劳黄冈万达餐厅 ¥22，最高 麦当劳黄冈居然之家餐厅 ¥22，价差 ¥0。其他命中形态：「麦香鱼套餐」各店同价。价差为 0，结论：各店同价。"}, "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/7", "isMock": false, "request": {"target": "麦香鱼", "stores": 2}, "response": {"rows": [{"store": "麦当劳黄冈万达餐厅", "storeCode": "", "price": 22.0, "distM": null}, {"store": "麦当劳黄冈居然之家餐厅", "storeCode": "", "price": 22.0, "distM": null}], "deltaYuan": 0.0, "primaryForm": "麦香鱼", "groups": [{"name": "麦香鱼", "delta": 0.0, "stores": 2}, {"name": "麦香鱼套餐", "delta": 0.0, "stores": 2}]}}, {"traceId": "mcdetective-20261013-9e6ef1fe", "seq": 8, "kind": "info", "tool": "mctrace:rule", "title": "比对发现线索", "status": "success", "ts": "2026-10-13T21:02:52", "facts": [{"key": "unionItems", "value": 111, "source": "mctrace"}, {"key": "commonItems", "value": 90, "source": "mctrace"}, {"key": "coveragePct", "value": 81.1, "source": "mctrace", "note": "全部门店都有售的单品占比；其余为部分门店限定"}, {"key": "example", "value": "「泷泷星愿四件套」仅黄冈万达有售；此类非全部巡查门店共有的单品共 21 款", "source": "mctrace"}], "entities": {}, "rule": {"id": "availability.coverage", "pass": true, "coveragePct": 81.1}, "say": {"friendly": "顺手记一笔：2 家店合起来 111 款单品，家家都有的只有 90 款（81.1%）。想吃限定款的话，门店选址比几块钱更要命：「泷泷星愿四件套」仅黄冈万达有售；此类非全部巡查门店共有的单品共 21 款。", "pro": "餐品可得性：并集 111 款，交集 90 款（覆盖率 81.1%）。部分门店限定示例：「泷泷星愿四件套」仅黄冈万达有售；此类非全部巡查门店共有的单品共 21 款。"}, "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/8", "isMock": false, "request": {"stores": 2}, "response": {"union": 111, "common": 90, "coveragePct": 81.1}}, {"traceId": "mcdetective-20261013-9e6ef1fe", "seq": 9, "kind": "info", "tool": "mctrace:rule", "title": "比对发现线索", "status": "success", "ts": "2026-10-13T21:02:52", "facts": [{"key": "uniqueCouponSets", "value": 1, "source": "mctrace"}, {"key": "verdict", "value": "完全一致", "source": "mctrace"}], "entities": {}, "rule": {"id": "coupon.cross-store", "pass": true, "uniqueSets": 1}, "say": {"friendly": "券也核查完了：各家门店券完全一致——所以这单不比券，只比价和货。", "pro": "门店券跨店比对：所有巡查门店券集合完全一致，券维度不存在跨店差异。"}, "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/9", "isMock": false, "request": {"stores": 2}, "response": {"uniqueSets": 1}}, {"traceId": "mcdetective-20261013-9e6ef1fe", "seq": 10, "kind": "success", "tool": "summary-composer", "title": "结案报告", "status": "success", "ts": "2026-10-13T21:02:52", "facts": [{"key": "巡查门店", "value": 2, "source": "mctrace"}, {"key": "巡查半径", "value": "方圆 3 km（实际 95 m–1.8 km）", "source": "mctrace"}, {"key": "目标餐品", "value": "麦香鱼", "source": "user-request"}, {"key": "在售门店", "value": 2, "source": "mctrace"}, {"key": "最低价", "value": "麦当劳黄冈万达餐厅 ¥22", "source": "menu"}, {"key": "最高价", "value": "麦当劳黄冈居然之家餐厅 ¥22", "source": "menu"}, {"key": "比对形态", "value": "麦香鱼", "source": "mctrace", "note": "只与同一形态比价；其他命中形态见价差线索"}, {"key": "结论", "value": "无从比起（各店同价）", "source": "mctrace"}, {"key": "可得性覆盖率", "value": "81.1%", "source": "mctrace"}, {"key": "是否下单", "value": false, "source": "mctrace"}], "entities": {"麦香鱼": "目标餐品", "麦当劳黄冈万达餐厅": "结论门店"}, "rule": null, "say": {"friendly": "结案！方圆 3 公里 2 家店巡查完毕：「麦香鱼」无从比起（各店同价）。每一步的原始调用都能点开核验。没下单，你定～", "pro": "结案报告：巡查 2 家门店（半径 3km，实际覆盖 95 m–1.8 km）；目标「麦香鱼」主比对形态「麦香鱼」在售 2 家；结论：无从比起（各店同价）；可得性覆盖率 81.1%；未创建订单。"}, "evidenceRef": "trace://mcdetective-20261013-9e6ef1fe/events/10", "isMock": false, "request": {}, "response": {"result": {"patrolStores": 2, "patrolRange": "95 m–1.8 km", "target": "麦香鱼", "primaryForm": "麦香鱼", "inStockStores": 2, "verdict": "无从比起（各店同价）", "lowest": "麦当劳黄冈万达餐厅 ¥22", "highest": "麦当劳黄冈居然之家餐厅 ¥22", "deltaYuan": 0.0, "coveragePct": 81.1, "orderCreated": false}}}]}, "detective-jingan": {"traceId": "mcdetective-20261013-f6d7e7ce", "generatedAt": "2026-10-13T21:02:47", "isMock": false, "eventCount": 16, "events": [{"traceId": "mcdetective-20261013-f6d7e7ce", "seq": 1, "kind": "info", "tool": "user-request", "title": "接报案", "status": "success", "ts": "2026-10-13T21:02:39", "facts": [{"key": "city", "value": "上海市", "source": "user-request"}, {"key": "keyword", "value": "静安寺", "source": "user-request"}, {"key": "target", "value": "巨无霸三件套", "source": "user-request"}, {"key": "radiusKm", "value": 3.0, "source": "user-request", "note": "巡查半径；只查方圆该距离内的门店"}, {"key": "maxStores", "value": 10, "source": "user-request", "note": "巡查门店数上限，防止商圈过大时无限扫店"}], "entities": {"巨无霸三件套": "目标餐品 / target"}, "rule": null, "say": {"friendly": "接到报案：上海市静安寺附近，有人想查「巨无霸三件套」哪家卖得便宜。探长出动了，先按方圆 3 公里划定巡查范围。", "pro": "解析报案：区域=上海市静安寺；目标餐品=巨无霸三件套；巡查半径=3km；门店上限=10。"}, "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/1", "isMock": false, "request": {"city": "上海市", "keyword": "静安寺", "target": "巨无霸三件套", "radiusKm": 3.0, "maxStores": 10}, "response": {"case": "上海市静安寺 巨无霸三件套"}}, {"traceId": "mcdetective-20261013-f6d7e7ce", "seq": 2, "kind": "info", "tool": "query-nearby-stores", "title": "划定巡查范围", "status": "success", "ts": "2026-10-13T21:02:39", "facts": [{"key": "hitCount", "value": 5, "sourcePath": "$.data"}, {"key": "withinRadius", "value": 5, "source": "mctrace", "note": "方圆 3 km 内的门店数"}, {"key": "patrolCount", "value": 5, "source": "mctrace", "note": "上限 10 家后的实际巡查数"}, {"key": "distanceRange", "value": "134 m–791 m", "sourcePath": "$.data[].distance", "note": "接口返回距离为米"}, {"key": "patrolList", "value": "麦当劳上海静安寺餐厅、麦当劳上海越洋广场餐厅、麦当劳上海南京西路Eco1788餐厅、麦当劳上海CP静安餐厅、麦当劳上海静安延平路德必餐厅", "sourcePath": "$.data[].storeName"}], "entities": {"麦当劳上海静安寺餐厅": "巡查对象门店", "麦当劳上海越洋广场餐厅": "巡查对象门店", "麦当劳上海南京西路Eco1788餐厅": "巡查对象门店", "麦当劳上海CP静安餐厅": "巡查对象门店", "麦当劳上海静安延平路德必餐厅": "巡查对象门店"}, "rule": null, "say": {"friendly": "范围划定：静安寺方圆 3 公里命中 5 家（距离 134 m–791 m），逐家查，最多 10 家。", "pro": "门店查询命中 5 家；方圆 3km 内 5 家（距离 134 m–791 m）；取前 5 家巡查。"}, "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/2", "isMock": false, "request": {"beType": 1, "searchType": 2, "city": "上海市", "keyword": "静安寺"}, "response": {"success": true, "hitCount": 5, "withinRadius": 5, "distanceMissing": 0}}, {"traceId": "mcdetective-20261013-f6d7e7ce", "seq": 3, "kind": "info", "tool": "query-meals", "title": "巡查门店菜单", "status": "success", "ts": "2026-10-13T21:02:40", "facts": [{"key": "storeName", "value": "麦当劳上海静安寺餐厅", "sourcePath": "$.data.meals"}, {"key": "distance", "value": "134 m", "sourcePath": "$.data[].distance"}, {"key": "mealCount", "value": 113, "source": "mctrace"}, {"key": "targetHit", "value": "发现目标「巨无霸三件套」，标价 ¥37", "source": "mctrace"}], "entities": {"麦当劳上海静安寺餐厅": "巡查门店", "巨无霸三件套": "目标餐品"}, "rule": null, "say": {"friendly": "第 1 站（134 m）：麦当劳上海静安寺餐厅，菜单 113 个单品，发现目标「巨无霸三件套」，标价 ¥37。", "pro": "门店「麦当劳上海静安寺餐厅」（距离 134 m）菜单返回 113 个单品；目标餐品状态：发现目标「巨无霸三件套」，标价 ¥37。"}, "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/3", "isMock": false, "request": {"storeCode": "1450002", "orderType": 1, "beType": 1}, "response": {"success": true, "mealCount": 113}}, {"traceId": "mcdetective-20261013-f6d7e7ce", "seq": 4, "kind": "info", "tool": "query-store-coupons", "title": "核查门店券", "status": "success", "ts": "2026-10-13T21:02:41", "facts": [{"key": "storeName", "value": "麦当劳上海静安寺餐厅", "sourcePath": "$.data"}, {"key": "couponCount", "value": 2, "sourcePath": "$.data"}, {"key": "coupons", "value": "中薯条买一送一、王牌小食拼", "sourcePath": "$.data[].title"}], "entities": {"中薯条买一送一": "门店券 / coupon", "王牌小食拼": "门店券 / coupon"}, "rule": null, "say": {"friendly": "麦当劳上海静安寺餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。", "pro": "门店「麦当劳上海静安寺餐厅」券查询返回 2 张。"}, "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/4", "isMock": false, "request": {"orderType": 1, "beType": 1, "storeCode": "1450002"}, "response": {"success": true, "couponCount": 2}}, {"traceId": "mcdetective-20261013-f6d7e7ce", "seq": 5, "kind": "info", "tool": "query-meals", "title": "巡查门店菜单", "status": "success", "ts": "2026-10-13T21:02:42", "facts": [{"key": "storeName", "value": "麦当劳上海越洋广场餐厅", "sourcePath": "$.data.meals"}, {"key": "distance", "value": "194 m", "sourcePath": "$.data[].distance"}, {"key": "mealCount", "value": 116, "source": "mctrace"}, {"key": "targetHit", "value": "发现目标「巨无霸三件套」，标价 ¥36.5", "source": "mctrace"}], "entities": {"麦当劳上海越洋广场餐厅": "巡查门店", "巨无霸三件套": "目标餐品"}, "rule": null, "say": {"friendly": "第 2 站（194 m）：麦当劳上海越洋广场餐厅，菜单 116 个单品，发现目标「巨无霸三件套」，标价 ¥36.5。", "pro": "门店「麦当劳上海越洋广场餐厅」（距离 194 m）菜单返回 116 个单品；目标餐品状态：发现目标「巨无霸三件套」，标价 ¥36.5。"}, "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/5", "isMock": false, "request": {"storeCode": "1450133", "orderType": 1, "beType": 1}, "response": {"success": true, "mealCount": 116}}, {"traceId": "mcdetective-20261013-f6d7e7ce", "seq": 6, "kind": "info", "tool": "query-store-coupons", "title": "核查门店券", "status": "success", "ts": "2026-10-13T21:02:42", "facts": [{"key": "storeName", "value": "麦当劳上海越洋广场餐厅", "sourcePath": "$.data"}, {"key": "couponCount", "value": 2, "sourcePath": "$.data"}, {"key": "coupons", "value": "中薯条买一送一、王牌小食拼", "sourcePath": "$.data[].title"}], "entities": {"中薯条买一送一": "门店券 / coupon", "王牌小食拼": "门店券 / coupon"}, "rule": null, "say": {"friendly": "麦当劳上海越洋广场餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。", "pro": "门店「麦当劳上海越洋广场餐厅」券查询返回 2 张。"}, "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/6", "isMock": false, "request": {"orderType": 1, "beType": 1, "storeCode": "1450133"}, "response": {"success": true, "couponCount": 2}}, {"traceId": "mcdetective-20261013-f6d7e7ce", "seq": 7, "kind": "info", "tool": "query-meals", "title": "巡查门店菜单", "status": "success", "ts": "2026-10-13T21:02:43", "facts": [{"key": "storeName", "value": "麦当劳上海南京西路Eco1788餐厅", "sourcePath": "$.data.meals"}, {"key": "distance", "value": "221 m", "sourcePath": "$.data[].distance"}, {"key": "mealCount", "value": 117, "source": "mctrace"}, {"key": "targetHit", "value": "发现目标「巨无霸三件套」，标价 ¥36.5", "source": "mctrace"}], "entities": {"麦当劳上海南京西路Eco1788餐厅": "巡查门店", "巨无霸三件套": "目标餐品"}, "rule": null, "say": {"friendly": "第 3 站（221 m）：麦当劳上海南京西路Eco1788餐厅，菜单 117 个单品，发现目标「巨无霸三件套」，标价 ¥36.5。", "pro": "门店「麦当劳上海南京西路Eco1788餐厅」（距离 221 m）菜单返回 117 个单品；目标餐品状态：发现目标「巨无霸三件套」，标价 ¥36.5。"}, "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/7", "isMock": false, "request": {"storeCode": "1450224", "orderType": 1, "beType": 1}, "response": {"success": true, "mealCount": 117}}, {"traceId": "mcdetective-20261013-f6d7e7ce", "seq": 8, "kind": "info", "tool": "query-store-coupons", "title": "核查门店券", "status": "success", "ts": "2026-10-13T21:02:44", "facts": [{"key": "storeName", "value": "麦当劳上海南京西路Eco1788餐厅", "sourcePath": "$.data"}, {"key": "couponCount", "value": 2, "sourcePath": "$.data"}, {"key": "coupons", "value": "中薯条买一送一、王牌小食拼", "sourcePath": "$.data[].title"}], "entities": {"中薯条买一送一": "门店券 / coupon", "王牌小食拼": "门店券 / coupon"}, "rule": null, "say": {"friendly": "麦当劳上海南京西路Eco1788餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。", "pro": "门店「麦当劳上海南京西路Eco1788餐厅」券查询返回 2 张。"}, "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/8", "isMock": false, "request": {"orderType": 1, "beType": 1, "storeCode": "1450224"}, "response": {"success": true, "couponCount": 2}}, {"traceId": "mcdetective-20261013-f6d7e7ce", "seq": 9, "kind": "info", "tool": "query-meals", "title": "巡查门店菜单", "status": "success", "ts": "2026-10-13T21:02:45", "facts": [{"key": "storeName", "value": "麦当劳上海CP静安餐厅", "sourcePath": "$.data.meals"}, {"key": "distance", "value": "258 m", "sourcePath": "$.data[].distance"}, {"key": "mealCount", "value": 110, "source": "mctrace"}, {"key": "targetHit", "value": "发现目标「巨无霸三件套」，标价 ¥36.5", "source": "mctrace"}], "entities": {"麦当劳上海CP静安餐厅": "巡查门店", "巨无霸三件套": "目标餐品"}, "rule": null, "say": {"friendly": "第 4 站（258 m）：麦当劳上海CP静安餐厅，菜单 110 个单品，发现目标「巨无霸三件套」，标价 ¥36.5。", "pro": "门店「麦当劳上海CP静安餐厅」（距离 258 m）菜单返回 110 个单品；目标餐品状态：发现目标「巨无霸三件套」，标价 ¥36.5。"}, "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/9", "isMock": false, "request": {"storeCode": "1450400", "orderType": 1, "beType": 1}, "response": {"success": true, "mealCount": 110}}, {"traceId": "mcdetective-20261013-f6d7e7ce", "seq": 10, "kind": "info", "tool": "query-store-coupons", "title": "核查门店券", "status": "success", "ts": "2026-10-13T21:02:45", "facts": [{"key": "storeName", "value": "麦当劳上海CP静安餐厅", "sourcePath": "$.data"}, {"key": "couponCount", "value": 2, "sourcePath": "$.data"}, {"key": "coupons", "value": "中薯条买一送一、王牌小食拼", "sourcePath": "$.data[].title"}], "entities": {"中薯条买一送一": "门店券 / coupon", "王牌小食拼": "门店券 / coupon"}, "rule": null, "say": {"friendly": "麦当劳上海CP静安餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。", "pro": "门店「麦当劳上海CP静安餐厅」券查询返回 2 张。"}, "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/10", "isMock": false, "request": {"orderType": 1, "beType": 1, "storeCode": "1450400"}, "response": {"success": true, "couponCount": 2}}, {"traceId": "mcdetective-20261013-f6d7e7ce", "seq": 11, "kind": "info", "tool": "query-meals", "title": "巡查门店菜单", "status": "success", "ts": "2026-10-13T21:02:46", "facts": [{"key": "storeName", "value": "麦当劳上海静安延平路德必餐厅", "sourcePath": "$.data.meals"}, {"key": "distance", "value": "791 m", "sourcePath": "$.data[].distance"}, {"key": "mealCount", "value": 105, "source": "mctrace"}, {"key": "targetHit", "value": "发现目标「巨无霸三件套」，标价 ¥36.5", "source": "mctrace"}], "entities": {"麦当劳上海静安延平路德必餐厅": "巡查门店", "巨无霸三件套": "目标餐品"}, "rule": null, "say": {"friendly": "第 5 站（791 m）：麦当劳上海静安延平路德必餐厅，菜单 105 个单品，发现目标「巨无霸三件套」，标价 ¥36.5。", "pro": "门店「麦当劳上海静安延平路德必餐厅」（距离 791 m）菜单返回 105 个单品；目标餐品状态：发现目标「巨无霸三件套」，标价 ¥36.5。"}, "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/11", "isMock": false, "request": {"storeCode": "1450650", "orderType": 1, "beType": 1}, "response": {"success": true, "mealCount": 105}}, {"traceId": "mcdetective-20261013-f6d7e7ce", "seq": 12, "kind": "info", "tool": "query-store-coupons", "title": "核查门店券", "status": "success", "ts": "2026-10-13T21:02:47", "facts": [{"key": "storeName", "value": "麦当劳上海静安延平路德必餐厅", "sourcePath": "$.data"}, {"key": "couponCount", "value": 2, "sourcePath": "$.data"}, {"key": "coupons", "value": "中薯条买一送一、王牌小食拼", "sourcePath": "$.data[].title"}], "entities": {"中薯条买一送一": "门店券 / coupon", "王牌小食拼": "门店券 / coupon"}, "rule": null, "say": {"friendly": "麦当劳上海静安延平路德必餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。", "pro": "门店「麦当劳上海静安延平路德必餐厅」券查询返回 2 张。"}, "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/12", "isMock": false, "request": {"orderType": 1, "beType": 1, "storeCode": "1450650"}, "response": {"success": true, "couponCount": 2}}, {"traceId": "mcdetective-20261013-f6d7e7ce", "seq": 13, "kind": "success", "tool": "mctrace:rule", "title": "比对发现线索", "status": "success", "ts": "2026-10-13T21:02:47", "facts": [{"key": "comparedForm", "value": "巨无霸三件套", "source": "mctrace", "note": "目标关键词可能命中多种形态（单品/套餐），只与同一形态比价"}, {"key": "lowest", "value": "麦当劳上海越洋广场餐厅 ¥36.5", "source": "menu"}, {"key": "highest", "value": "麦当劳上海静安寺餐厅 ¥37", "source": "menu"}, {"key": "deltaYuan", "value": 0.5, "source": "mctrace"}, {"key": "comparedStores", "value": 5, "source": "mctrace"}, {"key": "otherForms", "value": "无", "source": "mctrace", "note": "其他命中形态的结论，单独列示，不混入主对比"}], "entities": {"麦当劳上海越洋广场餐厅": "价差榜门店", "麦当劳上海南京西路Eco1788餐厅": "价差榜门店", "麦当劳上海CP静安餐厅": "价差榜门店", "麦当劳上海静安延平路德必餐厅": "价差榜门店", "麦当劳上海静安寺餐厅": "价差榜门店"}, "rule": {"id": "price.cross-store", "pass": true, "deltaYuan": 0.5}, "say": {"friendly": "线索比对完成：「巨无霸三件套」5 家在售。最低 麦当劳上海越洋广场餐厅 ¥36.5，最高 麦当劳上海静安寺餐厅 ¥37。", "pro": "目标餐品跨店比价（限定同形态「巨无霸三件套」）：5 家门店在售；最低 麦当劳上海越洋广场餐厅 ¥36.5，最高 麦当劳上海静安寺餐厅 ¥37，价差 ¥0.5。其他命中形态：无。"}, "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/13", "isMock": false, "request": {"target": "巨无霸三件套", "stores": 5}, "response": {"rows": [{"store": "麦当劳上海越洋广场餐厅", "storeCode": "", "price": 36.5, "distM": null}, {"store": "麦当劳上海南京西路Eco1788餐厅", "storeCode": "", "price": 36.5, "distM": null}, {"store": "麦当劳上海CP静安餐厅", "storeCode": "", "price": 36.5, "distM": null}, {"store": "麦当劳上海静安延平路德必餐厅", "storeCode": "", "price": 36.5, "distM": null}, {"store": "麦当劳上海静安寺餐厅", "storeCode": "", "price": 37.0, "distM": null}], "deltaYuan": 0.5, "primaryForm": "巨无霸三件套", "groups": [{"name": "巨无霸三件套", "delta": 0.5, "stores": 5}]}}, {"traceId": "mcdetective-20261013-f6d7e7ce", "seq": 14, "kind": "info", "tool": "mctrace:rule", "title": "比对发现线索", "status": "success", "ts": "2026-10-13T21:02:47", "facts": [{"key": "unionItems", "value": 136, "source": "mctrace"}, {"key": "commonItems", "value": 89, "source": "mctrace"}, {"key": "coveragePct", "value": 65.4, "source": "mctrace", "note": "全部门店都有售的单品占比；其余为部分门店限定"}, {"key": "example", "value": "「鱼排堡开心乐园餐」仅上海静安寺有售；此类非全部巡查门店共有的单品共 47 款", "source": "mctrace"}], "entities": {}, "rule": {"id": "availability.coverage", "pass": true, "coveragePct": 65.4}, "say": {"friendly": "顺手记一笔：5 家店合起来 136 款单品，家家都有的只有 89 款（65.4%）。想吃限定款的话，门店选址比几块钱更要命：「鱼排堡开心乐园餐」仅上海静安寺有售；此类非全部巡查门店共有的单品共 47 款。", "pro": "餐品可得性：并集 136 款，交集 89 款（覆盖率 65.4%）。部分门店限定示例：「鱼排堡开心乐园餐」仅上海静安寺有售；此类非全部巡查门店共有的单品共 47 款。"}, "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/14", "isMock": false, "request": {"stores": 5}, "response": {"union": 136, "common": 89, "coveragePct": 65.4}}, {"traceId": "mcdetective-20261013-f6d7e7ce", "seq": 15, "kind": "info", "tool": "mctrace:rule", "title": "比对发现线索", "status": "success", "ts": "2026-10-13T21:02:47", "facts": [{"key": "uniqueCouponSets", "value": 1, "source": "mctrace"}, {"key": "verdict", "value": "完全一致", "source": "mctrace"}], "entities": {}, "rule": {"id": "coupon.cross-store", "pass": true, "uniqueSets": 1}, "say": {"friendly": "券也核查完了：各家门店券完全一致——所以这单不比券，只比价和货。", "pro": "门店券跨店比对：所有巡查门店券集合完全一致，券维度不存在跨店差异。"}, "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/15", "isMock": false, "request": {"stores": 5}, "response": {"uniqueSets": 1}}, {"traceId": "mcdetective-20261013-f6d7e7ce", "seq": 16, "kind": "success", "tool": "summary-composer", "title": "结案报告", "status": "success", "ts": "2026-10-13T21:02:47", "facts": [{"key": "巡查门店", "value": 5, "source": "mctrace"}, {"key": "巡查半径", "value": "方圆 3 km（实际 134 m–791 m）", "source": "mctrace"}, {"key": "目标餐品", "value": "巨无霸三件套", "source": "user-request"}, {"key": "在售门店", "value": 5, "source": "mctrace"}, {"key": "最低价", "value": "麦当劳上海越洋广场餐厅 ¥36.5", "source": "menu"}, {"key": "最高价", "value": "麦当劳上海静安寺餐厅 ¥37", "source": "menu"}, {"key": "比对形态", "value": "巨无霸三件套", "source": "mctrace", "note": "只与同一形态比价；其他命中形态见价差线索"}, {"key": "结论", "value": "差价 ¥0.5：麦当劳上海越洋广场餐厅 最便宜", "source": "mctrace"}, {"key": "可得性覆盖率", "value": "65.4%", "source": "mctrace"}, {"key": "是否下单", "value": false, "source": "mctrace"}], "entities": {"巨无霸三件套": "目标餐品", "麦当劳上海越洋广场餐厅": "结论门店"}, "rule": null, "say": {"friendly": "结案！方圆 3 公里 5 家店巡查完毕：「巨无霸三件套」差价 ¥0.5：麦当劳上海越洋广场餐厅 最便宜。每一步的原始调用都能点开核验。没下单，你定～", "pro": "结案报告：巡查 5 家门店（半径 3km，实际覆盖 134 m–791 m）；目标「巨无霸三件套」主比对形态「巨无霸三件套」在售 5 家；结论：差价 ¥0.5：麦当劳上海越洋广场餐厅 最便宜；可得性覆盖率 65.4%；未创建订单。"}, "evidenceRef": "trace://mcdetective-20261013-f6d7e7ce/events/16", "isMock": false, "request": {}, "response": {"result": {"patrolStores": 5, "patrolRange": "134 m–791 m", "target": "巨无霸三件套", "primaryForm": "巨无霸三件套", "inStockStores": 5, "verdict": "差价 ¥0.5：麦当劳上海越洋广场餐厅 最便宜", "lowest": "麦当劳上海越洋广场餐厅 ¥36.5", "highest": "麦当劳上海静安寺餐厅 ¥37", "deltaYuan": 0.5, "coveragePct": 65.4, "orderCreated": false}}}]}, "detective-patrol": {"traceId": "mcdetective-20261013-aafba506", "generatedAt": "2026-10-13T21:02:38", "isMock": false, "eventCount": 16, "events": [{"traceId": "mcdetective-20261013-aafba506", "seq": 1, "kind": "info", "tool": "user-request", "title": "接报案", "status": "success", "ts": "2026-10-13T21:02:26", "facts": [{"key": "city", "value": "北京市", "source": "user-request"}, {"key": "keyword", "value": "中关村", "source": "user-request"}, {"key": "target", "value": "精选单人餐三件套", "source": "user-request"}, {"key": "radiusKm", "value": 3.0, "source": "user-request", "note": "巡查半径；只查方圆该距离内的门店"}, {"key": "maxStores", "value": 10, "source": "user-request", "note": "巡查门店数上限，防止商圈过大时无限扫店"}], "entities": {"精选单人餐三件套": "目标餐品 / target"}, "rule": null, "say": {"friendly": "接到报案：北京市中关村附近，有人想查「精选单人餐三件套」哪家卖得便宜。探长出动了，先按方圆 3 公里划定巡查范围。", "pro": "解析报案：区域=北京市中关村；目标餐品=精选单人餐三件套；巡查半径=3km；门店上限=10。"}, "evidenceRef": "trace://mcdetective-20261013-aafba506/events/1", "isMock": false, "request": {"city": "北京市", "keyword": "中关村", "target": "精选单人餐三件套", "radiusKm": 3.0, "maxStores": 10}, "response": {"case": "北京市中关村 精选单人餐三件套"}}, {"traceId": "mcdetective-20261013-aafba506", "seq": 2, "kind": "info", "tool": "query-nearby-stores", "title": "划定巡查范围", "status": "success", "ts": "2026-10-13T21:02:27", "facts": [{"key": "hitCount", "value": 5, "sourcePath": "$.data"}, {"key": "withinRadius", "value": 5, "source": "mctrace", "note": "方圆 3 km 内的门店数"}, {"key": "patrolCount", "value": 5, "source": "mctrace", "note": "上限 10 家后的实际巡查数"}, {"key": "distanceRange", "value": "183 m–807 m", "sourcePath": "$.data[].distance", "note": "接口返回距离为米"}, {"key": "patrolList", "value": "麦当劳北京善缘街(中关村5号)餐厅、麦当劳北京中关村领展广场餐厅、麦当劳北京海淀镇餐厅、麦当劳北京海淀中街(巴比伦时尚酒店)餐厅、麦当劳北京海淀黄庄餐厅", "sourcePath": "$.data[].storeName"}], "entities": {"麦当劳北京善缘街(中关村5号)餐厅": "巡查对象门店", "麦当劳北京中关村领展广场餐厅": "巡查对象门店", "麦当劳北京海淀镇餐厅": "巡查对象门店", "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅": "巡查对象门店", "麦当劳北京海淀黄庄餐厅": "巡查对象门店"}, "rule": null, "say": {"friendly": "范围划定：中关村方圆 3 公里命中 5 家（距离 183 m–807 m），逐家查，最多 10 家。", "pro": "门店查询命中 5 家；方圆 3km 内 5 家（距离 183 m–807 m）；取前 5 家巡查。"}, "evidenceRef": "trace://mcdetective-20261013-aafba506/events/2", "isMock": false, "request": {"beType": 1, "searchType": 2, "city": "北京市", "keyword": "中关村"}, "response": {"success": true, "hitCount": 5, "withinRadius": 5, "distanceMissing": 0}}, {"traceId": "mcdetective-20261013-aafba506", "seq": 3, "kind": "info", "tool": "query-meals", "title": "巡查门店菜单", "status": "success", "ts": "2026-10-13T21:02:28", "facts": [{"key": "storeName", "value": "麦当劳北京善缘街(中关村5号)餐厅", "sourcePath": "$.data.meals"}, {"key": "distance", "value": "183 m", "sourcePath": "$.data[].distance"}, {"key": "mealCount", "value": 109, "source": "mctrace"}, {"key": "targetHit", "value": "发现目标「精选单人餐三件套」，标价 ¥34.5", "source": "mctrace"}], "entities": {"麦当劳北京善缘街(中关村5号)餐厅": "巡查门店", "精选单人餐三件套": "目标餐品"}, "rule": null, "say": {"friendly": "第 1 站（183 m）：麦当劳北京善缘街(中关村5号)餐厅，菜单 109 个单品，发现目标「精选单人餐三件套」，标价 ¥34.5。", "pro": "门店「麦当劳北京善缘街(中关村5号)餐厅」（距离 183 m）菜单返回 109 个单品；目标餐品状态：发现目标「精选单人餐三件套」，标价 ¥34.5。"}, "evidenceRef": "trace://mcdetective-20261013-aafba506/events/3", "isMock": false, "request": {"storeCode": "1950640", "orderType": 1, "beType": 1}, "response": {"success": true, "mealCount": 109}}, {"traceId": "mcdetective-20261013-aafba506", "seq": 4, "kind": "info", "tool": "query-store-coupons", "title": "核查门店券", "status": "success", "ts": "2026-10-13T21:02:28", "facts": [{"key": "storeName", "value": "麦当劳北京善缘街(中关村5号)餐厅", "sourcePath": "$.data"}, {"key": "couponCount", "value": 2, "sourcePath": "$.data"}, {"key": "coupons", "value": "中薯条买一送一、王牌小食拼", "sourcePath": "$.data[].title"}], "entities": {"中薯条买一送一": "门店券 / coupon", "王牌小食拼": "门店券 / coupon"}, "rule": null, "say": {"friendly": "麦当劳北京善缘街(中关村5号)餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。", "pro": "门店「麦当劳北京善缘街(中关村5号)餐厅」券查询返回 2 张。"}, "evidenceRef": "trace://mcdetective-20261013-aafba506/events/4", "isMock": false, "request": {"orderType": 1, "beType": 1, "storeCode": "1950640"}, "response": {"success": true, "couponCount": 2}}, {"traceId": "mcdetective-20261013-aafba506", "seq": 5, "kind": "info", "tool": "query-meals", "title": "巡查门店菜单", "status": "success", "ts": "2026-10-13T21:02:29", "facts": [{"key": "storeName", "value": "麦当劳北京中关村领展广场餐厅", "sourcePath": "$.data.meals"}, {"key": "distance", "value": "365 m", "sourcePath": "$.data[].distance"}, {"key": "mealCount", "value": 99, "source": "mctrace"}, {"key": "targetHit", "value": "发现目标「精选单人餐三件套」，标价 ¥34.5", "source": "mctrace"}], "entities": {"麦当劳北京中关村领展广场餐厅": "巡查门店", "精选单人餐三件套": "目标餐品"}, "rule": null, "say": {"friendly": "第 2 站（365 m）：麦当劳北京中关村领展广场餐厅，菜单 99 个单品，发现目标「精选单人餐三件套」，标价 ¥34.5。", "pro": "门店「麦当劳北京中关村领展广场餐厅」（距离 365 m）菜单返回 99 个单品；目标餐品状态：发现目标「精选单人餐三件套」，标价 ¥34.5。"}, "evidenceRef": "trace://mcdetective-20261013-aafba506/events/5", "isMock": false, "request": {"storeCode": "1951000", "orderType": 1, "beType": 1}, "response": {"success": true, "mealCount": 99}}, {"traceId": "mcdetective-20261013-aafba506", "seq": 6, "kind": "info", "tool": "query-store-coupons", "title": "核查门店券", "status": "success", "ts": "2026-10-13T21:02:30", "facts": [{"key": "storeName", "value": "麦当劳北京中关村领展广场餐厅", "sourcePath": "$.data"}, {"key": "couponCount", "value": 2, "sourcePath": "$.data"}, {"key": "coupons", "value": "中薯条买一送一、王牌小食拼", "sourcePath": "$.data[].title"}], "entities": {"中薯条买一送一": "门店券 / coupon", "王牌小食拼": "门店券 / coupon"}, "rule": null, "say": {"friendly": "麦当劳北京中关村领展广场餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。", "pro": "门店「麦当劳北京中关村领展广场餐厅」券查询返回 2 张。"}, "evidenceRef": "trace://mcdetective-20261013-aafba506/events/6", "isMock": false, "request": {"orderType": 1, "beType": 1, "storeCode": "1951000"}, "response": {"success": true, "couponCount": 2}}, {"traceId": "mcdetective-20261013-aafba506", "seq": 7, "kind": "info", "tool": "query-meals", "title": "巡查门店菜单", "status": "success", "ts": "2026-10-13T21:02:31", "facts": [{"key": "storeName", "value": "麦当劳北京海淀镇餐厅", "sourcePath": "$.data.meals"}, {"key": "distance", "value": "417 m", "sourcePath": "$.data[].distance"}, {"key": "mealCount", "value": 88, "source": "mctrace"}, {"key": "targetHit", "value": "发现目标「精选单人餐三件套」，标价 ¥33.5", "source": "mctrace"}], "entities": {"麦当劳北京海淀镇餐厅": "巡查门店", "精选单人餐三件套": "目标餐品"}, "rule": null, "say": {"friendly": "第 3 站（417 m）：麦当劳北京海淀镇餐厅，菜单 88 个单品，发现目标「精选单人餐三件套」，标价 ¥33.5。", "pro": "门店「麦当劳北京海淀镇餐厅」（距离 417 m）菜单返回 88 个单品；目标餐品状态：发现目标「精选单人餐三件套」，标价 ¥33.5。"}, "evidenceRef": "trace://mcdetective-20261013-aafba506/events/7", "isMock": false, "request": {"storeCode": "1950013", "orderType": 1, "beType": 1}, "response": {"success": true, "mealCount": 88}}, {"traceId": "mcdetective-20261013-aafba506", "seq": 8, "kind": "info", "tool": "query-store-coupons", "title": "核查门店券", "status": "success", "ts": "2026-10-13T21:02:31", "facts": [{"key": "storeName", "value": "麦当劳北京海淀镇餐厅", "sourcePath": "$.data"}, {"key": "couponCount", "value": 2, "sourcePath": "$.data"}, {"key": "coupons", "value": "中薯条买一送一、王牌小食拼", "sourcePath": "$.data[].title"}], "entities": {"中薯条买一送一": "门店券 / coupon", "王牌小食拼": "门店券 / coupon"}, "rule": null, "say": {"friendly": "麦当劳北京海淀镇餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。", "pro": "门店「麦当劳北京海淀镇餐厅」券查询返回 2 张。"}, "evidenceRef": "trace://mcdetective-20261013-aafba506/events/8", "isMock": false, "request": {"orderType": 1, "beType": 1, "storeCode": "1950013"}, "response": {"success": true, "couponCount": 2}}, {"traceId": "mcdetective-20261013-aafba506", "seq": 9, "kind": "info", "tool": "query-meals", "title": "巡查门店菜单", "status": "success", "ts": "2026-10-13T21:02:34", "facts": [{"key": "storeName", "value": "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅", "sourcePath": "$.data.meals"}, {"key": "distance", "value": "655 m", "sourcePath": "$.data[].distance"}, {"key": "mealCount", "value": 89, "source": "mctrace"}, {"key": "targetHit", "value": "发现目标「精选单人餐三件套」，标价 ¥36.5", "source": "mctrace"}], "entities": {"麦当劳北京海淀中街(巴比伦时尚酒店)餐厅": "巡查门店", "精选单人餐三件套": "目标餐品"}, "rule": null, "say": {"friendly": "第 4 站（655 m）：麦当劳北京海淀中街(巴比伦时尚酒店)餐厅，菜单 89 个单品，发现目标「精选单人餐三件套」，标价 ¥36.5。", "pro": "门店「麦当劳北京海淀中街(巴比伦时尚酒店)餐厅」（距离 655 m）菜单返回 89 个单品；目标餐品状态：发现目标「精选单人餐三件套」，标价 ¥36.5。"}, "evidenceRef": "trace://mcdetective-20261013-aafba506/events/9", "isMock": false, "request": {"storeCode": "1950822", "orderType": 1, "beType": 1}, "response": {"success": true, "mealCount": 89}}, {"traceId": "mcdetective-20261013-aafba506", "seq": 10, "kind": "info", "tool": "query-store-coupons", "title": "核查门店券", "status": "success", "ts": "2026-10-13T21:02:36", "facts": [{"key": "storeName", "value": "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅", "sourcePath": "$.data"}, {"key": "couponCount", "value": 2, "sourcePath": "$.data"}, {"key": "coupons", "value": "中薯条买一送一、王牌小食拼", "sourcePath": "$.data[].title"}], "entities": {"中薯条买一送一": "门店券 / coupon", "王牌小食拼": "门店券 / coupon"}, "rule": null, "say": {"friendly": "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。", "pro": "门店「麦当劳北京海淀中街(巴比伦时尚酒店)餐厅」券查询返回 2 张。"}, "evidenceRef": "trace://mcdetective-20261013-aafba506/events/10", "isMock": false, "request": {"orderType": 1, "beType": 1, "storeCode": "1950822"}, "response": {"success": true, "couponCount": 2}}, {"traceId": "mcdetective-20261013-aafba506", "seq": 11, "kind": "info", "tool": "query-meals", "title": "巡查门店菜单", "status": "success", "ts": "2026-10-13T21:02:37", "facts": [{"key": "storeName", "value": "麦当劳北京海淀黄庄餐厅", "sourcePath": "$.data.meals"}, {"key": "distance", "value": "807 m", "sourcePath": "$.data[].distance"}, {"key": "mealCount", "value": 92, "source": "mctrace"}, {"key": "targetHit", "value": "发现目标「精选单人餐三件套」，标价 ¥34.5", "source": "mctrace"}], "entities": {"麦当劳北京海淀黄庄餐厅": "巡查门店", "精选单人餐三件套": "目标餐品"}, "rule": null, "say": {"friendly": "第 5 站（807 m）：麦当劳北京海淀黄庄餐厅，菜单 92 个单品，发现目标「精选单人餐三件套」，标价 ¥34.5。", "pro": "门店「麦当劳北京海淀黄庄餐厅」（距离 807 m）菜单返回 92 个单品；目标餐品状态：发现目标「精选单人餐三件套」，标价 ¥34.5。"}, "evidenceRef": "trace://mcdetective-20261013-aafba506/events/11", "isMock": false, "request": {"storeCode": "1950027", "orderType": 1, "beType": 1}, "response": {"success": true, "mealCount": 92}}, {"traceId": "mcdetective-20261013-aafba506", "seq": 12, "kind": "info", "tool": "query-store-coupons", "title": "核查门店券", "status": "success", "ts": "2026-10-13T21:02:38", "facts": [{"key": "storeName", "value": "麦当劳北京海淀黄庄餐厅", "sourcePath": "$.data"}, {"key": "couponCount", "value": 2, "sourcePath": "$.data"}, {"key": "coupons", "value": "中薯条买一送一、王牌小食拼", "sourcePath": "$.data[].title"}], "entities": {"中薯条买一送一": "门店券 / coupon", "王牌小食拼": "门店券 / coupon"}, "rule": null, "say": {"friendly": "麦当劳北京海淀黄庄餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。", "pro": "门店「麦当劳北京海淀黄庄餐厅」券查询返回 2 张。"}, "evidenceRef": "trace://mcdetective-20261013-aafba506/events/12", "isMock": false, "request": {"orderType": 1, "beType": 1, "storeCode": "1950027"}, "response": {"success": true, "couponCount": 2}}, {"traceId": "mcdetective-20261013-aafba506", "seq": 13, "kind": "success", "tool": "mctrace:rule", "title": "比对发现线索", "status": "success", "ts": "2026-10-13T21:02:38", "facts": [{"key": "comparedForm", "value": "精选单人餐三件套", "source": "mctrace", "note": "目标关键词可能命中多种形态（单品/套餐），只与同一形态比价"}, {"key": "lowest", "value": "麦当劳北京海淀镇餐厅 ¥33.5", "source": "menu"}, {"key": "highest", "value": "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅 ¥36.5", "source": "menu"}, {"key": "deltaYuan", "value": 3.0, "source": "mctrace"}, {"key": "comparedStores", "value": 5, "source": "mctrace"}, {"key": "otherForms", "value": "无", "source": "mctrace", "note": "其他命中形态的结论，单独列示，不混入主对比"}], "entities": {"麦当劳北京海淀镇餐厅": "价差榜门店", "麦当劳北京善缘街(中关村5号)餐厅": "价差榜门店", "麦当劳北京中关村领展广场餐厅": "价差榜门店", "麦当劳北京海淀黄庄餐厅": "价差榜门店", "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅": "价差榜门店"}, "rule": {"id": "price.cross-store", "pass": true, "deltaYuan": 3.0}, "say": {"friendly": "线索比对完成：「精选单人餐三件套」5 家在售。最低 麦当劳北京海淀镇餐厅 ¥33.5，最高 麦当劳北京海淀中街(巴比伦时尚酒店)餐厅 ¥36.5。", "pro": "目标餐品跨店比价（限定同形态「精选单人餐三件套」）：5 家门店在售；最低 麦当劳北京海淀镇餐厅 ¥33.5，最高 麦当劳北京海淀中街(巴比伦时尚酒店)餐厅 ¥36.5，价差 ¥3。其他命中形态：无。"}, "evidenceRef": "trace://mcdetective-20261013-aafba506/events/13", "isMock": false, "request": {"target": "精选单人餐三件套", "stores": 5}, "response": {"rows": [{"store": "麦当劳北京海淀镇餐厅", "storeCode": "", "price": 33.5, "distM": null}, {"store": "麦当劳北京善缘街(中关村5号)餐厅", "storeCode": "", "price": 34.5, "distM": null}, {"store": "麦当劳北京中关村领展广场餐厅", "storeCode": "", "price": 34.5, "distM": null}, {"store": "麦当劳北京海淀黄庄餐厅", "storeCode": "", "price": 34.5, "distM": null}, {"store": "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅", "storeCode": "", "price": 36.5, "distM": null}], "deltaYuan": 3.0, "primaryForm": "精选单人餐三件套", "groups": [{"name": "精选单人餐三件套", "delta": 3.0, "stores": 5}]}}, {"traceId": "mcdetective-20261013-aafba506", "seq": 14, "kind": "info", "tool": "mctrace:rule", "title": "比对发现线索", "status": "success", "ts": "2026-10-13T21:02:38", "facts": [{"key": "unionItems", "value": 130, "source": "mctrace"}, {"key": "commonItems", "value": 51, "source": "mctrace"}, {"key": "coveragePct", "value": 39.2, "source": "mctrace", "note": "全部门店都有售的单品占比；其余为部分门店限定"}, {"key": "example", "value": "「芝士安格斯厚牛堡三件套」仅善缘街(中关村5号)有售；此类非全部巡查门店共有的单品共 79 款", "source": "mctrace"}], "entities": {}, "rule": {"id": "availability.coverage", "pass": true, "coveragePct": 39.2}, "say": {"friendly": "顺手记一笔：5 家店合起来 130 款单品，家家都有的只有 51 款（39.2%）。想吃限定款的话，门店选址比几块钱更要命：「芝士安格斯厚牛堡三件套」仅善缘街(中关村5号)有售；此类非全部巡查门店共有的单品共 79 款。", "pro": "餐品可得性：并集 130 款，交集 51 款（覆盖率 39.2%）。部分门店限定示例：「芝士安格斯厚牛堡三件套」仅善缘街(中关村5号)有售；此类非全部巡查门店共有的单品共 79 款。"}, "evidenceRef": "trace://mcdetective-20261013-aafba506/events/14", "isMock": false, "request": {"stores": 5}, "response": {"union": 130, "common": 51, "coveragePct": 39.2}}, {"traceId": "mcdetective-20261013-aafba506", "seq": 15, "kind": "info", "tool": "mctrace:rule", "title": "比对发现线索", "status": "success", "ts": "2026-10-13T21:02:38", "facts": [{"key": "uniqueCouponSets", "value": 1, "source": "mctrace"}, {"key": "verdict", "value": "完全一致", "source": "mctrace"}], "entities": {}, "rule": {"id": "coupon.cross-store", "pass": true, "uniqueSets": 1}, "say": {"friendly": "券也核查完了：各家门店券完全一致——所以这单不比券，只比价和货。", "pro": "门店券跨店比对：所有巡查门店券集合完全一致，券维度不存在跨店差异。"}, "evidenceRef": "trace://mcdetective-20261013-aafba506/events/15", "isMock": false, "request": {"stores": 5}, "response": {"uniqueSets": 1}}, {"traceId": "mcdetective-20261013-aafba506", "seq": 16, "kind": "success", "tool": "summary-composer", "title": "结案报告", "status": "success", "ts": "2026-10-13T21:02:38", "facts": [{"key": "巡查门店", "value": 5, "source": "mctrace"}, {"key": "巡查半径", "value": "方圆 3 km（实际 183 m–807 m）", "source": "mctrace"}, {"key": "目标餐品", "value": "精选单人餐三件套", "source": "user-request"}, {"key": "在售门店", "value": 5, "source": "mctrace"}, {"key": "最低价", "value": "麦当劳北京海淀镇餐厅 ¥33.5", "source": "menu"}, {"key": "最高价", "value": "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅 ¥36.5", "source": "menu"}, {"key": "比对形态", "value": "精选单人餐三件套", "source": "mctrace", "note": "只与同一形态比价；其他命中形态见价差线索"}, {"key": "结论", "value": "差价 ¥3：麦当劳北京海淀镇餐厅 最便宜", "source": "mctrace"}, {"key": "可得性覆盖率", "value": "39.2%", "source": "mctrace"}, {"key": "是否下单", "value": false, "source": "mctrace"}], "entities": {"精选单人餐三件套": "目标餐品", "麦当劳北京海淀镇餐厅": "结论门店"}, "rule": null, "say": {"friendly": "结案！方圆 3 公里 5 家店巡查完毕：「精选单人餐三件套」差价 ¥3：麦当劳北京海淀镇餐厅 最便宜。每一步的原始调用都能点开核验。没下单，你定～", "pro": "结案报告：巡查 5 家门店（半径 3km，实际覆盖 183 m–807 m）；目标「精选单人餐三件套」主比对形态「精选单人餐三件套」在售 5 家；结论：差价 ¥3：麦当劳北京海淀镇餐厅 最便宜；可得性覆盖率 39.2%；未创建订单。"}, "evidenceRef": "trace://mcdetective-20261013-aafba506/events/16", "isMock": false, "request": {}, "response": {"result": {"patrolStores": 5, "patrolRange": "183 m–807 m", "target": "精选单人餐三件套", "primaryForm": "精选单人餐三件套", "inStockStores": 5, "verdict": "差价 ¥3：麦当劳北京海淀镇餐厅 最便宜", "lowest": "麦当劳北京海淀镇餐厅 ¥33.5", "highest": "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅 ¥36.5", "deltaYuan": 3.0, "coveragePct": 39.2, "orderCreated": false}}}]}, "jingan-breakfast": {"traceId": "mctrace-20261010-e62db40e", "generatedAt": "2026-10-10T17:48:14", "isMock": false, "eventCount": 10, "events": [{"traceId": "mctrace-20261010-e62db40e", "seq": 1, "kind": "info", "tool": "user-request", "title": "先把要求记下来", "status": "success", "ts": "2026-10-10T17:48:11", "facts": [{"key": "keyword", "value": "黄冈", "source": "user-request"}, {"key": "budgetYuan", "value": 50.0, "source": "user-request"}, {"key": "maxKcal", "value": 500, "source": "user-request"}, {"key": "goal", "value": "减脂（低卡）", "source": "user-request", "note": "目标决定选品规则；规则不同会给出完全不同的答案"}], "entities": {}, "rule": null, "say": {"friendly": "好嘞！黄冈市黄冈附近，想点份减脂餐：价格不超过 50.0 元、热量不超 500 千卡，要低卡。我从找门店开始。", "pro": "解析用户目标：区域=黄冈市黄冈；价格上限=50.0元；能量上限=500kcal；**目标=减脂**，因此选品规则为「约束内取热量最低的正餐」。"}, "evidenceRef": "trace://mctrace-20261010-e62db40e/events/1", "isMock": false, "request": {"keyword": "黄冈", "budgetYuan": 50.0, "maxKcal": 500, "goal": "fatloss"}, "response": {"userRequest": "帮我在黄冈附近点份减脂餐：预算不超过 50 元、热量不超 500 千卡，要低卡。"}}, {"traceId": "mctrace-20261010-e62db40e", "seq": 2, "kind": "info", "tool": "query-nearby-stores", "title": "找到具体门店", "status": "success", "ts": "2026-10-10T17:48:12", "facts": [{"key": "storeName", "value": "麦当劳黄冈万达餐厅", "sourcePath": "$.data[0].storeName"}, {"key": "storeCode", "value": "1960134", "sourcePath": "$.data[0].storeCode"}, {"key": "address", "value": "赤壁二路**号", "sourcePath": "$.data[0].address"}], "entities": {"麦当劳黄冈万达餐厅": "门店名称 / storeName"}, "rule": null, "say": {"friendly": "找到了！先看「麦当劳黄冈万达餐厅」，位置正合适。我就从它的菜单开始查。", "pro": "门店查询返回候选。选用「麦当劳黄冈万达餐厅」（编码 1960134）作为后续菜单查询的目标门店。"}, "evidenceRef": "trace://mctrace-20261010-e62db40e/events/2", "isMock": false, "request": {"beType": 1, "searchType": 2, "city": "黄冈市", "keyword": "黄冈"}, "response": {"success": true, "storeCount": 1}}, {"traceId": "mctrace-20261010-e62db40e", "seq": 3, "kind": "info", "tool": "query-meals", "title": "认真翻了菜单", "status": "success", "ts": "2026-10-10T17:48:12", "facts": [{"key": "itemCount", "value": 109, "sourcePath": "$.data.meals"}, {"key": "sample", "value": "麦辣鸡腿汉堡三件套、培根安格斯厚牛堡、玫瑰红糖糍粑风味派", "sourcePath": "$.data.meals"}], "entities": {"麦辣鸡腿汉堡三件套": "菜单餐品 / item.name", "培根安格斯厚牛堡": "菜单餐品 / item.name", "玫瑰红糖糍粑风味派": "菜单餐品 / item.name", "阳光橙麦炫酷": "菜单餐品 / item.name"}, "rule": null, "say": {"friendly": "菜单里看了不少单品，先记几个带热量的候选：麦辣鸡腿汉堡三件套、培根安格斯厚牛堡、玫瑰红糖糍粑风味派……", "pro": "菜单返回 109 个带价格单品。进入营养与预算校验。"}, "evidenceRef": "trace://mctrace-20261010-e62db40e/events/3", "isMock": false, "request": {"storeCode": "1960134", "orderType": 1, "beType": 1}, "response": {"success": true, "mealCount": 109}}, {"traceId": "mctrace-20261010-e62db40e", "seq": 4, "kind": "info", "tool": "list-nutrition-foods", "title": "核对候选热量", "status": "success", "ts": "2026-10-10T17:48:13", "facts": [{"key": "menuItems", "value": 109, "sourcePath": "$.data.meals"}, {"key": "nutritionMatched", "value": 19, "source": "nutrition-table"}, {"key": "coveragePct", "value": 17.4, "source": "mctrace", "note": "营养表只覆盖部分在售单品；未覆盖者无法判断热量，不参与推荐"}, {"key": "sample", "value": "培根安格斯厚牛堡 707kcal、芝士安格斯厚牛堡 696kcal、培根蔬萃双层牛堡 442kcal", "source": "nutrition-table"}], "entities": {"培根安格斯厚牛堡": "营养餐品 / nutrition", "芝士安格斯厚牛堡": "营养餐品 / nutrition", "培根蔬萃双层牛堡": "营养餐品 / nutrition", "巨无霸": "营养餐品 / nutrition"}, "rule": {"id": "nutrition.coverage", "pass": false, "coveragePct": 17.4}, "say": {"friendly": "核对了候选的热量：培根安格斯厚牛堡 707千卡，芝士安格斯厚牛堡 696千卡，培根蔬萃双层牛堡 442千卡……不过菜单里 109 个单品，营养表只对得上 19 个（17.4%），剩下那些我没法判断热量，不瞎推荐。", "pro": "菜单 109 个在售单品，营养表匹配到 19 个（覆盖率 17.4%），其中 12 个为正餐单品，可用于能量约束校验。覆盖率不足时推荐结果的可选集很小，此事实已显式告知用户。"}, "evidenceRef": "trace://mctrace-20261010-e62db40e/events/4", "isMock": false, "request": {}, "response": {"menuItems": 109, "matched": 19, "coveragePct": 17.4}}, {"traceId": "mctrace-20261010-e62db40e", "seq": 5, "kind": "warning", "tool": "mctrace:rule", "title": "发现约束冲突", "status": "success", "ts": "2026-10-10T17:48:13", "facts": [{"key": "item", "value": "培根安格斯厚牛堡", "source": "menu+nutrition"}, {"key": "kcal", "value": 707, "sourcePath": "$.nutrition"}, {"key": "maxKcal", "value": 500, "source": "user-request"}, {"key": "deltaKcal", "value": 207, "source": "rule"}], "entities": {"培根安格斯厚牛堡": "初始方案餐品"}, "rule": null, "say": {"friendly": "等等……「培根安格斯厚牛堡」约 707 千卡，比 500 的目标多了 207。看来得收敛一点！", "pro": "初始候选「培根安格斯厚牛堡」示例营养 707 kcal，超过用户上限 207 kcal，约束未通过。"}, "evidenceRef": "trace://mctrace-20261010-e62db40e/events/5", "isMock": false, "request": {"item": "培根安格斯厚牛堡", "kcal": 707, "maxKcal": 500}, "response": {"rule": "nutrition.max"}}, {"traceId": "mctrace-20261010-e62db40e", "seq": 6, "kind": "info", "tool": "query-meal-detail", "title": "拆开看它有什么", "status": "success", "ts": "2026-10-10T17:48:13", "facts": [{"key": "item", "value": "麦香鱼", "sourcePath": "$.request.code"}, {"key": "composition", "value": "麦香鱼", "sourcePath": "$.data"}], "entities": {"麦香鱼": "餐品构成 / meal-detail"}, "rule": null, "say": {"friendly": "顺手拆开看了一眼「麦香鱼」：麦香鱼。", "pro": "餐品详情返回构成：['麦香鱼']。"}, "evidenceRef": "trace://mctrace-20261010-e62db40e/events/6", "isMock": false, "request": {"storeCode": "1960134", "orderType": 1, "beType": 1, "code": "1600"}, "response": {"success": true, "parsedParts": 1}}, {"traceId": "mctrace-20261010-e62db40e", "seq": 7, "kind": "info", "tool": "query-store-coupons", "title": "查看门店券", "status": "info", "ts": "2026-10-10T17:48:13", "facts": [{"key": "couponCount", "value": 0, "sourcePath": "$.data"}, {"key": "coupons", "value": "无", "sourcePath": "$.data[].title"}, {"key": "applicableToPick", "value": "否", "source": "match"}], "entities": {}, "rule": null, "say": {"friendly": "这家门店券接口这次没返回可用券 —— 但这不等于你没券，账户券是另一套，接着查。", "pro": "门店券查询返回 0 张；与推荐单品的适用商品匹配结果：不适用。"}, "evidenceRef": "trace://mctrace-20261010-e62db40e/events/7", "isMock": false, "request": {"orderType": 1, "beType": 1, "storeCode": "1960134"}, "response": {"success": false, "couponCount": 0}}, {"traceId": "mctrace-20261010-e62db40e", "seq": 8, "kind": "info", "tool": "available-coupons", "title": "available-coupons", "status": "success", "ts": "2026-10-10T17:48:13", "facts": [{"key": "parsedCoupons", "value": 6, "source": "markdown-parse"}, {"key": "usableCoupons", "value": 3, "source": "markdown-parse"}, {"key": "usableList", "value": "免费脆薯饼、人气麦旋风买一送一、9.9元中杯冰美式", "source": "markdown-parse"}, {"key": "format", "value": "markdown（非 JSON）", "source": "mctrace", "note": "该工具返回 Markdown 文本，通用 JSON 解析器会读不出"}], "entities": {"免费脆薯饼": "可领取优惠券 / coupon", "人气麦旋风买一送一": "可领取优惠券 / coupon", "9.9元中杯冰美式": "可领取优惠券 / coupon"}, "rule": {"id": "coupon.available", "pass": true, "usable": 3}, "say": {"friendly": "账户里还有 3 张能直接领的券：免费脆薯饼、人气麦旋风买一送一、9.9元中杯冰美式。", "pro": "available-coupons 返回 Markdown 文本，解析出 6 条，其中状态为可领取的 3 张。"}, "evidenceRef": "trace://mctrace-20261010-e62db40e/events/8", "isMock": false, "request": {}, "response": {"format": "markdown", "parsed": 6, "usable": 3}}, {"traceId": "mctrace-20261010-e62db40e", "seq": 9, "kind": "warning", "tool": "calculate-price", "title": "核算价格", "status": "degraded", "ts": "2026-10-10T17:48:14", "facts": [{"key": "payableYuan", "value": 22.0, "sourcePath": "$.data.meals"}, {"key": "budgetYuan", "value": 50.0, "source": "user-request"}, {"key": "priceSource", "value": "menu", "source": "mctrace"}], "entities": {"麦香鱼": "算价餐品 / item.name", "22.0": "应付金额 / payableYuan"}, "rule": {"id": "budget.max", "pass": true, "deltaYuan": -28.0}, "say": {"friendly": "算价接口这次没返回明细，我就用菜单标价：「麦香鱼」22.0 元（来源：菜单）。", "pro": "价格来源=menu；应付=22.0元；预算规则通过=True。"}, "evidenceRef": "trace://mctrace-20261010-e62db40e/events/9", "isMock": false, "request": {"storeCode": "1960134", "orderType": 1, "beType": 1, "items": [{"code": "1600", "quantity": 1}]}, "response": {"success": true, "priceSource": "menu"}}, {"traceId": "mctrace-20261010-e62db40e", "seq": 10, "kind": "success", "tool": "summary-composer", "title": "整理好结果与证据", "status": "success", "ts": "2026-10-10T17:48:14", "facts": [{"key": "store", "value": "麦当劳黄冈万达餐厅", "sourcePath": "$.data[0].storeName"}, {"key": "推荐单品", "value": "麦香鱼", "source": "menu+nutrition"}, {"key": "总价", "value": 22.0, "source": "menu"}, {"key": "热量", "value": 325, "source": "nutrition-table"}, {"key": "选品规则", "value": "减脂目标：预算与热量两条硬约束都通过后，取热量最低的正餐单品", "source": "mctrace"}, {"key": "备选", "value": "培根蔬萃双层牛堡 442kcal/¥24.5；双层吉士汉堡 429kcal/¥23；板烧鸡腿堡 391kcal/¥23.5", "source": "menu+nutrition"}, {"key": "营养覆盖率", "value": "17.4%（菜单 109 个在售单品中 19 个有热量数据）", "source": "mctrace"}, {"key": "是否下单", "value": false, "source": "mctrace"}], "entities": {"麦当劳黄冈万达餐厅": "最终门店", "麦香鱼": "最终餐品"}, "rule": null, "say": {"friendly": "搞定！「麦当劳黄冈万达餐厅」的减脂晚餐：麦香鱼。22.0 元、325 千卡 —— 减脂目标下热量最低的单品。同规则的备选：培根蔬萃双层牛堡 442kcal/¥24.5；双层吉士汉堡 429kcal/¥23；板烧鸡腿堡 391kcal/¥23.5。没下单，你定～", "pro": "完成报告：门店=麦当劳黄冈万达餐厅；推荐=麦香鱼；价格=22.0元（来源menu）；热量=325kcal；选品规则=减脂目标：预算与热量两条硬约束都通过后，取热量最低的正餐单品；备选=培根蔬萃双层牛堡 442kcal/¥24.5；双层吉士汉堡 429kcal/¥23；板烧鸡腿堡 391kcal/¥23.5；营养覆盖率=17.4%；未创建订单。"}, "evidenceRef": "trace://mctrace-20261010-e62db40e/events/10", "isMock": false, "request": {}, "response": {"result": {"store": "麦当劳黄冈万达餐厅", "item": "麦香鱼", "payableYuan": 22.0, "kcal": 325, "goal": "fatloss", "rule": "减脂目标：预算与热量两条硬约束都通过后，取热量最低的正餐单品", "alternatives": ["培根蔬萃双层牛堡", "双层吉士汉堡", "板烧鸡腿堡"], "nutritionCoveragePct": 17.4, "checksPassed": true, "orderCreated": false, "summary": "麦香鱼 325kcal/¥22（减脂目标下热量最低的单品）"}}}]}, "points-steward": {"traceId": "mctrace-20261010-d40e1240", "generatedAt": "2026-10-10T17:21:41", "isMock": false, "eventCount": 11, "events": [{"traceId": "mctrace-20261010-d40e1240", "seq": 1, "kind": "info", "tool": "user-request", "title": "先把要求记下来", "status": "success", "ts": "2026-10-10T17:21:37", "facts": [{"key": "scope", "value": "个人积分资产", "source": "user-request"}, {"key": "askExpiring", "value": true, "source": "user-request"}], "entities": {}, "rule": null, "say": {"friendly": "好嘞！帮你把麦当劳积分资产盘一遍：余额、临期积分、抽奖机会、沉睡奖券、积分商城最值兑换、可领券，都列清楚，每一笔都能点开看来源。", "pro": "解析用户目标：范围=个人积分资产；关注临期损耗、抽奖权益、沉睡满意度奖券、最值兑换与可领券。"}, "evidenceRef": "trace://mctrace-20261010-d40e1240/events/1", "isMock": false, "request": {"scope": "个人积分资产"}, "response": {"userRequest": "盘点我的麦当劳积分资产"}}, {"traceId": "mctrace-20261010-d40e1240", "seq": 2, "kind": "info", "tool": "query-my-account", "title": "盘点积分余额", "status": "success", "ts": "2026-10-10T17:21:37", "facts": [{"key": "availablePoint", "value": 173.3, "sourcePath": "$.data.availablePoint"}, {"key": "accumulativePoint", "value": 568.0, "sourcePath": "$.data.accumulativePoint"}, {"key": "expiredPoint", "value": 394.7, "sourcePath": "$.data.expiredPoint"}, {"key": "currentMouthExpirePoint", "value": 0.0, "sourcePath": "$.data.currentMouthExpirePoint"}], "entities": {"可用积分 173.3": "余额 / availablePoint"}, "rule": null, "say": {"friendly": "积分余额到手：可用 173.3 分，累计拿过 568.0 分。", "pro": "账户返回：可用=173.3，累计=568.0，历史已过期=394.7，本月将过期=0.0。"}, "evidenceRef": "trace://mctrace-20261010-d40e1240/events/2", "isMock": false, "request": {}, "response": {"success": true}}, {"traceId": "mctrace-20261010-d40e1240", "seq": 3, "kind": "warning", "tool": "mctrace:rule", "title": "发现资产流失", "status": "success", "ts": "2026-10-10T17:21:37", "facts": [{"key": "expiredPoint", "value": 394.7, "sourcePath": "$.data.expiredPoint"}, {"key": "meaning", "value": "历史上已白白过期的积分", "source": "rule"}], "entities": {}, "rule": null, "say": {"friendly": "等等，你历史上已经白白过期了 394.7 积分……这就是需要「资产管家」的理由。", "pro": "历史已过期积分=394.7，构成资产流失，约束未通过。"}, "evidenceRef": "trace://mctrace-20261010-d40e1240/events/3", "isMock": false, "request": {"expiredPoint": 394.7}, "response": {"rule": "points.expired"}}, {"traceId": "mctrace-20261010-d40e1240", "seq": 4, "kind": "info", "tool": "query-lottery-info", "title": "查看抽奖机会", "status": "success", "ts": "2026-10-10T17:21:38", "facts": [{"key": "activityStatusText", "value": "进行中", "sourcePath": "$.data.activityStatusText"}, {"key": "drawPoint", "value": 24.0, "sourcePath": "$.data.drawPoint"}, {"key": "availableTimes", "value": "—", "sourcePath": "$.data.availableTimes"}], "entities": {"抽奖：进行中": "抽奖状态 / activityStatusText"}, "rule": null, "say": {"friendly": "抽奖这边：进行中，单次 24.0 分，还能抽 — 次。", "pro": "抽奖信息：状态=进行中，单次消耗=24.0，剩余次数=—。"}, "evidenceRef": "trace://mctrace-20261010-d40e1240/events/4", "isMock": false, "request": {}, "response": {"success": true}}, {"traceId": "mctrace-20261010-d40e1240", "seq": 5, "kind": "info", "tool": "query-my-prizes", "title": "翻中奖记录", "status": "success", "ts": "2026-10-10T17:21:39", "facts": [{"key": "prizeCount", "value": 4, "sourcePath": "$.data.prizes"}, {"key": "sample", "value": "秋分测试、小暑、春分", "sourcePath": "$.data.prizes[].name"}], "entities": {"秋分测试": "我的奖品 / prize.name", "小暑": "我的奖品 / prize.name", "春分": "我的奖品 / prize.name"}, "rule": null, "say": {"friendly": "中奖记录：共 4 个（秋分测试、小暑、春分）。", "pro": "我的奖品：数量=4，样本=秋分测试、小暑、春分。"}, "evidenceRef": "trace://mctrace-20261010-d40e1240/events/5", "isMock": false, "request": {}, "response": {"success": true, "prizeCount": 4}}, {"traceId": "mctrace-20261010-d40e1240", "seq": 6, "kind": "info", "tool": "order-list", "title": "翻历史订单", "status": "success", "ts": "2026-10-10T17:21:39", "facts": [{"key": "orderCount", "value": 5, "sourcePath": "$.data.list"}, {"key": "sampleOrderId", "value": "1030831120000572715413578467", "sourcePath": "$.data.list[0].orderId"}], "entities": {}, "rule": null, "say": {"friendly": "翻了下历史订单，共 5 笔，拿第一笔去查关联的满意度奖券。", "pro": "订单列表：数量=5；取 1030831120000572715413578467 作为沉睡奖券查询目标。"}, "evidenceRef": "trace://mctrace-20261010-d40e1240/events/6", "isMock": false, "request": {}, "response": {"success": true, "orderCount": 5}}, {"traceId": "mctrace-20261010-d40e1240", "seq": 7, "kind": "info", "tool": "query-survey-coupon", "title": "唤醒沉睡奖券", "status": "error", "ts": "2026-10-10T17:21:40", "facts": [{"key": "sleepingCount", "value": 0, "source": "survey-coupon"}, {"key": "sample", "value": "未发现", "source": "survey-coupon"}], "entities": {}, "rule": null, "say": {"friendly": "遍历首笔订单，未发现未核销的满意度奖券。", "pro": "沉睡奖券查询（orderId=1030831120000572715413578467）：命中 0 张。"}, "evidenceRef": "trace://mctrace-20261010-d40e1240/events/7", "isMock": false, "request": {"orderId": "1030831120000572715413578467"}, "response": {"success": false, "sleepingCount": 0}}, {"traceId": "mctrace-20261010-d40e1240", "seq": 8, "kind": "info", "tool": "mall-points-products", "title": "找积分商城最值", "status": "success", "ts": "2026-10-10T17:21:41", "facts": [{"key": "productCount", "value": 50, "sourcePath": "$.data"}, {"key": "bestValue", "value": "为随心配五大巨星“应援”1积分兑换活动（约 1.0 分）", "sourcePath": "$.data[].point"}], "entities": {"为随心配五大巨星“应援”1积分兑换活动": "商城商品 / spuName"}, "rule": null, "say": {"friendly": "积分商城逛了一圈：50 件可换，最值的一件是「为随心配五大巨星“应援”1积分兑换活动」约 1.0 分。", "pro": "积分商城：数量=50；最值推荐=为随心配五大巨星“应援”1积分兑换活动（1.0 分）。"}, "evidenceRef": "trace://mctrace-20261010-d40e1240/events/8", "isMock": false, "request": {}, "response": {"success": true, "productCount": 50}}, {"traceId": "mctrace-20261010-d40e1240", "seq": 9, "kind": "info", "tool": "available-coupons", "title": "查可领券", "status": "error", "ts": "2026-10-10T17:21:41", "facts": [{"key": "claimableCount", "value": 0, "source": "available-coupons"}, {"key": "sample", "value": "无", "source": "available-coupons"}], "entities": {}, "rule": null, "say": {"friendly": "当前没有可领的新券。", "pro": "可领券：0 张。"}, "evidenceRef": "trace://mctrace-20261010-d40e1240/events/9", "isMock": false, "request": {}, "response": {"success": true, "claimableCount": 0}}, {"traceId": "mctrace-20261010-d40e1240", "seq": 10, "kind": "info", "tool": "campaign-calendar", "title": "查活动日历", "status": "error", "ts": "2026-10-10T17:21:41", "facts": [{"key": "activityCount", "value": 0, "source": "campaign-calendar"}, {"key": "sample", "value": "无", "source": "campaign-calendar"}], "entities": {}, "rule": null, "say": {"friendly": "暂无进行中活动。", "pro": "活动日历：0 个。"}, "evidenceRef": "trace://mctrace-20261010-d40e1240/events/10", "isMock": false, "request": {}, "response": {"success": true, "activityCount": 0}}, {"traceId": "mctrace-20261010-d40e1240", "seq": 11, "kind": "success", "tool": "summary-composer", "title": "整理好结果与证据", "status": "success", "ts": "2026-10-10T17:21:41", "facts": [{"key": "availablePoint", "value": 173.3, "sourcePath": "$.data.availablePoint"}, {"key": "expiredPoint", "value": 394.7, "sourcePath": "$.data.expiredPoint"}, {"key": "expiringThisMonth", "value": 0.0, "sourcePath": "$.data.currentMouthExpirePoint"}, {"key": "sleepingCoupons", "value": 0, "source": "survey-coupon"}, {"key": "bestRedeem", "value": "为随心配五大巨星“应援”1积分兑换活动（约 1.0 分）", "sourcePath": "$.data[].point"}, {"key": "orderCreated", "value": false, "source": "mctrace"}], "entities": {}, "rule": null, "say": {"friendly": "搞定！可用 173.3 分、历史已过期 394.7 分、本月将过期 0.0 分；沉睡奖券 0 张；商城最值换「为随心配五大巨星“应援”1积分兑换活动」约 1.0 分。全部只读盘点，没动你账户～", "pro": "完成报告：可用=173.3；历史过期=394.7；本月过期=0.0；沉睡奖券=0；最值兑换=为随心配五大巨星“应援”1积分兑换活动(1.0分)；可领券=0；活动=0；全程只读。"}, "evidenceRef": "trace://mctrace-20261010-d40e1240/events/11", "isMock": false, "request": {}, "response": {"result": {"availablePoint": 173.3, "expiredPoint": 394.7, "expiringThisMonth": 0.0, "sleepingCoupons": 0, "bestRedeem": "为随心配五大巨星“应援”1积分兑换活动", "bestRedeemPoint": 1.0, "claimableCoupons": 0, "activities": 0, "checksPassed": true, "orderCreated": false, "summary": "可用 173.3 分 · 历史过期 394.7 分 · 本月过期 0.0 分 · 沉睡奖券 0 张"}}}]}, "减脂晚餐": {"traceId": "mctrace-20261010-e56c5461", "generatedAt": "2026-10-10T16:43:33", "isMock": false, "eventCount": 10, "events": [{"traceId": "mctrace-20261010-e56c5461", "seq": 1, "kind": "info", "tool": "user-request", "title": "先把要求记下来", "status": "success", "ts": "2026-10-10T16:43:31", "facts": [{"key": "keyword", "value": "黄冈", "source": "user-request"}, {"key": "budgetYuan", "value": 50, "source": "user-request"}, {"key": "maxKcal", "value": 500, "source": "user-request"}, {"key": "goal", "value": "减脂（低卡）", "source": "user-request", "note": "目标决定选品规则；规则不同会给出完全不同的答案"}], "entities": {}, "rule": null, "say": {"friendly": "好嘞！黄冈市黄冈附近，想点份减脂餐：价格不超过 50 元、热量不超 500 千卡，要低卡。我从找门店开始。", "pro": "解析用户目标：区域=黄冈市黄冈；价格上限=50元；能量上限=500kcal；**目标=减脂**，因此选品规则为「约束内取热量最低的正餐」。"}, "evidenceRef": "trace://mctrace-20261010-e56c5461/events/1", "isMock": false, "request": {"keyword": "黄冈", "budgetYuan": 50, "maxKcal": 500, "goal": "fatloss"}, "response": {"userRequest": "黄冈万达附近减脂晚餐，预算50以内、热量不超500千卡"}}, {"traceId": "mctrace-20261010-e56c5461", "seq": 2, "kind": "info", "tool": "query-nearby-stores", "title": "找到具体门店", "status": "success", "ts": "2026-10-10T16:43:32", "facts": [{"key": "storeName", "value": "麦当劳黄冈万达餐厅", "sourcePath": "$.data[0].storeName"}, {"key": "storeCode", "value": "1960134", "sourcePath": "$.data[0].storeCode"}, {"key": "address", "value": "赤壁二路**号", "sourcePath": "$.data[0].address"}], "entities": {"麦当劳黄冈万达餐厅": "门店名称 / storeName"}, "rule": null, "say": {"friendly": "找到了！先看「麦当劳黄冈万达餐厅」，位置正合适。我就从它的菜单开始查。", "pro": "门店查询返回候选。选用「麦当劳黄冈万达餐厅」（编码 1960134）作为后续菜单查询的目标门店。"}, "evidenceRef": "trace://mctrace-20261010-e56c5461/events/2", "isMock": false, "request": {"beType": 1, "searchType": 2, "city": "黄冈市", "keyword": "黄冈"}, "response": {"success": true, "storeCount": 1}}, {"traceId": "mctrace-20261010-e56c5461", "seq": 3, "kind": "info", "tool": "query-meals", "title": "认真翻了菜单", "status": "success", "ts": "2026-10-10T16:43:32", "facts": [{"key": "itemCount", "value": 111, "sourcePath": "$.data.meals"}, {"key": "sample", "value": "麦辣鸡腿汉堡三件套、培根安格斯厚牛堡、玫瑰红糖糍粑风味派", "sourcePath": "$.data.meals"}], "entities": {"麦辣鸡腿汉堡三件套": "菜单餐品 / item.name", "培根安格斯厚牛堡": "菜单餐品 / item.name", "玫瑰红糖糍粑风味派": "菜单餐品 / item.name", "阳光橙麦炫酷": "菜单餐品 / item.name"}, "rule": null, "say": {"friendly": "菜单里看了不少单品，先记几个带热量的候选：麦辣鸡腿汉堡三件套、培根安格斯厚牛堡、玫瑰红糖糍粑风味派……", "pro": "菜单返回 111 个带价格单品。进入营养与预算校验。"}, "evidenceRef": "trace://mctrace-20261010-e56c5461/events/3", "isMock": false, "request": {"storeCode": "1960134", "orderType": 1, "beType": 1}, "response": {"success": true, "mealCount": 111}}, {"traceId": "mctrace-20261010-e56c5461", "seq": 4, "kind": "info", "tool": "list-nutrition-foods", "title": "核对候选热量", "status": "success", "ts": "2026-10-10T16:43:32", "facts": [{"key": "menuItems", "value": 111, "sourcePath": "$.data.meals"}, {"key": "nutritionMatched", "value": 19, "source": "nutrition-table"}, {"key": "coveragePct", "value": 17.1, "source": "mctrace", "note": "营养表只覆盖部分在售单品；未覆盖者无法判断热量，不参与推荐"}, {"key": "sample", "value": "培根安格斯厚牛堡 707kcal、芝士安格斯厚牛堡 696kcal、培根蔬萃双层牛堡 442kcal", "source": "nutrition-table"}], "entities": {"培根安格斯厚牛堡": "营养餐品 / nutrition", "芝士安格斯厚牛堡": "营养餐品 / nutrition", "培根蔬萃双层牛堡": "营养餐品 / nutrition", "巨无霸": "营养餐品 / nutrition"}, "rule": {"id": "nutrition.coverage", "pass": false, "coveragePct": 17.1}, "say": {"friendly": "核对了候选的热量：培根安格斯厚牛堡 707千卡，芝士安格斯厚牛堡 696千卡，培根蔬萃双层牛堡 442千卡……不过菜单里 111 个单品，营养表只对得上 19 个（17.1%），剩下那些我没法判断热量，不瞎推荐。", "pro": "菜单 111 个在售单品，营养表匹配到 19 个（覆盖率 17.1%），其中 12 个为正餐单品，可用于能量约束校验。覆盖率不足时推荐结果的可选集很小，此事实已显式告知用户。"}, "evidenceRef": "trace://mctrace-20261010-e56c5461/events/4", "isMock": false, "request": {}, "response": {"menuItems": 111, "matched": 19, "coveragePct": 17.1}}, {"traceId": "mctrace-20261010-e56c5461", "seq": 5, "kind": "warning", "tool": "mctrace:rule", "title": "发现约束冲突", "status": "success", "ts": "2026-10-10T16:43:32", "facts": [{"key": "item", "value": "培根安格斯厚牛堡", "source": "menu+nutrition"}, {"key": "kcal", "value": 707, "sourcePath": "$.nutrition"}, {"key": "maxKcal", "value": 500, "source": "user-request"}, {"key": "deltaKcal", "value": 207, "source": "rule"}], "entities": {"培根安格斯厚牛堡": "初始方案餐品"}, "rule": null, "say": {"friendly": "等等……「培根安格斯厚牛堡」约 707 千卡，比 500 的目标多了 207。看来得收敛一点！", "pro": "初始候选「培根安格斯厚牛堡」示例营养 707 kcal，超过用户上限 207 kcal，约束未通过。"}, "evidenceRef": "trace://mctrace-20261010-e56c5461/events/5", "isMock": false, "request": {"item": "培根安格斯厚牛堡", "kcal": 707, "maxKcal": 500}, "response": {"rule": "nutrition.max"}}, {"traceId": "mctrace-20261010-e56c5461", "seq": 6, "kind": "info", "tool": "query-meal-detail", "title": "拆开看它有什么", "status": "success", "ts": "2026-10-10T16:43:33", "facts": [{"key": "item", "value": "麦香鱼", "sourcePath": "$.request.code"}, {"key": "composition", "value": "麦香鱼", "sourcePath": "$.data"}], "entities": {"麦香鱼": "餐品构成 / meal-detail"}, "rule": null, "say": {"friendly": "顺手拆开看了一眼「麦香鱼」：麦香鱼。", "pro": "餐品详情返回构成：['麦香鱼']。"}, "evidenceRef": "trace://mctrace-20261010-e56c5461/events/6", "isMock": false, "request": {"storeCode": "1960134", "orderType": 1, "beType": 1, "code": "1600"}, "response": {"success": true, "parsedParts": 1}}, {"traceId": "mctrace-20261010-e56c5461", "seq": 7, "kind": "info", "tool": "query-store-coupons", "title": "查看门店券", "status": "info", "ts": "2026-10-10T16:43:33", "facts": [{"key": "couponCount", "value": 0, "sourcePath": "$.data"}, {"key": "coupons", "value": "无", "sourcePath": "$.data[].title"}, {"key": "applicableToPick", "value": "否", "source": "match"}], "entities": {}, "rule": null, "say": {"friendly": "这家门店券接口这次没返回可用券 —— 但这不等于你没券，账户券是另一套，接着查。", "pro": "门店券查询返回 0 张；与推荐单品的适用商品匹配结果：不适用。"}, "evidenceRef": "trace://mctrace-20261010-e56c5461/events/7", "isMock": false, "request": {"orderType": 1, "beType": 1, "storeCode": "1960134"}, "response": {"success": false, "couponCount": 0}}, {"traceId": "mctrace-20261010-e56c5461", "seq": 8, "kind": "info", "tool": "available-coupons", "title": "available-coupons", "status": "success", "ts": "2026-10-10T16:43:33", "facts": [{"key": "parsedCoupons", "value": 6, "source": "markdown-parse"}, {"key": "usableCoupons", "value": 3, "source": "markdown-parse"}, {"key": "usableList", "value": "免费脆薯饼、人气麦旋风买一送一、9.9元中杯冰美式", "source": "markdown-parse"}, {"key": "format", "value": "markdown（非 JSON）", "source": "mctrace", "note": "该工具返回 Markdown 文本，通用 JSON 解析器会读不出"}], "entities": {"免费脆薯饼": "可领取优惠券 / coupon", "人气麦旋风买一送一": "可领取优惠券 / coupon", "9.9元中杯冰美式": "可领取优惠券 / coupon"}, "rule": {"id": "coupon.available", "pass": true, "usable": 3}, "say": {"friendly": "账户里还有 3 张能直接领的券：免费脆薯饼、人气麦旋风买一送一、9.9元中杯冰美式。", "pro": "available-coupons 返回 Markdown 文本，解析出 6 条，其中状态为可领取的 3 张。"}, "evidenceRef": "trace://mctrace-20261010-e56c5461/events/8", "isMock": false, "request": {}, "response": {"format": "markdown", "parsed": 6, "usable": 3}}, {"traceId": "mctrace-20261010-e56c5461", "seq": 9, "kind": "warning", "tool": "calculate-price", "title": "核算价格", "status": "degraded", "ts": "2026-10-10T16:43:33", "facts": [{"key": "payableYuan", "value": 22.0, "sourcePath": "$.data.meals"}, {"key": "budgetYuan", "value": 50, "source": "user-request"}, {"key": "priceSource", "value": "menu", "source": "mctrace"}], "entities": {"麦香鱼": "算价餐品 / item.name", "22.0": "应付金额 / payableYuan"}, "rule": {"id": "budget.max", "pass": true, "deltaYuan": -28.0}, "say": {"friendly": "算价接口这次没返回明细，我就用菜单标价：「麦香鱼」22.0 元（来源：菜单）。", "pro": "价格来源=menu；应付=22.0元；预算规则通过=True。"}, "evidenceRef": "trace://mctrace-20261010-e56c5461/events/9", "isMock": false, "request": {"storeCode": "1960134", "orderType": 1, "beType": 1, "items": [{"code": "1600", "quantity": 1}]}, "response": {"success": true, "priceSource": "menu"}}, {"traceId": "mctrace-20261010-e56c5461", "seq": 10, "kind": "success", "tool": "summary-composer", "title": "整理好结果与证据", "status": "success", "ts": "2026-10-10T16:43:33", "facts": [{"key": "store", "value": "麦当劳黄冈万达餐厅", "sourcePath": "$.data[0].storeName"}, {"key": "推荐单品", "value": "麦香鱼", "source": "menu+nutrition"}, {"key": "总价", "value": 22.0, "source": "menu"}, {"key": "热量", "value": 325, "source": "nutrition-table"}, {"key": "选品规则", "value": "减脂目标：预算与热量两条硬约束都通过后，取热量最低的正餐单品", "source": "mctrace"}, {"key": "备选", "value": "培根蔬萃双层牛堡 442kcal/¥24.5；双层吉士汉堡 429kcal/¥23；板烧鸡腿堡 391kcal/¥23.5", "source": "menu+nutrition"}, {"key": "营养覆盖率", "value": "17.1%（菜单 111 个在售单品中 19 个有热量数据）", "source": "mctrace"}, {"key": "是否下单", "value": false, "source": "mctrace"}], "entities": {"麦当劳黄冈万达餐厅": "最终门店", "麦香鱼": "最终餐品"}, "rule": null, "say": {"friendly": "搞定！「麦当劳黄冈万达餐厅」的减脂晚餐：麦香鱼。22.0 元、325 千卡 —— 减脂目标下热量最低的单品。同规则的备选：培根蔬萃双层牛堡 442kcal/¥24.5；双层吉士汉堡 429kcal/¥23；板烧鸡腿堡 391kcal/¥23.5。没下单，你定～", "pro": "完成报告：门店=麦当劳黄冈万达餐厅；推荐=麦香鱼；价格=22.0元（来源menu）；热量=325kcal；选品规则=减脂目标：预算与热量两条硬约束都通过后，取热量最低的正餐单品；备选=培根蔬萃双层牛堡 442kcal/¥24.5；双层吉士汉堡 429kcal/¥23；板烧鸡腿堡 391kcal/¥23.5；营养覆盖率=17.1%；未创建订单。"}, "evidenceRef": "trace://mctrace-20261010-e56c5461/events/10", "isMock": false, "request": {}, "response": {"result": {"store": "麦当劳黄冈万达餐厅", "item": "麦香鱼", "payableYuan": 22.0, "kcal": 325, "goal": "fatloss", "rule": "减脂目标：预算与热量两条硬约束都通过后，取热量最低的正餐单品", "alternatives": ["培根蔬萃双层牛堡", "双层吉士汉堡", "板烧鸡腿堡"], "nutritionCoveragePct": 17.1, "checksPassed": true, "orderCreated": false, "summary": "麦香鱼 325kcal/¥22（减脂目标下热量最低的单品）"}}}]}}, "order": ["jingan-breakfast", "points-steward", "detective-patrol", "detective-jingan", "detective-huanggang", "减脂晚餐"], "labels": {"detective-huanggang": "⑤ 麦探长 · 黄冈万达比价（同价案）", "detective-jingan": "④ 麦探长 · 上海静安寺比价", "detective-patrol": "③ 麦探长 · 北京中关村比价", "jingan-breakfast": "① 静安寺早餐 · 点餐推荐", "points-steward": "② 积分资产盘点", "减脂晚餐": "⑥ 黄冈万达 · 减脂晚餐"}}</script>
+<script id="embedded-tools" type="application/json">{"user-request": {"cn": "用户需求", "internal": true, "desc": "把你的自然语言请求变成这条轨迹的起点"}, "mctrace:rule": {"cn": "规则校验", "internal": true, "desc": "本机规则引擎对预算 / 热量 / 临期积分等约束做硬校验"}, "summary-composer": {"cn": "结果汇总", "internal": true, "desc": "把这条轨迹里的事实汇总成一句结论"}, "query-nearby-stores": {"cn": "附近门店", "desc": "按关键词与城市查找附近门店"}, "query-meals": {"cn": "门店菜单", "desc": "查该门店在售的餐品与价格"}, "list-nutrition-foods": {"cn": "营养成分表", "desc": "查餐品的热量等营养数据"}, "query-store-coupons": {"cn": "门店优惠券", "desc": "查这家门店当前可用的优惠券"}, "calculate-price": {"cn": "价格试算", "desc": "对所选餐品试算应付金额"}, "query-my-account": {"cn": "账户积分", "desc": "查可用积分、累计积分、已过期积分"}, "query-lottery-info": {"cn": "抽奖活动", "desc": "查抽奖活动状态与单次消耗积分"}, "query-my-prizes": {"cn": "中奖记录", "desc": "查历史中奖奖品与核销状态"}, "order-list": {"cn": "历史订单", "desc": "查历史订单列表"}, "query-survey-coupon": {"cn": "满意度奖券", "desc": "查订单关联的满意度调查奖券"}, "mall-points-products": {"cn": "积分商城", "desc": "查积分可兑换的商品"}, "available-coupons": {"cn": "可领取券", "desc": "查当前可以领取的优惠券"}, "campaign-calendar": {"cn": "活动日历", "desc": "查正在进行中的活动日历"}}</script>
+<script>
+(function(global){
+  "use strict";
+
+  var STATUS_TXT = {success:"成功", warning:"提醒", degraded:"降级", error:"失败"};
+  var RESULT_LABELS = {
+    availablePoint:"可用积分", accumulativePoint:"累计积分", expiredPoint:"历史已过期",
+    currentMouthExpirePoint:"本月将过期", expiringThisMonth:"本月将过期",
+    sleepingCoupons:"沉睡奖券", bestRedeem:"最值兑换", bestRedeemPoint:"最值兑换(分)",
+    claimableCoupons:"可领券", activities:"进行中活动",
+    store:"门店", item:"推荐餐品", payableYuan:"应付金额", kcal:"热量",
+    checksPassed:"约束校验", orderCreated:"是否下单",
+    patrolStores:"巡查门店", target:"目标餐品", inStockStores:"在售门店",
+    verdict:"结论", lowest:"最低价", highest:"最高价",
+    deltaYuan:"差价", coveragePct:"可得性覆盖率",
+    primaryForm:"比对形态", patrolRange:"实际覆盖"
+  };
+
+  function el(tag, cls){ var e=document.createElement(tag); if(cls) e.className=cls; return e; }
+  function tx(tag, cls, t){ var e=el(tag, cls); e.textContent = (t==null? "" : String(t)); return e; }
+  function btn(cls, t){ var b=el("button", cls); b.type="button"; b.textContent=t==null?"":String(t); return b; }
+  function fmt(v){ if(v===true) return "是"; if(v===false) return "否"; if(v===null||v===undefined) return "—"; return String(v); }
+
+  function UI(opts){
+    opts = opts || {};
+    this.tools = opts.tools || {};
+    this.ids = opts.ids || {};
+    this.narr = "friendly";
+    this.trace = null;
+    this.shown = 0;
+    if (opts.autoInitLens !== false) this._initLens();
+  }
+
+  UI.prototype._q = function(id){ return document.getElementById(id); };
+  UI.prototype.meta = function(tool){ return this.tools[tool] || {cn: tool, desc: "真实 MCP 工具调用"}; };
+  UI.prototype.hasEvidence = function(ev){ return !!(ev.request || ev.response); };
+
+  UI.prototype._initLens = function(){
+    var self=this;
+    var ov = this._q("overlay"), closeBtn = this._q("lensClose");
+    if(ov) ov.onclick = function(){ self.closeLens(); };
+    if(closeBtn) closeBtn.onclick = function(){ self.closeLens(); };
+    document.addEventListener("keydown", function(e){ if(e.key === "Escape") self.closeLens(); });
+  };
+  UI.prototype.openLens = function(){
+    var l=this._q("lens"), o=this._q("overlay");
+    if(l) l.classList.add("open");
+    if(o) o.classList.add("show");
+  };
+  UI.prototype.closeLens = function(){
+    var l=this._q("lens"), o=this._q("overlay");
+    if(l) l.classList.remove("open");
+    if(o) o.classList.remove("show");
+  };
+
+  UI.prototype._lensBody = function(title){
+    document.getElementById("lensTitle").textContent = title;
+    var b = document.getElementById("lensBody");
+    b.innerHTML = "";
+    return b;
+  };
+  UI.prototype._lensLine = function(b, label, value){
+    var row = el("div","lv");
+    row.appendChild(tx("div","l", label));
+    row.appendChild(tx("div","v", value));
+    b.appendChild(row);
+  };
+  UI.prototype._hint = function(b, t){ b.appendChild(tx("div","hint", t)); };
+  UI.prototype._json = function(b, obj){
+    var pre = el("pre");
+    pre.textContent = JSON.stringify(obj, null, 2);
+    b.appendChild(pre);
+  };
+
+  UI.prototype.openLensForFact = function(f){
+    var b = this._lensBody("事实来源：" + f.key);
+    this._lensLine(b, "取值", fmt(f.value));
+    this._lensLine(b, f.sourcePath ? "取自返回结果的字段" : "来源", f.sourcePath || f.source || "—");
+    var ev = this.findEventWithFact(f);
+    if(ev){
+      this._hint(b, "这条事实来自下面这次真实调用：");
+      this._lensLine(b, "工具", this.meta(ev.tool).cn + "（" + ev.tool + "）");
+      this._lensLine(b, "状态", STATUS_TXT[ev.status] || ev.status);
+      this._json(b, {request: ev.request, response: ev.response});
+    }
+    this.openLens();
+  };
+  UI.prototype.openLensForTool = function(ev){
+    var m = this.meta(ev.tool), self = this;
+    var b = this._lensBody("调用证据：" + m.cn);
+    this._lensLine(b, "这个工具做什么", m.desc || "—");
+    this._lensLine(b, "工具名", ev.tool);
+    this._lensLine(b, "状态", STATUS_TXT[ev.status] || ev.status);
+    this._lensLine(b, "证据编号", ev.evidenceRef || "—");
+    this._hint(b, "下面是这次调用发给麦当劳 MCP 的原始请求与原始返回：");
+    this._json(b, {request: ev.request, response: ev.response});
+    if(ev.facts && ev.facts.length){
+      this._hint(b, "本次抽取到的事实：");
+      ev.facts.forEach(function(f){
+        var s = f.sourcePath || f.source || "";
+        self._lensLine(b, f.key, fmt(f.value) + (s ? "  ← " + s : ""));
+      });
+    }
+    this.openLens();
+  };
+  UI.prototype.openLensInternal = function(ev){
+    var m = this.meta(ev.tool), self = this;
+    var b = this._lensBody("本机步骤：" + m.cn);
+    this._lensLine(b, "这一步做什么", m.desc || "—");
+    this._lensLine(b, "状态", STATUS_TXT[ev.status] || ev.status);
+    this._hint(b, "这一步由 McTrace 本机引擎生成，不对应任何 MCP 调用，因此没有 request/response。它基于上一步的真实返回做处理：");
+    if(ev.facts && ev.facts.length){
+      ev.facts.forEach(function(f){
+        if(f.sourcePath || f.source){ self._lensLine(b, f.key, fmt(f.value) + "  ← " + (f.sourcePath||f.source)); }
+      });
+    }
+    this.openLens();
+  };
+  UI.prototype.openLensForEntity = function(ev, name, role){
+    var m = this.meta(ev.tool), self = this;
+    var b = this._lensBody("实体：" + name);
+    this._lensLine(b, "角色", role || "—");
+    if(this.hasEvidence(ev)){
+      this._lensLine(b, "来自工具", m.cn + "（" + ev.tool + "）");
+      this._lensLine(b, "证据编号", ev.evidenceRef || "—");
+      this._hint(b, "原始请求与返回：");
+      this._json(b, {request: ev.request, response: ev.response});
+    } else {
+      this._hint(b, "该实体由本机步骤归纳，不对应 MCP 调用。");
+      if(ev.facts && ev.facts.length){
+        ev.facts.forEach(function(f){
+          if(f.sourcePath || f.source){ self._lensLine(b, f.key, fmt(f.value) + "  ← " + (f.sourcePath||f.source)); }
+        });
+      }
+    }
+    this.openLens();
+  };
+  UI.prototype.findEventWithFact = function(f){
+    if(!this.trace || !this.trace.events) return null;
+    for(var i=0;i<this.trace.events.length;i++){
+      var e = this.trace.events[i];
+      if(e.facts && e.facts.some(function(x){ return x.key===f.key && String(x.value)===String(f.value); })) return e;
+    }
+    return this.trace.events[this.trace.events.length-1];
+  };
+
+  UI.prototype._factRow = function(f){
+    var self=this, row = el("div","fact");
+    row.appendChild(tx("span","k", f.key));
+    row.appendChild(tx("span","v", fmt(f.value)));
+    var src = f.sourcePath || f.source;
+    if(src){
+      var s = btn("srcbtn", src);
+      s.title = "这个数值取自返回结果的该字段，点击查看原始调用";
+      s.onclick = function(){ self.openLensForFact(f); };
+      row.appendChild(s);
+    }
+    return row;
+  };
+
+  UI.prototype._toolBtn = function(ev){
+    var self=this, m = this.meta(ev.tool);
+    var internal = !!m.internal || !this.hasEvidence(ev);
+    var b = el("button","toolbtn"+(internal?" internal":""));
+    b.type = "button";
+    b.appendChild(el("span","ticon"));
+    b.appendChild(tx("span","tname", m.cn));
+    if(ev.tool) b.appendChild(tx("code","tcode", ev.tool));
+    b.appendChild(tx("span","tlook", internal ? "本机步骤" : "查看原始调用"));
+    b.title = (m.desc||"") + (internal ? "（本机处理步骤，不产生 MCP 调用）" : " · 点击查看这次调用的原始请求与返回");
+    b.onclick = function(){ internal ? self.openLensInternal(ev) : self.openLensForTool(ev); };
+    return b;
+  };
+
+  UI.prototype._narrative = function(ev){
+    var n = el("div","narr"+(this.narr==="pro"?" pro":""));
+    n.appendChild(tx("span","who", this.narr==="friendly" ? "会边做边说的助手" : "业务结果视角"));
+    n.appendChild(document.createTextNode((ev.say && ev.say[this.narr]) || ""));
+    return n;
+  };
+
+  UI.prototype.renderEvent = function(ev){
+    var self=this, card = el("div","event k-"+(ev.kind||"info"));
+
+    var head = el("div","ehead");
+    head.appendChild(tx("span","seq "+(ev.kind||"info"), ev.seq));
+    head.appendChild(tx("h4","etitle", ev.title || this.meta(ev.tool).cn));
+    head.appendChild(tx("span","badge "+ev.status, STATUS_TXT[ev.status]||ev.status));
+    head.appendChild(tx("span","ts", ev.ts));
+    card.appendChild(head);
+
+    var tr = el("div","toolrow");
+    tr.appendChild(this._toolBtn(ev));
+    card.appendChild(tr);
+
+    card.appendChild(this._narrative(ev));
+
+    if(ev.facts && ev.facts.length){
+      var facts = el("div","facts");
+      ev.facts.forEach(function(f){ facts.appendChild(self._factRow(f)); });
+      card.appendChild(facts);
+    }
+    if(ev.rule){
+      var r = el("div","rule "+(ev.rule.pass?"pass":"fail"));
+      r.appendChild(tx("span","id", ev.rule.id));
+      var t = ev.rule.pass ? "通过" : "未通过";
+      if(ev.rule.deltaKcal!=null) t += "（Δ "+ev.rule.deltaKcal+" kcal）";
+      if(ev.rule.deltaYuan!=null) t += "（Δ "+ev.rule.deltaYuan+" 元）";
+      r.appendChild(document.createTextNode(t));
+      card.appendChild(r);
+    }
+    if(ev.entities && Object.keys(ev.entities).length){
+      var ents = el("div","ents");
+      Object.keys(ev.entities).forEach(function(name){
+        var e = el("span","ent");
+        e.appendChild(document.createTextNode(name));
+        e.appendChild(tx("span","role", ev.entities[name]));
+        e.title = "点击查看该实体的原始调用证据";
+        e.onclick = function(){ self.openLensForEntity(ev, name, ev.entities[name]); };
+        ents.appendChild(e);
+      });
+      card.appendChild(ents);
+    }
+    card._ev = ev;
+    return card;
+  };
+
+  UI.prototype.setNarr = function(mode){
+    this.narr = mode;
+    var tl = this._q(this.ids.timeline);
+    if(!tl) return;
+    var self = this;
+    [].forEach.call(tl.children, function(card){
+      if(!card._ev) return;
+      var old = card.querySelector(".narr");
+      if(old) card.replaceChild(self._narrative(card._ev), old);
+    });
+  };
+
+  UI.prototype.loadTrace = function(trace){
+    this.trace = trace;
+    this._seenSeq = {};
+    var tl = this._q(this.ids.timeline);
+    if(tl) tl.innerHTML = "";
+    var res = this._q(this.ids.result);
+    if(res) res.classList.remove("show");
+    if(!tl) return 0;
+    if(!trace || !trace.events || !trace.events.length){
+      var empty = el("div","empty");
+      empty.appendChild(tx("div","", (this.ids.emptyText || "没有可回放的事件。")));
+      tl.appendChild(empty);
+      this.shown = 0;
+      return 0;
+    }
+    var self = this;
+    trace.events.forEach(function(ev){
+      self._seenSeq[String(ev.seq)] = 1;
+      tl.appendChild(self.renderEvent(ev));
+    });
+    this.shown = 0;
+    return trace.events.length;
+  };
+
+  /* 实时模式：只把「新到」的事件追加进来（按 seq 去重），已有节点不动。
+     用于 mctrace_start 的轮询场景 —— 事件是后台跑出来的，界面边跑边长。 */
+  UI.prototype.appendEvents = function(trace){
+    if(!trace) return 0;
+    var tl = this._q(this.ids.timeline);
+    if(!tl) return 0;
+    if(!this.trace || !this._seenSeq){
+      // 第一次：先把舞台清干净，但**不**走 loadTrace —— 它留给一次性全量模式
+      this._seenSeq = {};
+      tl.innerHTML = "";
+      var r = this._q(this.ids.result);
+      if(r) r.classList.remove("show");
+    }
+    this.trace = trace;
+    var self = this, added = 0;
+    (trace.events || []).forEach(function(ev){
+      var key = String(ev.seq);
+      if(self._seenSeq[key]) return;
+      self._seenSeq[key] = 1;
+      var node = self.renderEvent(ev);
+      if(node && node.classList) node.classList.add("show");
+      tl.appendChild(node);
+      added++;
+    });
+    if(added){
+      this.shown = tl.children.length;
+      this._updateBar();
+      this.maybeResult();
+      if(typeof this.renderStat === "function") this.renderStat();
+    }
+    return added;
+  };
+
+  UI.prototype.revealAll = function(){
+    var tl = this._q(this.ids.timeline);
+    if(!tl) return;
+    for(var i=0;i<tl.children.length;i++){ if(tl.children[i].classList) tl.children[i].classList.add("show"); }
+    this.shown = tl.children.length;
+    this._updateBar();
+    this.maybeResult();
+  };
+  UI.prototype.reset = function(){
+    var tl = this._q(this.ids.timeline);
+    if(tl){ for(var i=0;i<tl.children.length;i++){ tl.children[i].classList.remove("show"); } }
+    var res = this._q(this.ids.result);
+    if(res) res.classList.remove("show");
+    this.shown = 0;
+    this._updateBar();
+  };
+  UI.prototype.showNext = function(){
+    var tl = this._q(this.ids.timeline);
+    if(!tl) return false;
+    if(this.shown >= tl.children.length) return false;
+    var c = tl.children[this.shown];
+    if(c && c.classList) c.classList.add("show");
+    this.shown++;
+    this._updateBar();
+    if(this.shown >= tl.children.length) this.maybeResult();
+    return true;
+  };
+  UI.prototype.done = function(){
+    var tl = this._q(this.ids.timeline);
+    return tl ? (this.shown >= tl.children.length) : true;
+  };
+  UI.prototype._updateBar = function(){
+    var bar = this._q(this.ids.bar), tl = this._q(this.ids.timeline);
+    if(bar && tl) bar.style.width = (tl.children.length ? (this.shown/tl.children.length*100) : 0) + "%";
+  };
+
+  UI.prototype.maybeResult = function(){
+    var grid = this._q(this.ids.resultGrid), res = this._q(this.ids.result);
+    if(!grid || !res || !this.trace) return;
+    var found = (this.trace.events||[]).filter(function(e){ return e.response && e.response.result; })[0];
+    if(found) this.renderResult(found.response.result, found.facts);
+  };
+
+  UI.prototype._cell = function(label, val, cls){
+    var c = el("div","rcell "+(cls||""));
+    c.appendChild(tx("div","l", label));
+    c.appendChild(tx("div","n", fmt(val)));
+    return c;
+  };
+  UI.prototype.renderResult = function(r, facts){
+    var self=this, grid = this._q(this.ids.resultGrid), res = this._q(this.ids.result), noteEl = this._q(this.ids.resultNote);
+    if(!grid) return;
+    grid.innerHTML = "";
+    var isOrder = (r.store || r.item || r.payableYuan!=null || r.kcal!=null);
+    if(isOrder){
+      if(r.store) grid.appendChild(this._cell("门店", r.store));
+      if(r.item) grid.appendChild(this._cell("推荐餐品", r.item));
+      if(r.payableYuan!=null) grid.appendChild(this._cell("应付金额", typeof r.payableYuan==="number" ? "¥"+r.payableYuan : r.payableYuan));
+      if(r.kcal!=null) grid.appendChild(this._cell("热量", r.kcal+" kcal"));
+      grid.appendChild(this._cell("约束校验", r.checksPassed?"全部通过":"未通过", r.checksPassed?"ok":"no"));
+      grid.appendChild(this._cell("是否下单", r.orderCreated?"已下单":"未下单", r.orderCreated?"":"no"));
+    } else {
+      Object.keys(r).forEach(function(k){
+        if(r[k]===null || r[k]===undefined) return;
+        if(k==="summary"||k==="orderCreated"||k==="checksPassed") return;
+        var cls = "";
+        if((k==="expiredPoint"||k==="expiringThisMonth") && r[k]) cls="no";
+        if((k==="sleepingCoupons"||k==="claimableCoupons"||k==="activities") && r[k]) cls="ok";
+        grid.appendChild(self._cell(RESULT_LABELS[k]||k, r[k], cls));
+      });
+      grid.appendChild(this._cell("是否写操作", r.orderCreated?"已下单":"无（只读）", r.orderCreated?"no":"ok"));
+    }
+    var note = "";
+    if(facts){
+      var ps = facts.filter(function(f){ return f.key==="priceSource"; })[0];
+      if(ps) note += "价格来源：" + ps.value + "（诚实原则：仅叙述真实返回的数据）。 ";
+    }
+    if(r.summary) note += r.summary + "。";
+    note += "全程只读，未调用任何下单/抽奖写操作。";
+    if(noteEl) noteEl.textContent = note;
+    res.classList.add("show");
+  };
+
+  UI.prototype.renderStat = function(){
+    var node = this._q(this.ids.stat);
+    if(!node || !this.trace) return;
+    var tools = {}, warns=0, errs=0;
+    (this.trace.events||[]).forEach(function(e){
+      tools[e.tool]=(tools[e.tool]||0)+1;
+      if(e.kind==="warning") warns++;
+      if(e.kind==="error") errs++;
+    });
+    node.innerHTML = "";
+    var parts = [["事件", (this.trace.events||[]).length], ["工具种类", Object.keys(tools).length],
+                 ["提醒", warns], ["失败", errs], ["数据", this.trace.isMock ? "模拟" : "真实"]];
+    parts.forEach(function(p){
+      var s = el("span");
+      s.appendChild(document.createTextNode(p[0] + " "));
+      s.appendChild(tx("b","", p[1]));
+      node.appendChild(s);
+    });
+  };
+
+  UI.prototype.headline = function(){
+    var evs = (this.trace && this.trace.events) || [];
+    var last = evs[evs.length-1];
+    return (last && last.say && last.say.friendly) || "";
+  };
+
+  global.McTraceUI = UI;
+  global.McTraceUI.TOOL_META_FALLBACK = {};
+})(window);
+</script>
+<script>
+(function(){
+  "use strict";
+  var EMBED = JSON.parse(document.getElementById("embedded-traces").textContent);
+  var TOOLS = JSON.parse(document.getElementById("embedded-tools").textContent);
+  var SCENARIOS = EMBED.scenarios || {"默认": EMBED};
+  var SCN_ORDER = EMBED.order || Object.keys(SCENARIOS);
+  var SCN_LABELS = EMBED.labels || {};
+
+  var ui = new McTraceUI({
+    tools: TOOLS,
+    ids: {timeline:"timeline", result:"result", resultGrid:"resultGrid", resultNote:"resultNote",
+          stat:"stat", bar:"bar"},
+    emptyText: "没有可回放的事件。用右上角「载入…」选择一个 trace.json。"
+  });
+
+  var timer = null, playing = false;
+  var timeline = document.getElementById("timeline");
+
+  function currentKey(){ return document.getElementById("scn").value; }
+  function currentTrace(){ return SCENARIOS[currentKey()]; }
+
+  function paintTrace(t){
+    document.getElementById("tid").textContent = t.traceId || "trace";
+    var mc = document.getElementById("mockchip");
+    mc.textContent = t.isMock ? "模拟数据" : "真实数据";
+    mc.className = "chip " + (t.isMock ? "mock" : "real");
+    ui.loadTrace(t);
+    ui.renderStat();
+  }
+
+  function play(){ if(playing) return; if(ui.done()) ui.reset(); playing=true;
+    document.getElementById("play").textContent = "⏸ 暂停";
+    var sp = parseInt(document.getElementById("speed").value, 10);
+    timer = setInterval(function(){ if(!ui.showNext()) stop(); }, sp); }
+  function stop(){ playing=false; clearInterval(timer); timer=null; document.getElementById("play").textContent="▶ 播放"; }
+
+  document.getElementById("play").onclick = function(){ playing ? stop() : play(); };
+  document.getElementById("step").onclick = function(){ if(playing) stop(); ui.showNext(); };
+  document.getElementById("replay").onclick = function(){ ui.reset(); play(); };
+  document.getElementById("speed").onchange = function(){ if(playing){ stop(); play(); } };
+  document.getElementById("narrseg").onclick = function(e){
+    var b = e.target.closest("button"); if(!b) return;
+    ui.setNarr(b.dataset.n);
+    [].forEach.call(this.children, function(x){ x.classList.toggle("on", x===b); });
+  };
+  var scn = document.getElementById("scn");
+  SCN_ORDER.forEach(function(k){
+    if(!(k in SCENARIOS)) return;
+    var o = document.createElement("option"); o.value = k; o.textContent = (SCN_LABELS[k] || k);
+    scn.appendChild(o);
+  });
+  scn.onchange = function(){ stop(); paintTrace(currentTrace()); };
+  document.getElementById("file").onchange = function(e){
+    var f = e.target.files[0]; if(!f) return;
+    var rd = new FileReader();
+    rd.onload = function(){
+      try{
+        var t = JSON.parse(rd.result);
+        SCENARIOS["__loaded__"] = t;
+        var exists = [].some.call(scn.options, function(o){ return o.value === "__loaded__"; });
+        if(!exists){
+          var o2 = document.createElement("option"); o2.value="__loaded__"; o2.textContent="载入的 trace"; scn.appendChild(o2);
+        }
+        scn.value = "__loaded__"; stop(); paintTrace(t);
+      }catch(err){ alert("JSON 解析失败：" + err.message); }
+    };
+    rd.readAsText(f);
+  };
+
+  paintTrace(currentTrace());
+})();
+</script>
+</body>
+</html>
