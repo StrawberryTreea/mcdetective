@@ -488,7 +488,9 @@ PAGE = f"""<!DOCTYPE html>
 
 <footer>
   麦探长 · 麦当劳程序员创意开发大赛参赛作品 · 独立开发，非麦当劳官方产品<br/>
-  证据链引擎：McTrace（事实是一等公民，拟人化 ≠ 编造）· 餐品信息、价格及供应状态以麦当劳官方渠道实时结果为准
+  证据链引擎：McTrace（事实是一等公民，拟人化 ≠ 编造）· 餐品信息、价格及供应状态以麦当劳官方渠道实时结果为准<br/>
+  <a href="https://github.com/StrawberryTreea/mcdetective" style="color:#185FA5">GitHub 仓库 · 源码与案卷全公开</a> ·
+  <span style="color:#DA291C;font-weight:700">这场比赛按 Star 排名——探长称职的话，上去点个 Star</span>
 </footer>
 
 </div>

@@ -1,7 +1,8 @@
 # McTrace · 麦搭子 —— 把它怎么给你挑的，全程摊开给你看
 
 <p align="center"><img src="assets/mcdetective-badge.png" width="140" alt="麦探长警徽"/></p>
-<p align="center"><b>麦探长</b>（本仓库门面场景）· 麦当劳物价侦探 —— 跑遍方圆几公里的门店，把「哪家便宜、哪家有货」查个底掉，每条线索都可戳开核验。打开 <code>apps/detective/detective.html</code> 即可看他的办案现场。</p>
+<p align="center"><b>麦探长</b>（本仓库门面场景）· 麦当劳物价侦探 —— 跑遍方圆几公里的门店，把「哪家便宜、哪家有货」查个底掉，每条线索都可戳开核验。</p>
+<p align="center"><b>👉 在线试用（无需安装）：<a href="https://mcdetective.app.workbuddy.host/">https://mcdetective.app.workbuddy.host/</a></b>　|　仓库：<a href="https://github.com/StrawberryTreea/mcdetective">github.com/StrawberryTreea/mcdetective</a>（觉得探长称职，点个 Star ⭐）</p>
 
 > 麦搭子，是你的 AI 点单搭子：你吩咐一句，它不闷头扔结果，而是把「怎么给你挑的」当场演出来——边做边说、会亮红灯、还会老实认怂。
 > 点单也好、盘积分也好，每一步都锚在真实麦当劳 MCP 调用上，点得开、看得见原始数据：过程全摊开，能随时戳、能挑刺。
