@@ -264,9 +264,6 @@ body{background:#F6F2EA;color:#2C2C2A;font:14px/1.7 -apple-system,"PingFang SC",
 .top .logo{display:flex;align-items:center;gap:8px}
 .top h1{font-size:19px;font-weight:800;letter-spacing:.5px}
 .top h1 small{font-size:12px;font-weight:600;color:#8a7f68;margin-left:6px}
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
-.chip{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid #E5DCC9;color:#6b6350;background:#FAF7EF}
-.chip.real{background:#DA291C;border-color:#DA291C;color:#fff}
 .card{background:#fff;border:1.5px solid #E5DCC9;border-radius:16px;padding:18px 20px;margin-top:14px;box-shadow:0 2px 10px rgba(120,100,60,.05)}
 .card h2{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .card h2 .no{width:22px;height:22px;border-radius:7px;background:#DA291C;color:#fff;font-size:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
@@ -451,11 +448,6 @@ PAGE = f"""<!DOCTYPE html>
   <div class="logo">
     {BADGE_IMG or BADGE}
     <h1>麦探长<small>麦当劳物价侦探</small></h1>
-  </div>
-  <div class="chips">
-    <span class="chip real">真实数据</span>
-    <span class="chip">全程只读</span>
-    <span class="chip">{len(cases)} 册归档</span>
   </div>
 </header>
 
