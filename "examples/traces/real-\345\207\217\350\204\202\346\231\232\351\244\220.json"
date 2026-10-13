@@ -1,0 +1,526 @@
+{
+  "traceId": "mctrace-20261010-e56c5461",
+  "generatedAt": "2026-10-10T16:43:33",
+  "isMock": false,
+  "eventCount": 10,
+  "events": [
+    {
+      "traceId": "mctrace-20261010-e56c5461",
+      "seq": 1,
+      "kind": "info",
+      "tool": "user-request",
+      "title": "先把要求记下来",
+      "status": "success",
+      "ts": "2026-10-10T16:43:31",
+      "facts": [
+        {
+          "key": "keyword",
+          "value": "黄冈",
+          "source": "user-request"
+        },
+        {
+          "key": "budgetYuan",
+          "value": 50,
+          "source": "user-request"
+        },
+        {
+          "key": "maxKcal",
+          "value": 500,
+          "source": "user-request"
+        },
+        {
+          "key": "goal",
+          "value": "减脂（低卡）",
+          "source": "user-request",
+          "note": "目标决定选品规则；规则不同会给出完全不同的答案"
+        }
+      ],
+      "entities": {},
+      "rule": null,
+      "say": {
+        "friendly": "好嘞！黄冈市黄冈附近，想点份减脂餐：价格不超过 50 元、热量不超 500 千卡，要低卡。我从找门店开始。",
+        "pro": "解析用户目标：区域=黄冈市黄冈；价格上限=50元；能量上限=500kcal；**目标=减脂**，因此选品规则为「约束内取热量最低的正餐」。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-e56c5461/events/1",
+      "isMock": false,
+      "request": {
+        "keyword": "黄冈",
+        "budgetYuan": 50,
+        "maxKcal": 500,
+        "goal": "fatloss"
+      },
+      "response": {
+        "userRequest": "黄冈万达附近减脂晚餐，预算50以内、热量不超500千卡"
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-e56c5461",
+      "seq": 2,
+      "kind": "info",
+      "tool": "query-nearby-stores",
+      "title": "找到具体门店",
+      "status": "success",
+      "ts": "2026-10-10T16:43:32",
+      "facts": [
+        {
+          "key": "storeName",
+          "value": "麦当劳黄冈万达餐厅",
+          "sourcePath": "$.data[0].storeName"
+        },
+        {
+          "key": "storeCode",
+          "value": "1960134",
+          "sourcePath": "$.data[0].storeCode"
+        },
+        {
+          "key": "address",
+          "value": "赤壁二路**号",
+          "sourcePath": "$.data[0].address"
+        }
+      ],
+      "entities": {
+        "麦当劳黄冈万达餐厅": "门店名称 / storeName"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "找到了！先看「麦当劳黄冈万达餐厅」，位置正合适。我就从它的菜单开始查。",
+        "pro": "门店查询返回候选。选用「麦当劳黄冈万达餐厅」（编码 1960134）作为后续菜单查询的目标门店。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-e56c5461/events/2",
+      "isMock": false,
+      "request": {
+        "beType": 1,
+        "searchType": 2,
+        "city": "黄冈市",
+        "keyword": "黄冈"
+      },
+      "response": {
+        "success": true,
+        "storeCount": 1
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-e56c5461",
+      "seq": 3,
+      "kind": "info",
+      "tool": "query-meals",
+      "title": "认真翻了菜单",
+      "status": "success",
+      "ts": "2026-10-10T16:43:32",
+      "facts": [
+        {
+          "key": "itemCount",
+          "value": 111,
+          "sourcePath": "$.data.meals"
+        },
+        {
+          "key": "sample",
+          "value": "麦辣鸡腿汉堡三件套、培根安格斯厚牛堡、玫瑰红糖糍粑风味派",
+          "sourcePath": "$.data.meals"
+        }
+      ],
+      "entities": {
+        "麦辣鸡腿汉堡三件套": "菜单餐品 / item.name",
+        "培根安格斯厚牛堡": "菜单餐品 / item.name",
+        "玫瑰红糖糍粑风味派": "菜单餐品 / item.name",
+        "阳光橙麦炫酷": "菜单餐品 / item.name"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "菜单里看了不少单品，先记几个带热量的候选：麦辣鸡腿汉堡三件套、培根安格斯厚牛堡、玫瑰红糖糍粑风味派……",
+        "pro": "菜单返回 111 个带价格单品。进入营养与预算校验。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-e56c5461/events/3",
+      "isMock": false,
+      "request": {
+        "storeCode": "1960134",
+        "orderType": 1,
+        "beType": 1
+      },
+      "response": {
+        "success": true,
+        "mealCount": 111
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-e56c5461",
+      "seq": 4,
+      "kind": "info",
+      "tool": "list-nutrition-foods",
+      "title": "核对候选热量",
+      "status": "success",
+      "ts": "2026-10-10T16:43:32",
+      "facts": [
+        {
+          "key": "menuItems",
+          "value": 111,
+          "sourcePath": "$.data.meals"
+        },
+        {
+          "key": "nutritionMatched",
+          "value": 19,
+          "source": "nutrition-table"
+        },
+        {
+          "key": "coveragePct",
+          "value": 17.1,
+          "source": "mctrace",
+          "note": "营养表只覆盖部分在售单品；未覆盖者无法判断热量，不参与推荐"
+        },
+        {
+          "key": "sample",
+          "value": "培根安格斯厚牛堡 707kcal、芝士安格斯厚牛堡 696kcal、培根蔬萃双层牛堡 442kcal",
+          "source": "nutrition-table"
+        }
+      ],
+      "entities": {
+        "培根安格斯厚牛堡": "营养餐品 / nutrition",
+        "芝士安格斯厚牛堡": "营养餐品 / nutrition",
+        "培根蔬萃双层牛堡": "营养餐品 / nutrition",
+        "巨无霸": "营养餐品 / nutrition"
+      },
+      "rule": {
+        "id": "nutrition.coverage",
+        "pass": false,
+        "coveragePct": 17.1
+      },
+      "say": {
+        "friendly": "核对了候选的热量：培根安格斯厚牛堡 707千卡，芝士安格斯厚牛堡 696千卡，培根蔬萃双层牛堡 442千卡……不过菜单里 111 个单品，营养表只对得上 19 个（17.1%），剩下那些我没法判断热量，不瞎推荐。",
+        "pro": "菜单 111 个在售单品，营养表匹配到 19 个（覆盖率 17.1%），其中 12 个为正餐单品，可用于能量约束校验。覆盖率不足时推荐结果的可选集很小，此事实已显式告知用户。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-e56c5461/events/4",
+      "isMock": false,
+      "request": {},
+      "response": {
+        "menuItems": 111,
+        "matched": 19,
+        "coveragePct": 17.1
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-e56c5461",
+      "seq": 5,
+      "kind": "warning",
+      "tool": "mctrace:rule",
+      "title": "发现约束冲突",
+      "status": "success",
+      "ts": "2026-10-10T16:43:32",
+      "facts": [
+        {
+          "key": "item",
+          "value": "培根安格斯厚牛堡",
+          "source": "menu+nutrition"
+        },
+        {
+          "key": "kcal",
+          "value": 707,
+          "sourcePath": "$.nutrition"
+        },
+        {
+          "key": "maxKcal",
+          "value": 500,
+          "source": "user-request"
+        },
+        {
+          "key": "deltaKcal",
+          "value": 207,
+          "source": "rule"
+        }
+      ],
+      "entities": {
+        "培根安格斯厚牛堡": "初始方案餐品"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "等等……「培根安格斯厚牛堡」约 707 千卡，比 500 的目标多了 207。看来得收敛一点！",
+        "pro": "初始候选「培根安格斯厚牛堡」示例营养 707 kcal，超过用户上限 207 kcal，约束未通过。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-e56c5461/events/5",
+      "isMock": false,
+      "request": {
+        "item": "培根安格斯厚牛堡",
+        "kcal": 707,
+        "maxKcal": 500
+      },
+      "response": {
+        "rule": "nutrition.max"
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-e56c5461",
+      "seq": 6,
+      "kind": "info",
+      "tool": "query-meal-detail",
+      "title": "拆开看它有什么",
+      "status": "success",
+      "ts": "2026-10-10T16:43:33",
+      "facts": [
+        {
+          "key": "item",
+          "value": "麦香鱼",
+          "sourcePath": "$.request.code"
+        },
+        {
+          "key": "composition",
+          "value": "麦香鱼",
+          "sourcePath": "$.data"
+        }
+      ],
+      "entities": {
+        "麦香鱼": "餐品构成 / meal-detail"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "顺手拆开看了一眼「麦香鱼」：麦香鱼。",
+        "pro": "餐品详情返回构成：['麦香鱼']。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-e56c5461/events/6",
+      "isMock": false,
+      "request": {
+        "storeCode": "1960134",
+        "orderType": 1,
+        "beType": 1,
+        "code": "1600"
+      },
+      "response": {
+        "success": true,
+        "parsedParts": 1
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-e56c5461",
+      "seq": 7,
+      "kind": "info",
+      "tool": "query-store-coupons",
+      "title": "查看门店券",
+      "status": "info",
+      "ts": "2026-10-10T16:43:33",
+      "facts": [
+        {
+          "key": "couponCount",
+          "value": 0,
+          "sourcePath": "$.data"
+        },
+        {
+          "key": "coupons",
+          "value": "无",
+          "sourcePath": "$.data[].title"
+        },
+        {
+          "key": "applicableToPick",
+          "value": "否",
+          "source": "match"
+        }
+      ],
+      "entities": {},
+      "rule": null,
+      "say": {
+        "friendly": "这家门店券接口这次没返回可用券 —— 但这不等于你没券，账户券是另一套，接着查。",
+        "pro": "门店券查询返回 0 张；与推荐单品的适用商品匹配结果：不适用。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-e56c5461/events/7",
+      "isMock": false,
+      "request": {
+        "orderType": 1,
+        "beType": 1,
+        "storeCode": "1960134"
+      },
+      "response": {
+        "success": false,
+        "couponCount": 0
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-e56c5461",
+      "seq": 8,
+      "kind": "info",
+      "tool": "available-coupons",
+      "title": "available-coupons",
+      "status": "success",
+      "ts": "2026-10-10T16:43:33",
+      "facts": [
+        {
+          "key": "parsedCoupons",
+          "value": 6,
+          "source": "markdown-parse"
+        },
+        {
+          "key": "usableCoupons",
+          "value": 3,
+          "source": "markdown-parse"
+        },
+        {
+          "key": "usableList",
+          "value": "免费脆薯饼、人气麦旋风买一送一、9.9元中杯冰美式",
+          "source": "markdown-parse"
+        },
+        {
+          "key": "format",
+          "value": "markdown（非 JSON）",
+          "source": "mctrace",
+          "note": "该工具返回 Markdown 文本，通用 JSON 解析器会读不出"
+        }
+      ],
+      "entities": {
+        "免费脆薯饼": "可领取优惠券 / coupon",
+        "人气麦旋风买一送一": "可领取优惠券 / coupon",
+        "9.9元中杯冰美式": "可领取优惠券 / coupon"
+      },
+      "rule": {
+        "id": "coupon.available",
+        "pass": true,
+        "usable": 3
+      },
+      "say": {
+        "friendly": "账户里还有 3 张能直接领的券：免费脆薯饼、人气麦旋风买一送一、9.9元中杯冰美式。",
+        "pro": "available-coupons 返回 Markdown 文本，解析出 6 条，其中状态为可领取的 3 张。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-e56c5461/events/8",
+      "isMock": false,
+      "request": {},
+      "response": {
+        "format": "markdown",
+        "parsed": 6,
+        "usable": 3
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-e56c5461",
+      "seq": 9,
+      "kind": "warning",
+      "tool": "calculate-price",
+      "title": "核算价格",
+      "status": "degraded",
+      "ts": "2026-10-10T16:43:33",
+      "facts": [
+        {
+          "key": "payableYuan",
+          "value": 22.0,
+          "sourcePath": "$.data.meals"
+        },
+        {
+          "key": "budgetYuan",
+          "value": 50,
+          "source": "user-request"
+        },
+        {
+          "key": "priceSource",
+          "value": "menu",
+          "source": "mctrace"
+        }
+      ],
+      "entities": {
+        "麦香鱼": "算价餐品 / item.name",
+        "22.0": "应付金额 / payableYuan"
+      },
+      "rule": {
+        "id": "budget.max",
+        "pass": true,
+        "deltaYuan": -28.0
+      },
+      "say": {
+        "friendly": "算价接口这次没返回明细，我就用菜单标价：「麦香鱼」22.0 元（来源：菜单）。",
+        "pro": "价格来源=menu；应付=22.0元；预算规则通过=True。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-e56c5461/events/9",
+      "isMock": false,
+      "request": {
+        "storeCode": "1960134",
+        "orderType": 1,
+        "beType": 1,
+        "items": [
+          {
+            "code": "1600",
+            "quantity": 1
+          }
+        ]
+      },
+      "response": {
+        "success": true,
+        "priceSource": "menu"
+      }
+    },
+    {
+      "traceId": "mctrace-20261010-e56c5461",
+      "seq": 10,
+      "kind": "success",
+      "tool": "summary-composer",
+      "title": "整理好结果与证据",
+      "status": "success",
+      "ts": "2026-10-10T16:43:33",
+      "facts": [
+        {
+          "key": "store",
+          "value": "麦当劳黄冈万达餐厅",
+          "sourcePath": "$.data[0].storeName"
+        },
+        {
+          "key": "推荐单品",
+          "value": "麦香鱼",
+          "source": "menu+nutrition"
+        },
+        {
+          "key": "总价",
+          "value": 22.0,
+          "source": "menu"
+        },
+        {
+          "key": "热量",
+          "value": 325,
+          "source": "nutrition-table"
+        },
+        {
+          "key": "选品规则",
+          "value": "减脂目标：预算与热量两条硬约束都通过后，取热量最低的正餐单品",
+          "source": "mctrace"
+        },
+        {
+          "key": "备选",
+          "value": "培根蔬萃双层牛堡 442kcal/¥24.5；双层吉士汉堡 429kcal/¥23；板烧鸡腿堡 391kcal/¥23.5",
+          "source": "menu+nutrition"
+        },
+        {
+          "key": "营养覆盖率",
+          "value": "17.1%（菜单 111 个在售单品中 19 个有热量数据）",
+          "source": "mctrace"
+        },
+        {
+          "key": "是否下单",
+          "value": false,
+          "source": "mctrace"
+        }
+      ],
+      "entities": {
+        "麦当劳黄冈万达餐厅": "最终门店",
+        "麦香鱼": "最终餐品"
+      },
+      "rule": null,
+      "say": {
+        "friendly": "搞定！「麦当劳黄冈万达餐厅」的减脂晚餐：麦香鱼。22.0 元、325 千卡 —— 减脂目标下热量最低的单品。同规则的备选：培根蔬萃双层牛堡 442kcal/¥24.5；双层吉士汉堡 429kcal/¥23；板烧鸡腿堡 391kcal/¥23.5。没下单，你定～",
+        "pro": "完成报告：门店=麦当劳黄冈万达餐厅；推荐=麦香鱼；价格=22.0元（来源menu）；热量=325kcal；选品规则=减脂目标：预算与热量两条硬约束都通过后，取热量最低的正餐单品；备选=培根蔬萃双层牛堡 442kcal/¥24.5；双层吉士汉堡 429kcal/¥23；板烧鸡腿堡 391kcal/¥23.5；营养覆盖率=17.1%；未创建订单。"
+      },
+      "evidenceRef": "trace://mctrace-20261010-e56c5461/events/10",
+      "isMock": false,
+      "request": {},
+      "response": {
+        "result": {
+          "store": "麦当劳黄冈万达餐厅",
+          "item": "麦香鱼",
+          "payableYuan": 22.0,
+          "kcal": 325,
+          "goal": "fatloss",
+          "rule": "减脂目标：预算与热量两条硬约束都通过后，取热量最低的正餐单品",
+          "alternatives": [
+            "培根蔬萃双层牛堡",
+            "双层吉士汉堡",
+            "板烧鸡腿堡"
+          ],
+          "nutritionCoveragePct": 17.1,
+          "checksPassed": true,
+          "orderCreated": false,
+          "summary": "麦香鱼 325kcal/¥22（减脂目标下热量最低的单品）"
+        }
+      }
+    }
+  ]
+}
