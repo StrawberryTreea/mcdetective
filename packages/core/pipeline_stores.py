@@ -77,8 +77,13 @@ def fmt_km(m):
 
 def run_scenario(url, city, keyword, target,
                  radius_km=DEFAULT_RADIUS_KM, max_stores=DEFAULT_MAX_STORES,
-                 trace_id=None, emit=None, quiet=False):
-    tok = load_token()
+                 trace_id=None, emit=None, quiet=False, token=None):
+    """跑一次真实巡查。
+
+    token  显式传入 MCP Token（在线服务按访客自带 Token 跑时用）；
+           不传则回落到本机配置（环境变量 / token.txt / mcp.json）。
+    """
+    tok = token or load_token()
     c = McdMCPClient(tok, url=url)
     c.initialize()
     trace_id = trace_id or ("mcdetective-" + time.strftime("%Y%m%d") + "-" + uuid.uuid4().hex[:8])
@@ -279,15 +284,60 @@ def run_scenario(url, city, keyword, target,
             price_friendly += f"另外还命中 {len(other_forms)} 种形态（{forms_note}），没混进来一起比。"
         price_kind = "info" if same else "success"
     else:
-        low = high = None
-        delta = 0
-        price_rows = []
-        primary = None
-        price_facts = [{"key": "target", "value": target, "source": "user-request"},
-                       {"key": "found", "value": "巡查门店均未发现该餐品", "source": "mctrace"}]
-        price_friendly = f"翻遍 {len(stores)} 家店，都没找到「{target}」——换案吧。"
-        price_pro = f"目标餐品「{target}」在 {len(stores)} 家巡查门店中均未出现。"
-        price_kind = "warning"
+        # 时段感知：目标形态不在售（例：早时段只卖早餐）→ 不说「换案吧」的死胡同，
+        # 而是找出这几家店卖得最齐的在售主食，给出可切换的替代案并照样比价。
+        # 排除饮品与周边/玩具——替代案必须是能吃的东西，不能给用户推一个水手帽
+        EXCLUDE = re.compile(r"(可乐|雪碧|咖啡|牛奶|纯悦|鲜奶|冰奶|豆浆|豆奶|浆|茶饮|果饮|饮料"
+                             r"|周边|毛绒|玩偶|玩具|手办|盲盒|挂件|钥匙扣|贴纸|徽章|帽子|头饰|发卡"
+                             r"|水手帽|杯|勺|筷|叉|吸管|纸袋|餐巾|托盘|保鲜膜|兑换券|券|币|卡|包|袋|伞|鞋|袜)")
+        coverage_map = {}
+        for info in store_data.values():
+            for mc, (mname, price) in info["meals"].items():
+                if mname and price is not None:
+                    coverage_map.setdefault(mname, {})[info["name"]] = price
+        need_n = max(2, len(stores) - 1)
+        cands = [(nm, sp) for nm, sp in coverage_map.items()
+                 if not EXCLUDE.search(nm) and len(sp) >= need_n]
+        cands.sort(key=lambda kv: (-len(kv[1]), -max(kv[1].values())))
+        alt = cands[0] if cands else None
+        if alt:
+            aname, asp = alt
+            lo_s, hi_s = min(asp, key=asp.get), max(asp, key=asp.get)
+            primary = {"name": aname}
+            price_rows = sorted(({"store": s, "storeCode": "", "price": p, "distM": None}
+                                 for s, p in asp.items()), key=lambda r: r["price"])
+            low, high = price_rows[0], price_rows[-1]
+            delta = round(high["price"] - low["price"], 2)
+            same = delta <= 0.001
+            price_facts = [{"key": "targetForm", "value": target, "source": "user-request"},
+                           {"key": "targetOnSale", "value": "否——该形态当前不在这些店的菜单上",
+                            "source": "mctrace", "note": "多为时段下架；如实记录，不冒充"},
+                           {"key": "fallbackForm", "value": aname, "source": "menu",
+                            "note": f"这几家店卖得最齐的在售主食（{len(asp)} 家都有），作为替代案比价"},
+                           {"key": "comparedForm", "value": aname, "source": "mctrace",
+                            "note": "价差榜比对的是替代案形态，不是报案要的那个形态"},
+                           {"key": "lowest", "value": f"{low['store']} ¥{low['price']:g}", "source": "menu"},
+                           {"key": "highest", "value": f"{high['store']} ¥{high['price']:g}", "source": "menu"},
+                           {"key": "deltaYuan", "value": delta, "source": "mctrace"},
+                           {"key": "comparedStores", "value": len(price_rows), "source": "mctrace"}]
+            price_friendly = (f"翻遍 {len(stores)} 家店，「{target}」现在都不在菜单上——时段问题，"
+                              f"探长不拿别的形态冒充它。这几家现在卖得最齐的是「{aname}」"
+                              f"（{len(asp)} 家都有）：最低 {low['store']} ¥{low['price']:g}，"
+                              f"最高 {high['store']} ¥{high['price']:g}。想比别的，报个案就行。")
+            price_pro = (f"目标形态「{target}」在 {len(stores)} 家门店当前菜单中均未出现；"
+                         f"替代案「{aname}」（{len(asp)} 家在售，¥{low['price']:g}–¥{high['price']:g}，"
+                         f"价差 ¥{delta:g}）。")
+            price_kind = "warning"
+        else:
+            price_rows = []
+            price_facts = [{"key": "target", "value": target, "source": "user-request"},
+                           {"key": "found", "value": "巡查门店均未发现该餐品", "source": "mctrace"}]
+            price_friendly = f"翻遍 {len(stores)} 家店，都没找到「{target}」——换个时段或换个餐品再来。"
+            price_pro = f"目标餐品「{target}」在 {len(stores)} 家巡查门店中均未出现。"
+            price_kind = "warning"
+    def _pfact(key, default=None):
+        return next((f["value"] for f in price_facts if f["key"] == key), default)
+    alt_form = str(_pfact("targetOnSale") or "").startswith("否")
     add(price_kind, "mctrace:rule", "success",
         price_facts,
         {r["store"]: "价差榜门店" for r in price_rows[:6]},
@@ -297,6 +347,7 @@ def run_scenario(url, city, keyword, target,
         {"target": target, "stores": len(stores)},
         {"rows": price_rows, "deltaYuan": delta,
          "primaryForm": primary["name"] if primary else None,
+         "targetOnSale": _pfact("targetOnSale"),
          "groups": [{"name": g["name"], "delta": g["delta"], "stores": len(g["stores"])}
                     for g in group_rows]})
 
@@ -354,6 +405,9 @@ def run_scenario(url, city, keyword, target,
     form_txt = f"（{primary['name']}）" if primary and primary["name"] != target else ""
     verdict = ("无从比起（各店同价）" if (price_rows and delta <= 0.001)
                else (f"差价 ¥{delta:g}：{low['store']} 最便宜" if price_rows else "未发现目标餐品"))
+    if alt_form:
+        verdict = ("「" + target + "」当前不在售，替代案「" + _pfact("fallbackForm", "")
+                   + "」" + verdict)
     dists = [info["distM"] for info in store_data.values() if info["distM"] is not None]
     patrol_range = f"{fmt_km(min(dists))}–{fmt_km(max(dists))}" if dists else "未知"
     result_facts = [
@@ -374,8 +428,9 @@ def run_scenario(url, city, keyword, target,
         result_facts,
         {target: "目标餐品", (low["store"] if low else keyword): "结论门店"},
         None,
-        (f"结案！方圆 {radius_km:g} 公里 {len(stores)} 家店巡查完毕：「{primary['name'] if primary else target}」{verdict}。"
-         f"每一步的原始调用都能点开核验。没下单，你定～"),
+        (f"结案！方圆 {radius_km:g} 公里 {len(stores)} 家店巡查完毕："
+         + (verdict if alt_form else f"「{primary['name'] if primary else target}」{verdict}") + "。"
+         + f"每一步的原始调用都能点开核验。没下单，你定～"),
         (f"结案报告：巡查 {len(stores)} 家门店（半径 {radius_km:g}km，实际覆盖 {patrol_range}）；"
          f"目标「{target}」主比对形态「{primary['name'] if primary else '-'}」在售 {len(price_rows)} 家；"
          f"结论：{verdict}；可得性覆盖率 {coverage}%；未创建订单。"),

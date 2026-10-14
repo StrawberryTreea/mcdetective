@@ -37,6 +37,29 @@ body{background:#F6F2EA;color:#2C2C2A;font:14px/1.7 -apple-system,"PingFang SC",
 .intake-msg.ok{background:#EAF3DE;border:1px solid #97C459;color:#3B6D11}
 .intake-msg.new{background:#E6F1FB;border:1px solid #85B7EB;color:#185FA5}
 .intake-msg code{background:rgba(0,0,0,.07);border-radius:5px;padding:1px 6px;font:12px ui-monospace,monospace}
+.intake-msg.run{background:#FFF8E8;border:1px solid #F2A900;color:#7a5200}
+.intake-msg.err{background:#FCEBEB;border:1px solid #E24B4A;color:#A32D2D}
+.picks{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.pick{cursor:pointer;font:700 12px inherit;padding:4px 12px;border-radius:999px;border:1.5px solid #F2A900;background:#fff;color:#7a5200}
+.pick:hover{background:#F2A900;color:#3a2c00}
+.livefeed{margin-top:10px;max-height:230px;overflow:auto;border:1px solid #E5DCC9;border-radius:10px;background:#fff;padding:8px 10px}
+.livefeed:empty{display:none}
+.lf{display:flex;gap:8px;align-items:baseline;font-size:12px;padding:3px 0;border-bottom:1px dashed #EFE8D8}
+.lf:last-child{border-bottom:0}
+.lf .n{font:700 10.5px ui-monospace,monospace;color:#B4AE9C;width:20px;flex:0 0 20px}
+.lf .t{font-weight:700;color:#6b6350;white-space:nowrap}
+.lf.warn .t{color:#B57B00}
+.lf.ok .t{color:#2E7D32}
+.lf .s{color:#5b5340;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tokenbox{margin-top:10px;border:1px solid #85B7EB;background:#F2F8FE;border-radius:10px;padding:11px 13px;display:none}
+.tokenbox.show{display:block}
+.tokenbox .th{font-size:12.5px;font-weight:800;color:#185FA5;margin-bottom:6px}
+.tokenbox input{width:100%;font:12.5px ui-monospace,monospace;padding:8px 10px;border:1.5px solid #85B7EB;border-radius:8px;background:#fff}
+.tokenbox .note{margin-top:7px}
+.warnbar{margin-top:10px;background:#FFF3D6;border:1px solid #F2A900;border-left:4px solid #DA291C;border-radius:9px;padding:9px 13px;font-size:12.5px;color:#7a5200;font-weight:600}
+.live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#E24B4A;vertical-align:2px;margin-left:6px;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.livebar{background:linear-gradient(90deg,#DA291C,#F2A900);color:#fff;font-size:12px;font-weight:700;padding:7px 13px;border-radius:10px;margin:10px 0 0;display:inline-block}
 .casefile{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
 .cf{background:#FAF7EF;border:1px dashed #D8CDB4;border-radius:10px;padding:10px 12px}
 .cf .k{font-size:11.5px;color:#8a7f68;font-weight:700}
@@ -109,53 +132,63 @@ footer{margin-top:22px;text-align:center;font-size:11.5px;color:#8a7f68;line-hei
 
 <section class="card intake">
   <h2><span class="no">台</span>接案台 · 报个案</h2>
-  <div class="lead">说一句话就行——城市、地段、想查的餐品，探长自己领会；库里有的直接调档，没有的告诉你怎么让他真跑。</div>
+  <div class="lead">说一句话就行——城市、地段、想查的餐品，探长自己领会；缺什么他会问你，绝不瞎猜。</div>
   <form id="intakeForm" class="formrow">
     <div class="qbox"><input id="fQ" type="text" autocomplete="off"
       placeholder="比如：中关村 精选单人餐三件套哪家便宜？"/></div>
     <button class="gobtn" type="submit">探长出勤</button>
   </form>
   <div class="hint">默认方圆 3 km、最多 10 店（可在命令里改）· 例如：静安寺 麦香鱼 / 黄冈万达 巨无霸 / 深圳科技园 麦辣鸡腿堡</div>
-  <div class="archrow"><span class="lab">或调阅已归档案卷：</span><button class="casechip on" data-key="patrol">北京 · 中关村</button><button class="casechip" data-key="jingan">上海 · 静安寺</button><button class="casechip" data-key="huanggang">黄冈 · 万达</button></div>
+  <div class="tokenbox" id="tokenBox">
+    <div class="th">② 贴上你的 MCP Token，探长才能真出勤</div>
+    <input id="fToken" type="password" autocomplete="off" placeholder="粘贴 open.mcd.cn/mcd 控制台申请的 Token"/>
+    <div class="note">Token 只活在这一次请求里：不写进页面、不进仓库、不保存。<a href="https://open.mcd.cn/mcp" target="_blank" style="color:#185FA5">去申请（免费，手机号登录）</a> · 探长全程只读，不下单不领券。</div>
+  </div>
   <div class="intake-msg" id="intakeMsg"></div>
+  <div class="picks" id="picks"></div>
+  <div class="livefeed" id="liveFeed"></div>
+  <div class="archrow"><span class="lab">没带 Token？先调阅已归档案卷：</span><button class="casechip on" data-key="patrol">北京 · 中关村</button><button class="casechip" data-key="jingan">上海 · 静安寺</button><button class="casechip" data-key="huanggang">黄冈 · 万达</button></div>
 </section>
 
+<div id="liveCase"></div>
+
 <div class="caseview-wrap" id="case-patrol">
-<section class="caseview" data-city="北京市" data-keyword="中关村">
+<section class="caseview">
 <section class="card">
-  <h2><span class="no">卷</span>案卷 · 北京市中关村片区</h2>
+  <h2><span class="no">卷</span>案卷 · 黄冈市黄冈万达片区</h2>
   <div class="casefile">
-    <div class="cf"><div class="k">报案诉求</div><div class="v">「精选单人餐三件套」哪家卖得便宜？</div></div>
-    <div class="cf"><div class="k">巡查范围</div><div class="v">方圆 3.0 km · 命中 5 家</div></div>
-    <div class="cf"><div class="k">实际覆盖</div><div class="v">183 m–807 m · 巡查 5 家</div></div>
-    <div class="cf"><div class="k">立案时间</div><div class="v">2026-10-13T21:02:38</div></div>
-    <div class="cf"><div class="k">案号</div><div class="v" style="font-size:12px">mcdetective-20261013-aafba506</div></div>
+    <div class="cf"><div class="k">报案诉求</div><div class="v">「火腿扒麦满分」哪家卖得便宜？</div></div>
+    <div class="cf"><div class="k">巡查范围</div><div class="v">方圆 3.0 km · 命中 2 家</div></div>
+    <div class="cf"><div class="k">实际覆盖</div><div class="v">95 m–1.8 km · 巡查 2 家</div></div>
+    <div class="cf"><div class="k">立案时间</div><div class="v">2026-10-14T09:44:17</div></div>
+    <div class="cf"><div class="k">案号</div><div class="v" style="font-size:12px">mcdetective-20261014-42918eba</div></div>
     <div class="cf"><div class="k">状态</div><div class="v big">已结案 ✓</div></div>
   </div>
 </section>
 
 <section class="card">
   <h2><span class="no">1</span>巡查路线 · 逐店取证</h2>
-  <div class="station "><div class="sno">1</div><div class="sbody"><div class="sname">善缘街(中关村5号)</div><div class="smeta">183 m · 菜单 109 款 · 门店券 中薯条买一送一、王牌小食拼</div></div><div class="sprice">¥34.5</div></div><div class="station "><div class="sno">2</div><div class="sbody"><div class="sname">中关村领展广场</div><div class="smeta">365 m · 菜单 99 款 · 门店券 中薯条买一送一、王牌小食拼</div></div><div class="sprice">¥34.5</div></div><div class="station p-cheap"><div class="sno">3</div><div class="sbody"><div class="sname">海淀镇</div><div class="smeta">417 m · 菜单 88 款 · 门店券 中薯条买一送一、王牌小食拼</div></div><div class="sprice">¥33.5</div></div><div class="station p-high"><div class="sno">4</div><div class="sbody"><div class="sname">海淀中街(巴比伦时尚酒店)</div><div class="smeta">655 m · 菜单 89 款 · 门店券 中薯条买一送一、王牌小食拼</div></div><div class="sprice">¥36.5</div></div><div class="station "><div class="sno">5</div><div class="sbody"><div class="sname">海淀黄庄</div><div class="smeta">807 m · 菜单 92 款 · 门店券 中薯条买一送一、王牌小食拼</div></div><div class="sprice">¥34.5</div></div>
+  <div class="station "><div class="sno">1</div><div class="sbody"><div class="sname">黄冈万达</div><div class="smeta">95 m · 菜单 77 款 · 门店券 高达芝士蛋堡早餐两件套</div></div><div class="sprice">¥11</div></div><div class="station "><div class="sno">2</div><div class="sbody"><div class="sname">黄冈居然之家</div><div class="smeta">1.8 km · 菜单 79 款 · 门店券 高达芝士蛋堡早餐两件套</div></div><div class="sprice">¥11</div></div>
   <div class="note">站点按距离由近到远排列；距离取自 query-nearby-stores 的 distance 字段（米），标价取自各店 query-meals 的 currentPrice 字段，门店券数取自 query-store-coupons。</div>
 </section>
 
 <section class="card">
-  <h2><span class="no">2</span>线索一 · 价差榜（精选单人餐三件套）</h2>
-  <div class="brow cheap"><div class="bname">海淀镇<span class="badge cheap">最便宜</span></div><div class="btrack"><i style="width:86.6%"></i></div><div class="bval">¥33.5</div></div><div class="brow "><div class="bname">善缘街(中关村5号)</div><div class="btrack"><i style="width:89.2%"></i></div><div class="bval">¥34.5</div></div><div class="brow "><div class="bname">中关村领展广场</div><div class="btrack"><i style="width:89.2%"></i></div><div class="bval">¥34.5</div></div><div class="brow "><div class="bname">海淀黄庄</div><div class="btrack"><i style="width:89.2%"></i></div><div class="bval">¥34.5</div></div><div class="brow pricey"><div class="bname">海淀中街(巴比伦时尚酒店)<span class="badge pricey">最贵</span></div><div class="btrack"><i style="width:94.3%"></i></div><div class="bval">¥36.5</div></div>
-  <div class="delta">差价 <b>¥3</b>：海淀中街(巴比伦时尚酒店) 比 海淀镇 贵 9.0%</div>
-  <div class="note">条形图自 ¥0 起按真实标价等比绘制，未做视觉放大；只与同一形态比价。</div>
+  <h2><span class="no">2</span>线索一 · 价差榜（火腿扒麦满分）</h2>
+  <div class="brow "><div class="bname">黄冈万达</div><div class="btrack"><i style="width:94.3%"></i></div><div class="bval">¥11</div></div><div class="brow "><div class="bname">黄冈居然之家</div><div class="btrack"><i style="width:94.3%"></i></div><div class="bval">¥11</div></div>
+  <div class="delta">各店同价 <b>¥11</b>——本案无从比起，如实记录。</div>
   
+  <div class="note">条形图自 ¥0 起按真实标价等比绘制，未做视觉放大；只与同一形态比价。</div>
+  <div class="note">目标关键词还命中其他形态，单独列示、不混入比价：「火腿扒麦满分套餐」各店同价；「火腿扒麦满分组合」各店同价。</div>
 </section>
 
 <section class="card">
   <h2><span class="no">3</span>线索二 · 餐品可得性</h2>
   <div class="stats">
-    <div class="stat"><div class="n">130</div><div class="l">单品并集（款）</div></div>
-    <div class="stat"><div class="n">51</div><div class="l">全门店共有（款）</div></div>
-    <div class="stat"><div class="n">39.2%</div><div class="l">共有覆盖率</div></div>
+    <div class="stat"><div class="n">83</div><div class="l">单品并集（款）</div></div>
+    <div class="stat"><div class="n">73</div><div class="l">全门店共有（款）</div></div>
+    <div class="stat"><div class="n">88.0%</div><div class="l">共有覆盖率</div></div>
   </div>
-  <div class="note" style="margin-top:10px">「芝士安格斯厚牛堡三件套」仅善缘街(中关村5号)有售；此类非全部巡查门店共有的单品共 79 款。想吃限定款，门店选址比几块钱更要命。</div>
+  <div class="note" style="margin-top:10px">「北非蛋风味麦满分套餐」仅黄冈万达有售；此类非全部巡查门店共有的单品共 10 款。想吃限定款，门店选址比几块钱更要命。</div>
 </section>
 
 <section class="card">
@@ -170,177 +203,128 @@ footer{margin-top:22px;text-align:center;font-size:11.5px;color:#8a7f68;line-hei
 <section class="card">
   <h2><span class="no">5</span>结案报告</h2>
   <div class="verdict">
-    <div class="stamp">差价 ¥3 · 海淀镇最便宜</div>
-    <div class="sub">差价 ¥3：麦当劳北京海淀镇餐厅 最便宜 · 可得性覆盖率 39.2% · 未创建任何订单</div>
+    <div class="stamp">无从比起 · 各店同价 ¥11</div>
+    <div class="sub">无从比起（各店同价） · 可得性覆盖率 88.0% · 未创建任何订单</div>
   </div>
-  <div class="repro">$ python skills/mctrace/scripts/run_trace.py --detective 北京市 中关村 精选单人餐三件套 3.0 10</div>
+  <div class="repro">$ python skills/mctrace/scripts/run_trace.py --detective 黄冈市 黄冈万达 火腿扒麦满分 3.0 10</div>
 </section>
 
 <section class="card">
-  <h2><span class="no">附</span>案卷附录 · 16 条证据</h2>
-  <details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">01</span><span class="ttl">接报案</span><span class="tool">user-request</span></summary><div class="say">接到报案：北京市中关村附近，有人想查「精选单人餐三件套」哪家卖得便宜。探长出动了，先按方圆 3 公里划定巡查范围。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;city&quot;: &quot;北京市&quot;,
- &quot;keyword&quot;: &quot;中关村&quot;,
- &quot;target&quot;: &quot;精选单人餐三件套&quot;,
+  <h2><span class="no">附</span>案卷附录 · 10 条证据</h2>
+  <details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">01</span><span class="ttl">接报案</span><span class="tool">user-request</span></summary><div class="say">接到报案：黄冈市黄冈万达附近，有人想查「火腿扒麦满分」哪家卖得便宜。探长出动了，先按方圆 3 公里划定巡查范围。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;city&quot;: &quot;黄冈市&quot;,
+ &quot;keyword&quot;: &quot;黄冈万达&quot;,
+ &quot;target&quot;: &quot;火腿扒麦满分&quot;,
  &quot;radiusKm&quot;: 3.0,
  &quot;maxStores&quot;: 10
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
- &quot;case&quot;: &quot;北京市中关村 精选单人餐三件套&quot;
-}</pre></div><div class="ref">trace://mcdetective-20261013-aafba506/events/1</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">02</span><span class="ttl">划定巡查范围</span><span class="tool">query-nearby-stores</span></summary><div class="say">范围划定：中关村方圆 3 公里命中 5 家（距离 183 m–807 m），逐家查，最多 10 家。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;case&quot;: &quot;黄冈市黄冈万达 火腿扒麦满分&quot;
+}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/1</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">02</span><span class="ttl">划定巡查范围</span><span class="tool">query-nearby-stores</span></summary><div class="say">范围划定：黄冈万达方圆 3 公里命中 2 家（距离 95 m–1.8 km），逐家查，最多 10 家。</div><div class="raw"><div class="rawt">请求</div><pre>{
  &quot;beType&quot;: 1,
  &quot;searchType&quot;: 2,
- &quot;city&quot;: &quot;北京市&quot;,
- &quot;keyword&quot;: &quot;中关村&quot;
+ &quot;city&quot;: &quot;黄冈市&quot;,
+ &quot;keyword&quot;: &quot;黄冈万达&quot;
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
  &quot;success&quot;: true,
  &quot;hitCount&quot;: 5,
- &quot;withinRadius&quot;: 5,
+ &quot;withinRadius&quot;: 2,
  &quot;distanceMissing&quot;: 0
-}</pre></div><div class="ref">trace://mcdetective-20261013-aafba506/events/2</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">03</span><span class="ttl">巡查门店菜单</span><span class="tool">query-meals</span></summary><div class="say">第 1 站（183 m）：麦当劳北京善缘街(中关村5号)餐厅，菜单 109 个单品，发现目标「精选单人餐三件套」，标价 ¥34.5。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;storeCode&quot;: &quot;1950640&quot;,
+}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/2</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">03</span><span class="ttl">巡查门店菜单</span><span class="tool">query-meals</span></summary><div class="say">第 1 站（95 m）：麦当劳黄冈万达餐厅，菜单 77 个单品，发现目标「火腿扒麦满分」，标价 ¥11。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;storeCode&quot;: &quot;1960134&quot;,
  &quot;orderType&quot;: 1,
  &quot;beType&quot;: 1
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
  &quot;success&quot;: true,
- &quot;mealCount&quot;: 109
-}</pre></div><div class="ref">trace://mcdetective-20261013-aafba506/events/3</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">04</span><span class="ttl">核查门店券</span><span class="tool">query-store-coupons</span></summary><div class="say">麦当劳北京善缘街(中关村5号)餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;mealCount&quot;: 77
+}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/3</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">04</span><span class="ttl">核查门店券</span><span class="tool">query-store-coupons</span></summary><div class="say">麦当劳黄冈万达餐厅 门店券 1 张：高达芝士蛋堡早餐两件套，记下。</div><div class="raw"><div class="rawt">请求</div><pre>{
  &quot;orderType&quot;: 1,
  &quot;beType&quot;: 1,
- &quot;storeCode&quot;: &quot;1950640&quot;
+ &quot;storeCode&quot;: &quot;1960134&quot;
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
  &quot;success&quot;: true,
- &quot;couponCount&quot;: 2
-}</pre></div><div class="ref">trace://mcdetective-20261013-aafba506/events/4</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">05</span><span class="ttl">巡查门店菜单</span><span class="tool">query-meals</span></summary><div class="say">第 2 站（365 m）：麦当劳北京中关村领展广场餐厅，菜单 99 个单品，发现目标「精选单人餐三件套」，标价 ¥34.5。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;storeCode&quot;: &quot;1951000&quot;,
+ &quot;couponCount&quot;: 1
+}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/4</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">05</span><span class="ttl">巡查门店菜单</span><span class="tool">query-meals</span></summary><div class="say">第 2 站（1.8 km）：麦当劳黄冈居然之家餐厅，菜单 79 个单品，发现目标「火腿扒麦满分」，标价 ¥11。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;storeCode&quot;: &quot;1960179&quot;,
  &quot;orderType&quot;: 1,
  &quot;beType&quot;: 1
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
  &quot;success&quot;: true,
- &quot;mealCount&quot;: 99
-}</pre></div><div class="ref">trace://mcdetective-20261013-aafba506/events/5</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">06</span><span class="ttl">核查门店券</span><span class="tool">query-store-coupons</span></summary><div class="say">麦当劳北京中关村领展广场餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;mealCount&quot;: 79
+}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/5</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">06</span><span class="ttl">核查门店券</span><span class="tool">query-store-coupons</span></summary><div class="say">麦当劳黄冈居然之家餐厅 门店券 1 张：高达芝士蛋堡早餐两件套，记下。</div><div class="raw"><div class="rawt">请求</div><pre>{
  &quot;orderType&quot;: 1,
  &quot;beType&quot;: 1,
- &quot;storeCode&quot;: &quot;1951000&quot;
+ &quot;storeCode&quot;: &quot;1960179&quot;
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
  &quot;success&quot;: true,
- &quot;couponCount&quot;: 2
-}</pre></div><div class="ref">trace://mcdetective-20261013-aafba506/events/6</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">07</span><span class="ttl">巡查门店菜单</span><span class="tool">query-meals</span></summary><div class="say">第 3 站（417 m）：麦当劳北京海淀镇餐厅，菜单 88 个单品，发现目标「精选单人餐三件套」，标价 ¥33.5。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;storeCode&quot;: &quot;1950013&quot;,
- &quot;orderType&quot;: 1,
- &quot;beType&quot;: 1
-}</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
- &quot;success&quot;: true,
- &quot;mealCount&quot;: 88
-}</pre></div><div class="ref">trace://mcdetective-20261013-aafba506/events/7</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">08</span><span class="ttl">核查门店券</span><span class="tool">query-store-coupons</span></summary><div class="say">麦当劳北京海淀镇餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;orderType&quot;: 1,
- &quot;beType&quot;: 1,
- &quot;storeCode&quot;: &quot;1950013&quot;
-}</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
- &quot;success&quot;: true,
- &quot;couponCount&quot;: 2
-}</pre></div><div class="ref">trace://mcdetective-20261013-aafba506/events/8</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">09</span><span class="ttl">巡查门店菜单</span><span class="tool">query-meals</span></summary><div class="say">第 4 站（655 m）：麦当劳北京海淀中街(巴比伦时尚酒店)餐厅，菜单 89 个单品，发现目标「精选单人餐三件套」，标价 ¥36.5。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;storeCode&quot;: &quot;1950822&quot;,
- &quot;orderType&quot;: 1,
- &quot;beType&quot;: 1
-}</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
- &quot;success&quot;: true,
- &quot;mealCount&quot;: 89
-}</pre></div><div class="ref">trace://mcdetective-20261013-aafba506/events/9</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">10</span><span class="ttl">核查门店券</span><span class="tool">query-store-coupons</span></summary><div class="say">麦当劳北京海淀中街(巴比伦时尚酒店)餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;orderType&quot;: 1,
- &quot;beType&quot;: 1,
- &quot;storeCode&quot;: &quot;1950822&quot;
-}</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
- &quot;success&quot;: true,
- &quot;couponCount&quot;: 2
-}</pre></div><div class="ref">trace://mcdetective-20261013-aafba506/events/10</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">11</span><span class="ttl">巡查门店菜单</span><span class="tool">query-meals</span></summary><div class="say">第 5 站（807 m）：麦当劳北京海淀黄庄餐厅，菜单 92 个单品，发现目标「精选单人餐三件套」，标价 ¥34.5。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;storeCode&quot;: &quot;1950027&quot;,
- &quot;orderType&quot;: 1,
- &quot;beType&quot;: 1
-}</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
- &quot;success&quot;: true,
- &quot;mealCount&quot;: 92
-}</pre></div><div class="ref">trace://mcdetective-20261013-aafba506/events/11</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">12</span><span class="ttl">核查门店券</span><span class="tool">query-store-coupons</span></summary><div class="say">麦当劳北京海淀黄庄餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;orderType&quot;: 1,
- &quot;beType&quot;: 1,
- &quot;storeCode&quot;: &quot;1950027&quot;
-}</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
- &quot;success&quot;: true,
- &quot;couponCount&quot;: 2
-}</pre></div><div class="ref">trace://mcdetective-20261013-aafba506/events/12</div></details><details class="ev"><summary><span class="kdot kdot-success">✓</span><span class="seq">13</span><span class="ttl">比对发现线索</span><span class="tool">mctrace:rule</span></summary><div class="say">线索比对完成：「精选单人餐三件套」5 家在售。最低 麦当劳北京海淀镇餐厅 ¥33.5，最高 麦当劳北京海淀中街(巴比伦时尚酒店)餐厅 ¥36.5。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;target&quot;: &quot;精选单人餐三件套&quot;,
- &quot;stores&quot;: 5
+ &quot;couponCount&quot;: 1
+}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/6</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">07</span><span class="ttl">比对发现线索</span><span class="tool">mctrace:rule</span></summary><div class="say">线索比对完成：「火腿扒麦满分」2 家在售。最低 麦当劳黄冈万达餐厅 ¥11，最高 麦当劳黄冈居然之家餐厅 ¥11。各店同价——本案无从比起，如实记录。另外还命中 2 种形态（「火腿扒麦满分套餐」各店同价；「火腿扒麦满分组合」各店同价），没混进来一起比。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;target&quot;: &quot;火腿扒麦满分&quot;,
+ &quot;stores&quot;: 2
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
  &quot;rows&quot;: [
   {
-   &quot;store&quot;: &quot;麦当劳北京海淀镇餐厅&quot;,
+   &quot;store&quot;: &quot;麦当劳黄冈万达餐厅&quot;,
    &quot;storeCode&quot;: &quot;&quot;,
-   &quot;price&quot;: 33.5,
+   &quot;price&quot;: 11.0,
    &quot;distM&quot;: null
   },
   {
-   &quot;store&quot;: &quot;麦当劳北京善缘街(中关村5号)餐厅&quot;,
+   &quot;store&quot;: &quot;麦当劳黄冈居然之家餐厅&quot;,
    &quot;storeCode&quot;: &quot;&quot;,
-   &quot;price&quot;: 34.5,
-   &quot;distM&quot;: null
-  },
-  {
-   &quot;store&quot;: &quot;麦当劳北京中关村领展广场餐厅&quot;,
-   &quot;storeCode&quot;: &quot;&quot;,
-   &quot;price&quot;: 34.5,
-   &quot;distM&quot;: null
-  },
-  {
-   &quot;store&quot;: &quot;麦当劳北京海淀黄庄餐厅&quot;,
-   &quot;storeCode&quot;: &quot;&quot;,
-   &quot;price&quot;: 34.5,
-   &quot;distM&quot;: null
-  },
-  {
-   &quot;store&quot;: &quot;麦当劳北京海淀中街(巴比伦时尚酒店)餐厅&quot;,
-   &quot;storeCode&quot;: &quot;&quot;,
-   &quot;price&quot;: 36.5,
+   &quot;price&quot;: 11.0,
    &quot;distM&quot;: null
   }
  ],
- &quot;deltaYuan&quot;: 3.0,
- &quot;primaryForm&quot;: &quot;精选单人餐三件套&quot;,
+ &quot;deltaYuan&quot;: 0.0,
+ &quot;primaryForm&quot;: &quot;火腿扒麦满分&quot;,
+ &quot;targetOnSale&quot;: null,
  &quot;groups&quot;: [
   {
-   &quot;name&quot;: &quot;精选单人餐三件套&quot;,
-   &quot;delta&quot;: 3.0,
-   &quot;stores&quot;: 5
+   &quot;name&quot;: &quot;火腿扒麦满分&quot;,
+   &quot;delta&quot;: 0.0,
+   &quot;stores&quot;: 2
+  },
+  {
+   &quot;name&quot;: &quot;火腿扒麦满分套餐&quot;,
+   &quot;delta&quot;: 0.0,
+   &quot;stores&quot;: 2
+  },
+  {
+   &quot;name&quot;: &quot;火腿扒麦满分组合&quot;,
+   &quot;delta&quot;: 0.0,
+   &quot;stores&quot;: 2
   }
  ]
-}</pre></div><div class="ref">trace://mcdetective-20261013-aafba506/events/13</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">14</span><span class="ttl">比对发现线索</span><span class="tool">mctrace:rule</span></summary><div class="say">顺手记一笔：5 家店合起来 130 款单品，家家都有的只有 51 款（39.2%）。想吃限定款的话，门店选址比几块钱更要命：「芝士安格斯厚牛堡三件套」仅善缘街(中关村5号)有售；此类非全部巡查门店共有的单品共 79 款。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;stores&quot;: 5
+}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/7</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">08</span><span class="ttl">比对发现线索</span><span class="tool">mctrace:rule</span></summary><div class="say">顺手记一笔：2 家店合起来 83 款单品，家家都有的只有 73 款（88.0%）。想吃限定款的话，门店选址比几块钱更要命：「北非蛋风味麦满分套餐」仅黄冈万达有售；此类非全部巡查门店共有的单品共 10 款。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;stores&quot;: 2
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
- &quot;union&quot;: 130,
- &quot;common&quot;: 51,
- &quot;coveragePct&quot;: 39.2
-}</pre></div><div class="ref">trace://mcdetective-20261013-aafba506/events/14</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">15</span><span class="ttl">比对发现线索</span><span class="tool">mctrace:rule</span></summary><div class="say">券也核查完了：各家门店券完全一致——所以这单不比券，只比价和货。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;stores&quot;: 5
+ &quot;union&quot;: 83,
+ &quot;common&quot;: 73,
+ &quot;coveragePct&quot;: 88.0
+}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/8</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">09</span><span class="ttl">比对发现线索</span><span class="tool">mctrace:rule</span></summary><div class="say">券也核查完了：各家门店券完全一致——所以这单不比券，只比价和货。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;stores&quot;: 2
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
  &quot;uniqueSets&quot;: 1
-}</pre></div><div class="ref">trace://mcdetective-20261013-aafba506/events/15</div></details><details class="ev"><summary><span class="kdot kdot-success">✓</span><span class="seq">16</span><span class="ttl">结案报告</span><span class="tool">summary-composer</span></summary><div class="say">结案！方圆 3 公里 5 家店巡查完毕：「精选单人餐三件套」差价 ¥3：麦当劳北京海淀镇餐厅 最便宜。每一步的原始调用都能点开核验。没下单，你定～</div><div class="raw"><div class="rawt">请求</div><pre>{}</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
+}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/9</div></details><details class="ev"><summary><span class="kdot kdot-success">✓</span><span class="seq">10</span><span class="ttl">结案报告</span><span class="tool">summary-composer</span></summary><div class="say">结案！方圆 3 公里 2 家店巡查完毕：「火腿扒麦满分」无从比起（各店同价）。每一步的原始调用都能点开核验。没下单，你定～</div><div class="raw"><div class="rawt">请求</div><pre>{}</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
  &quot;result&quot;: {
-  &quot;patrolStores&quot;: 5,
-  &quot;patrolRange&quot;: &quot;183 m–807 m&quot;,
-  &quot;target&quot;: &quot;精选单人餐三件套&quot;,
-  &quot;primaryForm&quot;: &quot;精选单人餐三件套&quot;,
-  &quot;inStockStores&quot;: 5,
-  &quot;verdict&quot;: &quot;差价 ¥3：麦当劳北京海淀镇餐厅 最便宜&quot;,
-  &quot;lowest&quot;: &quot;麦当劳北京海淀镇餐厅 ¥33.5&quot;,
-  &quot;highest&quot;: &quot;麦当劳北京海淀中街(巴比伦时尚酒店)餐厅 ¥36.5&quot;,
-  &quot;deltaYuan&quot;: 3.0,
-  &quot;coveragePct&quot;: 39.2,
+  &quot;patrolStores&quot;: 2,
+  &quot;patrolRange&quot;: &quot;95 m–1.8 km&quot;,
+  &quot;target&quot;: &quot;火腿扒麦满分&quot;,
+  &quot;primaryForm&quot;: &quot;火腿扒麦满分&quot;,
+  &quot;inStockStores&quot;: 2,
+  &quot;verdict&quot;: &quot;无从比起（各店同价）&quot;,
+  &quot;lowest&quot;: &quot;麦当劳黄冈万达餐厅 ¥11&quot;,
+  &quot;highest&quot;: &quot;麦当劳黄冈居然之家餐厅 ¥11&quot;,
+  &quot;deltaYuan&quot;: 0.0,
+  &quot;coveragePct&quot;: 88.0,
   &quot;orderCreated&quot;: false
  }
-}</pre></div><div class="ref">trace://mcdetective-20261013-aafba506/events/16</div></details>
+}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/10</div></details>
 </section>
 </section>
 </div>
 <div class="caseview-wrap" id="case-jingan" style="display:none">
-<section class="caseview" data-city="上海市" data-keyword="静安寺">
+<section class="caseview">
 <section class="card">
   <h2><span class="no">卷</span>案卷 · 上海市静安寺片区</h2>
   <div class="casefile">
@@ -363,6 +347,7 @@ footer{margin-top:22px;text-align:center;font-size:11.5px;color:#8a7f68;line-hei
   <h2><span class="no">2</span>线索一 · 价差榜（巨无霸三件套）</h2>
   <div class="brow cheap"><div class="bname">越洋广场<span class="badge cheap">最便宜</span></div><div class="btrack"><i style="width:93.1%"></i></div><div class="bval">¥36.5</div></div><div class="brow "><div class="bname">南京西路Eco1788</div><div class="btrack"><i style="width:93.1%"></i></div><div class="bval">¥36.5</div></div><div class="brow "><div class="bname">CP静安</div><div class="btrack"><i style="width:93.1%"></i></div><div class="bval">¥36.5</div></div><div class="brow "><div class="bname">静安延平路德必</div><div class="btrack"><i style="width:93.1%"></i></div><div class="bval">¥36.5</div></div><div class="brow pricey"><div class="bname">静安寺<span class="badge pricey">最贵</span></div><div class="btrack"><i style="width:94.3%"></i></div><div class="bval">¥37</div></div>
   <div class="delta">差价 <b>¥0.5</b>：静安寺 比 越洋广场 贵 1.4%</div>
+  
   <div class="note">条形图自 ¥0 起按真实标价等比绘制，未做视觉放大；只与同一形态比价。</div>
   
 </section>
@@ -559,7 +544,7 @@ footer{margin-top:22px;text-align:center;font-size:11.5px;color:#8a7f68;line-hei
 </section>
 </div>
 <div class="caseview-wrap" id="case-huanggang" style="display:none">
-<section class="caseview" data-city="黄冈市" data-keyword="黄冈万达">
+<section class="caseview">
 <section class="card">
   <h2><span class="no">卷</span>案卷 · 黄冈市黄冈万达片区</h2>
   <div class="casefile">
@@ -582,6 +567,7 @@ footer{margin-top:22px;text-align:center;font-size:11.5px;color:#8a7f68;line-hei
   <h2><span class="no">2</span>线索一 · 价差榜（麦香鱼）</h2>
   <div class="brow "><div class="bname">黄冈万达</div><div class="btrack"><i style="width:94.3%"></i></div><div class="bval">¥22</div></div><div class="brow "><div class="bname">黄冈居然之家</div><div class="btrack"><i style="width:94.3%"></i></div><div class="bval">¥22</div></div>
   <div class="delta">各店同价 <b>¥22</b>——本案无从比起，如实记录。</div>
+  
   <div class="note">条形图自 ¥0 起按真实标价等比绘制，未做视觉放大；只与同一形态比价。</div>
   <div class="note">目标关键词还命中其他形态，单独列示、不混入比价：「麦香鱼套餐」各店同价。</div>
 </section>
@@ -745,74 +731,151 @@ footer{margin-top:22px;text-align:center;font-size:11.5px;color:#8a7f68;line-hei
 </div>
 <script>
 (function(){
-  var CASES = [{"key": "patrol", "label": "北京 · 中关村", "city": "北京市", "keyword": "中关村", "target": "精选单人餐三件套"}, {"key": "jingan", "label": "上海 · 静安寺", "city": "上海市", "keyword": "静安寺", "target": "巨无霸三件套"}, {"key": "huanggang", "label": "黄冈 · 万达", "city": "黄冈市", "keyword": "黄冈万达", "target": "麦香鱼"}];
-  var CITIES = ["北京","上海","广州","深圳","杭州","成都","武汉","南京","苏州","天津","重庆","西安","长沙","郑州","青岛","厦门","福州","合肥","南昌","贵阳","昆明","南宁","佛山","东莞","宁波","无锡","大连","沈阳","哈尔滨","长春","石家庄","太原","济南","温州","黄冈","鄂州","珠海","中山","惠州","汕头","湛江","柳州","桂林","海口","三亚","兰州","银川","西宁","乌鲁木齐","呼和浩特","宜昌","襄阳","洛阳","开封","徐州","常州","南通","扬州","泰州","盐城","芜湖","蚌埠","遵义","绵阳","泸州","唐山","烟台","潍坊","临沂","台州","嘉兴","绍兴","金华","湖州","丽水","衢州","舟山"];
-  var MEALS = ["巨无霸","麦香鱼","板烧鸡腿堡","麦辣鸡腿堡","麦辣鸡翅","不素之霸","双层深海鳕鱼堡","安格斯厚牛堡","培根蔬牛堡","吉士汉堡","薯条","麦乐鸡","甜筒","麦旋风","新地","脆薯饼","玉米杯","苹果片","三件套","套餐"];
-  var STOPS = ["哪家","哪个","哪家店","便宜","怎么","怎样","如何","查询","查一下","一下","附近","麦当劳","麦探长","帮我","请问","我想","想要","比较","比价","想吃","吃一份","点一份","来一份","多少","哪里","哪","家","店","的","了","吗","呢","吧","啊","和","跟","在","有","卖"];
-  function norm(s){ return (s||'').replace(/\s+/g,'').replace(/[省市]$/,''); }
-  function parse(raw){
-    var s = (raw||'').replace(/\s+/g,'').replace(/[？?！!。，,、]/g,'');
-    var city = '';
-    for (var i=0;i<CITIES.length;i++){ if (s.indexOf(CITIES[i])>=0){ city = CITIES[i]; break; } }
-    // 目标餐品：菜单词表命中（长的优先）
-    var target = '';
-    var sorted = MEALS.slice().sort(function(a,b){return b.length-a.length;});
-    for (var j=0;j<sorted.length;j++){
-      if (s.indexOf(sorted[j])>=0){ target = sorted[j]; break; }
-    }
-    // 归档命中：关键词在输入里
-    for (var k=0;k<CASES.length;k++){
-      var c = CASES[k];
-      if (s.indexOf(c.keyword)>=0){
-        return {hit:c, city:city||norm(c.city), area:c.keyword,
-                target:c.target||target||'巨无霸'};
-      }
-    }
-    // 未归档：城市 + 目标剥离后，剩余前几字当作区域（尽力而为，标注"我的理解"）
-    var rest = s;
-    if (city) rest = rest.replace(city,'');
-    if (target) rest = rest.replace(target,'');
-    STOPS.forEach(function(w){ rest = rest.split(w).join(''); });
-    var area = rest.slice(0,4);
-    return {hit:null, city:city||'', area:area, target:target||'巨无霸'};
-  }
-  function showCase(key){
-    CASES.forEach(function(c){
-      var el = document.getElementById('case-'+c.key);
-      if(el) el.style.display = (c.key===key) ? '' : 'none';
-    });
-    document.querySelectorAll('.casechip').forEach(function(b){
-      b.classList.toggle('on', b.dataset.key===key);
-    });
-    window.scrollTo({top:0,behavior:'smooth'});
-  }
-  document.querySelectorAll('.casechip').forEach(function(b){
-    b.onclick = function(){ showCase(b.dataset.key); setMsg('ok','已调档：'+b.textContent+'。'); };
-  });
+  var CASES = [{"key": "patrol", "label": "北京 · 中关村", "city": "黄冈市", "keyword": "黄冈万达", "target": "火腿扒麦满分"}, {"key": "jingan", "label": "上海 · 静安寺", "city": "上海市", "keyword": "静安寺", "target": "巨无霸三件套"}, {"key": "huanggang", "label": "黄冈 · 万达", "city": "黄冈市", "keyword": "黄冈万达", "target": "麦香鱼"}];
+  var LAST_QUERY = '';
+  var $ = function(id){ return document.getElementById(id); };
+
   function setMsg(cls, html){
-    var m = document.getElementById('intakeMsg');
-    m.className = 'intake-msg show '+cls;
+    var m = $('intakeMsg');
+    m.className = 'intake-msg show ' + (cls||'');
     m.innerHTML = html;
   }
+  function clearFeed(){ $('liveFeed').innerHTML = ''; }
+  function addLine(cls, seq, title, say){
+    var d = document.createElement('div');
+    d.className = 'lf ' + (cls||'');
+    d.innerHTML = '<span class="n">' + (seq!=null? seq : '') + '</span>'
+      + '<span class="t">' + title + '</span><span class="s">' + say + '</span>';
+    $('liveFeed').appendChild(d);
+    var f = $('liveFeed'); f.scrollTop = f.scrollHeight;
+  }
+  function showPicks(items, onPick){
+    var box = $('picks'); box.innerHTML = '';
+    items.forEach(function(it){
+      var b = document.createElement('button');
+      b.className = 'pick'; b.type = 'button'; b.textContent = it.label;
+      b.onclick = function(){ box.innerHTML = ''; onPick(it.value); };
+      box.appendChild(b);
+    });
+  }
+
+  // 调档（已归档真实案卷）
+  function showCase(key){
+    CASES.forEach(function(c){
+      var el = $('case-' + c.key);
+      if(el) el.style.display = (c.key === key) ? '' : 'none';
+    });
+    var live = $('liveCase');
+    if(live) live.style.display = 'none';
+    document.querySelectorAll('.casechip').forEach(function(b){
+      b.classList.toggle('on', b.dataset.key === key);
+    });
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  document.querySelectorAll('.casechip').forEach(function(b){
+    b.onclick = function(){
+      showCase(b.dataset.key);
+      setMsg('ok','已调阅归档案卷：<b>' + b.textContent + '</b>。想查新案子，点上面「探长出勤」。');
+      clearFeed(); $('picks').innerHTML = '';
+    };
+  });
+
+  // —— 真跑：接案台 → /api/patrol（NDJSON 流式）——
+  function run(query){
+    LAST_QUERY = query;
+    clearFeed();
+    $('picks').innerHTML = '';
+    var token = ($('fToken') && $('fToken').value || '').trim();
+    setMsg('run','探长出勤中…… 正在划定巡查范围、逐店取证（全过程只读，不下单）');
+    fetch('api/patrol', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({query: query, token: token})
+    }).then(function(resp){
+      var reader = resp.body.getReader(), dec = new TextDecoder(), buf = '', t0 = Date.now();
+      function pump(){
+        return reader.read().then(function(r){
+          buf += dec.decode(r.value || new Uint8Array(), {stream:true});
+          var lines = buf.split('\n'); buf = lines.pop();
+          lines.forEach(function(l){ if(l.trim()) handle(JSON.parse(l)); });
+          if(!r.done) return pump();
+        });
+      }
+      return pump().then(function(){ setTimeout(function(){ location.reload(); }, 1500); });
+    }).catch(function(err){
+      offlineNotice(err);
+    });
+  }
+
+  function handle(m){
+    if(m.type === 'progress'){
+      var cls = m.kind === 'warning' ? 'warn' : (m.kind === 'success' ? 'ok' : '');
+      addLine(cls, m.seq, m.title, m.say);
+      return;
+    }
+    if(m.type === 'clarify'){
+      var p = m.parsed || {};
+      var where = (p.city||'？') + ' ' + (p.area||'');
+      var qs = [];
+      if((m.need||[]).indexOf('city') >= 0) qs.push('在哪个城市查？（例如：北京市 / 上海市）');
+      if((m.need||[]).indexOf('target') >= 0) qs.push('想比哪款餐品的价格？');
+      setMsg('new','探长听明白了：<b>' + where + '</b>' + (p.inferred ? '（' + p.inferred + '）' : '')
+        + '，但缺一样：<b>' + qs.join(' ') + '</b>——不瞎猜，你点一下或者补一句：');
+      showPicks((m.need||[]).indexOf('target') >= 0
+        ? [{label:'巨无霸', value: targetOf(LAST_QUERY) + ' 巨无霸'},
+           {label:'麦香鱼', value: targetOf(LAST_QUERY) + ' 麦香鱼'},
+           {label:'板烧鸡腿堡', value: targetOf(LAST_QUERY) + ' 板烧鸡腿堡'},
+           {label:'精选单人餐三件套', value: targetOf(LAST_QUERY) + ' 精选单人餐三件套'}]
+        : [], function(v){ run(v); });
+      return;
+    }
+    if(m.type === 'need_token'){
+      $('tokenBox').classList.add('show');
+      setMsg('new', m.msg || '探长需要你的 MCP Token 才能真出勤（Token 只用于这一次请求）。');
+      return;
+    }
+    if(m.type === 'error'){
+      setMsg('err', '巡查未完成：' + (m.msg || '未知错误'));
+      return;
+    }
+    if(m.type === 'result'){
+      addLine('ok', '✓', '结案', m.traceId + ' · ' + m.events + ' 条证据 · 服务端 ' + m.elapsed + 's');
+      // 注入实时案卷（与归档案卷同一套渲染）
+      var live = $('liveCase');
+      live.innerHTML = '<div class="livebar">实时巡查结果 · 案号 ' + m.traceId + '（' + m.events + ' 条证据，' + m.elapsed + ' 秒）</div>' + m.html;
+      live.style.display = '';
+      document.querySelectorAll('.caseview-wrap').forEach(function(w){ w.style.display = 'none'; });
+      setMsg('ok','结案！这份是<b>刚刚真跑</b>的：探长只读地巡查了麦当劳 MCP，全程可核验。');
+      window.scrollTo({top: $('liveCase').offsetTop - 20, behavior:'smooth'});
+      return;
+    }
+  }
+
+  function targetOf(q){
+    // 从原句里保留地点部分：去掉常见问句尾巴
+    return (q||'').replace(/(有什么.*|哪家.*|哪个.*|怎么.*|附近.*|吗[?？]?)$/,'').trim();
+  }
+
+  function offlineNotice(err){
+    // 本地打开（file://）或后端不在时，诚实说明并给出可行路径
+    setMsg('new','这一页的「真跑」需要办案服务在线（浏览器要经它转发麦当劳 MCP——麦当劳 MCP 不允许浏览器跨域直连）。'
+      + '你现在打开的是<b>离线归档版</b>：下面三册归档案卷都是真数据，随便看；'
+      + '要真查新案子，二选一：① 用 WorkBuddy 装 Skill 后说一句话；② 本地起服务：'
+      + '<code>python apps/detective/server.py</code>。');
+    clearFeed();
+  }
+
   document.getElementById('intakeForm').addEventListener('submit', function(ev){
     ev.preventDefault();
-    var raw = document.getElementById('fQ').value.trim();
-    if(!raw){ setMsg('new','先得说个案子，比如「中关村 精选单人餐三件套哪家便宜」。'); return; }
-    var p = parse(raw);
-    if (p.hit){
-      showCase(p.hit.key);
-      setMsg('ok','已调档：'+p.hit.label+'（探长理解为：'+p.city+' '+p.area+' · '+p.target+'）。');
-    } else {
-      var where = (p.city||'某城') + (p.area ? p.area : '');
-      var cityTxt = p.city || '<城市>';
-      var areaTxt = p.area || (p.city ? p.city : '<区域>');
-      setMsg('new','探长的理解：<b>'+where+'</b>附近 · <b>'+p.target+'</b>（默认方圆 3 km、最多 10 店）。'
-        +'这一页是案卷回放，不回放实时数据——探长出勤需要真实数据通道（MCP Token 按参赛规则不进页面）。'
-        +'装上 WorkBuddy Skill 后说一句话就真跑，或粘贴这条命令：<br/>'
-        +'<code>python skills/mctrace/scripts/run_trace.py --detective '+cityTxt+' '+areaTxt+' '+p.target+' 3 10</code><br/>'
-        +'跑完用 <code>python apps/detective/build_detective.py</code> 重新生成本页，新案卷自动归档。');
-    }
+    var q = $('fQ').value.trim();
+    if(!q){ setMsg('new','先得说个案子，比如「中关村 精选单人餐三件套哪家便宜」。'); return; }
+    run(q);
   });
+
+  // 页面打开时先探一下服务在不在
+  fetch('api/health').then(function(r){ return r.json(); }).then(function(h){
+    if(h && h.ok){ setMsg('ok','办案服务在线，报个案试试（真跑，全程只读）。Token 只在你贴了之后用于这一次请求。'); }
+    else { offlineNotice(); }
+  }).catch(offlineNotice);
 })();
 </script>
 </body>

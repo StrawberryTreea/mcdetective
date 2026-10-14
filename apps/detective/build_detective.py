@@ -50,184 +50,8 @@ ARCHIVE = [
 ]
 
 
-def esc(s):
-    return H.escape(str(s), quote=True)
-
-
-def short(name):
-    return (name.replace("麦当劳北京", "").replace("麦当劳上海", "").replace("麦当劳", "")
-                .replace("餐厅", "").strip() or name)
-
-
-def facts_of(ev):
-    return {f["key"]: f["value"] for f in ev.get("facts", [])}
-
-
-def render_case(T):
-    """把一份 trace 渲染成一册案卷的 HTML（不含外壳）。"""
-    EVENTS = T["events"]
-    RESULT = next((e["response"]["result"] for e in EVENTS
-                   if (e.get("response") or {}).get("result")), {})
-    PRICE_EV = next(e for e in EVENTS if (e.get("rule") or {}).get("id") == "price.cross-store")
-    ROWS = PRICE_EV["response"].get("rows") or []
-    AVAIL_EV = next(e for e in EVENTS if (e.get("rule") or {}).get("id") == "availability.coverage")
-    COUPON_EV = next(e for e in EVENTS if (e.get("rule") or {}).get("id") == "coupon.cross-store")
-    STORES_EV = next(e for e in EVENTS if e["tool"] == "query-nearby-stores")
-    CASE_EV = EVENTS[0]
-
-    low = ROWS[0] if ROWS else None
-    high = ROWS[-1] if ROWS else None
-    delta = round(high["price"] - low["price"], 2) if (low and high) else 0
-    pct = round(delta / low["price"] * 100, 1) if (low and low["price"]) else 0
-    avail_facts = facts_of(AVAIL_EV)
-    coupon_facts = facts_of(COUPON_EV)
-    case_facts = facts_of(CASE_EV)
-    stores_facts = facts_of(STORES_EV)
-    price_facts = facts_of(PRICE_EV)
-    primary_form = price_facts.get("comparedForm", case_facts.get("target", ""))
-    other_forms = price_facts.get("otherForms", "无")
-
-    # 每店聚合（菜单事件 + 券事件按门店名配对）
-    store_cards = {}
-    for e in EVENTS:
-        if e["tool"] == "query-meals":
-            name = next((f["value"] for f in e["facts"] if f["key"] == "storeName"), "")
-            store_cards.setdefault(name, {})["mealCount"] = next(
-                (f["value"] for f in e["facts"] if f["key"] == "mealCount"), 0)
-            store_cards[name]["distance"] = next(
-                (f["value"] for f in e["facts"] if f["key"] == "distance"), "未知")
-        elif e["tool"] == "query-store-coupons":
-            name = next((f["value"] for f in e["facts"] if f["key"] == "storeName"), "")
-            store_cards.setdefault(name, {})["coupons"] = next(
-                (f["value"] for f in e["facts"] if f["key"] == "coupons"), "无")
-
-    # 价差条形图（0 起 honest scale）
-    pmax = max((r["price"] for r in ROWS), default=1) or 1
-    bars = []
-    for r in ROWS:
-        w = round(r["price"] / (pmax * 1.06) * 100, 1)
-        tag, cls = "", ""
-        if r is ROWS[0] and delta > 0:
-            tag, cls = '<span class="badge cheap">最便宜</span>', "cheap"
-        if r is ROWS[-1] and len(ROWS) > 1 and delta > 0:
-            tag = '<span class="badge pricey">最贵</span>'
-            cls = "pricey" if not cls else cls
-        bars.append(
-            f'<div class="brow {cls}"><div class="bname">{esc(short(r["store"]))}{tag}</div>'
-            f'<div class="btrack"><i style="width:{w}%"></i></div>'
-            f'<div class="bval">¥{r["price"]:g}</div></div>')
-
-    if not ROWS:
-        delta_html = '<div class="delta">巡查门店均未发现该餐品——此案无从比起。</div>'
-    elif delta > 0:
-        delta_html = (f'<div class="delta">差价 <b>¥{delta:g}</b>：{esc(short(high["store"]))} 比 '
-                      f'{esc(short(low["store"]))} 贵 {pct}%</div>')
-    else:
-        delta_html = (f'<div class="delta">各店同价 <b>¥{low["price"]:g}</b>——本案无从比起，如实记录。</div>')
-
-    if not ROWS:
-        stamp_html = '<div class="stamp">未发现目标餐品</div>'
-    elif delta > 0:
-        stamp_html = f'<div class="stamp">差价 ¥{delta:g} · {esc(short(low["store"]))}最便宜</div>'
-    else:
-        stamp_html = f'<div class="stamp">无从比起 · 各店同价 ¥{low["price"]:g}</div>'
-
-    # 巡查站点卡（按距离近→远）
-    stations = []
-    for i, (name, info) in enumerate(store_cards.items(), 1):
-        row = next((r for r in ROWS if r["store"] == name), None)
-        price_txt = f'¥{row["price"]:g}' if row else "未在售"
-        pcls = ("p-cheap" if (row and row is ROWS[0] and delta > 0) else
-                ("p-high" if (row and row is ROWS[-1] and delta > 0) else ""))
-        stations.append(
-            f'<div class="station {pcls}"><div class="sno">{i}</div>'
-            f'<div class="sbody"><div class="sname">{esc(short(name))}</div>'
-            f'<div class="smeta">{esc(info.get("distance","未知"))} · 菜单 {info.get("mealCount", 0)} 款 · 门店券 {esc(info.get("coupons", "无"))}</div></div>'
-            f'<div class="sprice">{price_txt}</div></div>')
-
-    # 案卷附录
-    KIND_DOT = {"info": "•", "warning": "⚠", "success": "✓", "error": "✗", "degraded": "≈"}
-    evidence = []
-    for e in EVENTS:
-        dot = KIND_DOT.get(e["kind"], "•")
-        req = json.dumps(e.get("request") or {}, ensure_ascii=False, indent=1)
-        resp = json.dumps(e.get("response") or {}, ensure_ascii=False, indent=1)
-        evidence.append(
-            f'<details class="ev"><summary><span class="kdot kdot-{e["kind"]}">{dot}</span>'
-            f'<span class="seq">{e["seq"]:02d}</span>'
-            f'<span class="ttl">{esc(e["title"])}</span>'
-            f'<span class="tool">{esc(e["tool"])}</span></summary>'
-            f'<div class="say">{esc(e["say"]["friendly"])}</div>'
-            f'<div class="raw"><div class="rawt">请求</div><pre>{esc(req)}</pre></div>'
-            f'<div class="raw"><div class="rawt">返回（节选）</div><pre>{esc(resp[:1600])}</pre></div>'
-            f'<div class="ref">{esc(e["evidenceRef"])}</div></details>')
-
-    forms_note = ""
-    if other_forms and other_forms != "无":
-        forms_note = f'<div class="note">目标关键词还命中其他形态，单独列示、不混入比价：{esc(other_forms)}。</div>'
-
-    return f"""
-<section class="caseview" data-city="{esc(case_facts.get('city',''))}" data-keyword="{esc(case_facts.get('keyword',''))}">
-<section class="card">
-  <h2><span class="no">卷</span>案卷 · {esc(case_facts.get("city",""))}{esc(case_facts.get("keyword",""))}片区</h2>
-  <div class="casefile">
-    <div class="cf"><div class="k">报案诉求</div><div class="v">「{esc(case_facts.get("target",""))}」哪家卖得便宜？</div></div>
-    <div class="cf"><div class="k">巡查范围</div><div class="v">方圆 {esc(case_facts.get("radiusKm",""))} km · 命中 {esc(stores_facts.get("withinRadius",""))} 家</div></div>
-    <div class="cf"><div class="k">实际覆盖</div><div class="v">{esc(stores_facts.get("distanceRange",""))} · 巡查 {esc(stores_facts.get("patrolCount",""))} 家</div></div>
-    <div class="cf"><div class="k">立案时间</div><div class="v">{esc(T["generatedAt"])}</div></div>
-    <div class="cf"><div class="k">案号</div><div class="v" style="font-size:12px">{esc(T["traceId"])}</div></div>
-    <div class="cf"><div class="k">状态</div><div class="v big">已结案 ✓</div></div>
-  </div>
-</section>
-
-<section class="card">
-  <h2><span class="no">1</span>巡查路线 · 逐店取证</h2>
-  {''.join(stations)}
-  <div class="note">站点按距离由近到远排列；距离取自 query-nearby-stores 的 distance 字段（米），标价取自各店 query-meals 的 currentPrice 字段，门店券数取自 query-store-coupons。</div>
-</section>
-
-<section class="card">
-  <h2><span class="no">2</span>线索一 · 价差榜（{esc(primary_form)}）</h2>
-  {''.join(bars)}
-  {delta_html}
-  <div class="note">条形图自 ¥0 起按真实标价等比绘制，未做视觉放大；只与同一形态比价。</div>
-  {forms_note}
-</section>
-
-<section class="card">
-  <h2><span class="no">3</span>线索二 · 餐品可得性</h2>
-  <div class="stats">
-    <div class="stat"><div class="n">{esc(avail_facts.get("unionItems",""))}</div><div class="l">单品并集（款）</div></div>
-    <div class="stat"><div class="n">{esc(avail_facts.get("commonItems",""))}</div><div class="l">全门店共有（款）</div></div>
-    <div class="stat"><div class="n">{esc(avail_facts.get("coveragePct",""))}%</div><div class="l">共有覆盖率</div></div>
-  </div>
-  <div class="note" style="margin-top:10px">{esc(avail_facts.get("example",""))}。想吃限定款，门店选址比几块钱更要命。</div>
-</section>
-
-<section class="card">
-  <h2><span class="no">4</span>线索三 · 门店券核查</h2>
-  <div class="casefile">
-    <div class="cf"><div class="k">不同券集合数</div><div class="v">{esc(coupon_facts.get("uniqueCouponSets",""))}</div></div>
-    <div class="cf"><div class="k">结论</div><div class="v big">{esc(coupon_facts.get("verdict",""))}</div></div>
-  </div>
-  <div class="note" style="margin-top:10px">所以本案不比券，只比价和货——没差异的维度不硬凑戏。</div>
-</section>
-
-<section class="card">
-  <h2><span class="no">5</span>结案报告</h2>
-  <div class="verdict">
-    {stamp_html}
-    <div class="sub">{esc(RESULT.get("verdict",""))} · 可得性覆盖率 {esc(RESULT.get("coveragePct",""))}% · 未创建任何订单</div>
-  </div>
-  <div class="repro">$ python skills/mctrace/scripts/run_trace.py --detective {esc(case_facts.get("city",""))} {esc(case_facts.get("keyword",""))} {esc(case_facts.get("target",""))} {esc(case_facts.get("radiusKm","3"))} 10</div>
-</section>
-
-<section class="card">
-  <h2><span class="no">附</span>案卷附录 · {len(EVENTS)} 条证据</h2>
-  {''.join(evidence)}
-</section>
-</section>
-"""
+# 渲染内核（办案页生成器与在线后端共用同一份，保证「归档案卷」与「实时案卷」外观一致）
+from case_render import esc, short, facts_of, render_case  # noqa: E402
 
 
 # ---------- 组装页面 ----------
@@ -288,6 +112,29 @@ body{background:#F6F2EA;color:#2C2C2A;font:14px/1.7 -apple-system,"PingFang SC",
 .intake-msg.ok{background:#EAF3DE;border:1px solid #97C459;color:#3B6D11}
 .intake-msg.new{background:#E6F1FB;border:1px solid #85B7EB;color:#185FA5}
 .intake-msg code{background:rgba(0,0,0,.07);border-radius:5px;padding:1px 6px;font:12px ui-monospace,monospace}
+.intake-msg.run{background:#FFF8E8;border:1px solid #F2A900;color:#7a5200}
+.intake-msg.err{background:#FCEBEB;border:1px solid #E24B4A;color:#A32D2D}
+.picks{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.pick{cursor:pointer;font:700 12px inherit;padding:4px 12px;border-radius:999px;border:1.5px solid #F2A900;background:#fff;color:#7a5200}
+.pick:hover{background:#F2A900;color:#3a2c00}
+.livefeed{margin-top:10px;max-height:230px;overflow:auto;border:1px solid #E5DCC9;border-radius:10px;background:#fff;padding:8px 10px}
+.livefeed:empty{display:none}
+.lf{display:flex;gap:8px;align-items:baseline;font-size:12px;padding:3px 0;border-bottom:1px dashed #EFE8D8}
+.lf:last-child{border-bottom:0}
+.lf .n{font:700 10.5px ui-monospace,monospace;color:#B4AE9C;width:20px;flex:0 0 20px}
+.lf .t{font-weight:700;color:#6b6350;white-space:nowrap}
+.lf.warn .t{color:#B57B00}
+.lf.ok .t{color:#2E7D32}
+.lf .s{color:#5b5340;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tokenbox{margin-top:10px;border:1px solid #85B7EB;background:#F2F8FE;border-radius:10px;padding:11px 13px;display:none}
+.tokenbox.show{display:block}
+.tokenbox .th{font-size:12.5px;font-weight:800;color:#185FA5;margin-bottom:6px}
+.tokenbox input{width:100%;font:12.5px ui-monospace,monospace;padding:8px 10px;border:1.5px solid #85B7EB;border-radius:8px;background:#fff}
+.tokenbox .note{margin-top:7px}
+.warnbar{margin-top:10px;background:#FFF3D6;border:1px solid #F2A900;border-left:4px solid #DA291C;border-radius:9px;padding:9px 13px;font-size:12.5px;color:#7a5200;font-weight:600}
+.live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#E24B4A;vertical-align:2px;margin-left:6px;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.livebar{background:linear-gradient(90deg,#DA291C,#F2A900);color:#fff;font-size:12px;font-weight:700;padding:7px 13px;border-radius:10px;margin:10px 0 0;display:inline-block}
 .casefile{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
 .cf{background:#FAF7EF;border:1px dashed #D8CDB4;border-radius:10px;padding:10px 12px}
 .cf .k{font-size:11.5px;color:#8a7f68;font-weight:700}
@@ -364,73 +211,150 @@ BADGE = """<svg width="46" height="46" viewBox="0 0 24 24" aria-label="麦探长
 JS = """
 (function(){
   var CASES = __CASES__;
-  var CITIES = ["北京","上海","广州","深圳","杭州","成都","武汉","南京","苏州","天津","重庆","西安","长沙","郑州","青岛","厦门","福州","合肥","南昌","贵阳","昆明","南宁","佛山","东莞","宁波","无锡","大连","沈阳","哈尔滨","长春","石家庄","太原","济南","温州","黄冈","鄂州","珠海","中山","惠州","汕头","湛江","柳州","桂林","海口","三亚","兰州","银川","西宁","乌鲁木齐","呼和浩特","宜昌","襄阳","洛阳","开封","徐州","常州","南通","扬州","泰州","盐城","芜湖","蚌埠","遵义","绵阳","泸州","唐山","烟台","潍坊","临沂","台州","嘉兴","绍兴","金华","湖州","丽水","衢州","舟山"];
-  var MEALS = ["巨无霸","麦香鱼","板烧鸡腿堡","麦辣鸡腿堡","麦辣鸡翅","不素之霸","双层深海鳕鱼堡","安格斯厚牛堡","培根蔬牛堡","吉士汉堡","薯条","麦乐鸡","甜筒","麦旋风","新地","脆薯饼","玉米杯","苹果片","三件套","套餐"];
-  var STOPS = ["哪家","哪个","哪家店","便宜","怎么","怎样","如何","查询","查一下","一下","附近","麦当劳","麦探长","帮我","请问","我想","想要","比较","比价","想吃","吃一份","点一份","来一份","多少","哪里","哪","家","店","的","了","吗","呢","吧","啊","和","跟","在","有","卖"];
-  function norm(s){ return (s||'').replace(/\\s+/g,'').replace(/[省市]$/,''); }
-  function parse(raw){
-    var s = (raw||'').replace(/\\s+/g,'').replace(/[？?！!。，,、]/g,'');
-    var city = '';
-    for (var i=0;i<CITIES.length;i++){ if (s.indexOf(CITIES[i])>=0){ city = CITIES[i]; break; } }
-    // 目标餐品：菜单词表命中（长的优先）
-    var target = '';
-    var sorted = MEALS.slice().sort(function(a,b){return b.length-a.length;});
-    for (var j=0;j<sorted.length;j++){
-      if (s.indexOf(sorted[j])>=0){ target = sorted[j]; break; }
-    }
-    // 归档命中：关键词在输入里
-    for (var k=0;k<CASES.length;k++){
-      var c = CASES[k];
-      if (s.indexOf(c.keyword)>=0){
-        return {hit:c, city:city||norm(c.city), area:c.keyword,
-                target:c.target||target||'巨无霸'};
-      }
-    }
-    // 未归档：城市 + 目标剥离后，剩余前几字当作区域（尽力而为，标注"我的理解"）
-    var rest = s;
-    if (city) rest = rest.replace(city,'');
-    if (target) rest = rest.replace(target,'');
-    STOPS.forEach(function(w){ rest = rest.split(w).join(''); });
-    var area = rest.slice(0,4);
-    return {hit:null, city:city||'', area:area, target:target||'巨无霸'};
-  }
-  function showCase(key){
-    CASES.forEach(function(c){
-      var el = document.getElementById('case-'+c.key);
-      if(el) el.style.display = (c.key===key) ? '' : 'none';
-    });
-    document.querySelectorAll('.casechip').forEach(function(b){
-      b.classList.toggle('on', b.dataset.key===key);
-    });
-    window.scrollTo({top:0,behavior:'smooth'});
-  }
-  document.querySelectorAll('.casechip').forEach(function(b){
-    b.onclick = function(){ showCase(b.dataset.key); setMsg('ok','已调档：'+b.textContent+'。'); };
-  });
+  var LAST_QUERY = '';
+  var $ = function(id){ return document.getElementById(id); };
+
   function setMsg(cls, html){
-    var m = document.getElementById('intakeMsg');
-    m.className = 'intake-msg show '+cls;
+    var m = $('intakeMsg');
+    m.className = 'intake-msg show ' + (cls||'');
     m.innerHTML = html;
   }
+  function clearFeed(){ $('liveFeed').innerHTML = ''; }
+  function addLine(cls, seq, title, say){
+    var d = document.createElement('div');
+    d.className = 'lf ' + (cls||'');
+    d.innerHTML = '<span class="n">' + (seq!=null? seq : '') + '</span>'
+      + '<span class="t">' + title + '</span><span class="s">' + say + '</span>';
+    $('liveFeed').appendChild(d);
+    var f = $('liveFeed'); f.scrollTop = f.scrollHeight;
+  }
+  function showPicks(items, onPick){
+    var box = $('picks'); box.innerHTML = '';
+    items.forEach(function(it){
+      var b = document.createElement('button');
+      b.className = 'pick'; b.type = 'button'; b.textContent = it.label;
+      b.onclick = function(){ box.innerHTML = ''; onPick(it.value); };
+      box.appendChild(b);
+    });
+  }
+
+  // 调档（已归档真实案卷）
+  function showCase(key){
+    CASES.forEach(function(c){
+      var el = $('case-' + c.key);
+      if(el) el.style.display = (c.key === key) ? '' : 'none';
+    });
+    var live = $('liveCase');
+    if(live) live.style.display = 'none';
+    document.querySelectorAll('.casechip').forEach(function(b){
+      b.classList.toggle('on', b.dataset.key === key);
+    });
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+  document.querySelectorAll('.casechip').forEach(function(b){
+    b.onclick = function(){
+      showCase(b.dataset.key);
+      setMsg('ok','已调阅归档案卷：<b>' + b.textContent + '</b>。想查新案子，点上面「探长出勤」。');
+      clearFeed(); $('picks').innerHTML = '';
+    };
+  });
+
+  // —— 真跑：接案台 → /api/patrol（NDJSON 流式）——
+  function run(query){
+    LAST_QUERY = query;
+    clearFeed();
+    $('picks').innerHTML = '';
+    var token = ($('fToken') && $('fToken').value || '').trim();
+    setMsg('run','探长出勤中…… 正在划定巡查范围、逐店取证（全过程只读，不下单）');
+    fetch('api/patrol', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({query: query, token: token})
+    }).then(function(resp){
+      var reader = resp.body.getReader(), dec = new TextDecoder(), buf = '', t0 = Date.now();
+      function pump(){
+        return reader.read().then(function(r){
+          buf += dec.decode(r.value || new Uint8Array(), {stream:true});
+          var lines = buf.split('\\n'); buf = lines.pop();
+          lines.forEach(function(l){ if(l.trim()) handle(JSON.parse(l)); });
+          if(!r.done) return pump();
+        });
+      }
+      return pump().then(function(){ setTimeout(function(){ location.reload(); }, 1500); });
+    }).catch(function(err){
+      offlineNotice(err);
+    });
+  }
+
+  function handle(m){
+    if(m.type === 'progress'){
+      var cls = m.kind === 'warning' ? 'warn' : (m.kind === 'success' ? 'ok' : '');
+      addLine(cls, m.seq, m.title, m.say);
+      return;
+    }
+    if(m.type === 'clarify'){
+      var p = m.parsed || {};
+      var where = (p.city||'？') + ' ' + (p.area||'');
+      var qs = [];
+      if((m.need||[]).indexOf('city') >= 0) qs.push('在哪个城市查？（例如：北京市 / 上海市）');
+      if((m.need||[]).indexOf('target') >= 0) qs.push('想比哪款餐品的价格？');
+      setMsg('new','探长听明白了：<b>' + where + '</b>' + (p.inferred ? '（' + p.inferred + '）' : '')
+        + '，但缺一样：<b>' + qs.join(' ') + '</b>——不瞎猜，你点一下或者补一句：');
+      showPicks((m.need||[]).indexOf('target') >= 0
+        ? [{label:'巨无霸', value: targetOf(LAST_QUERY) + ' 巨无霸'},
+           {label:'麦香鱼', value: targetOf(LAST_QUERY) + ' 麦香鱼'},
+           {label:'板烧鸡腿堡', value: targetOf(LAST_QUERY) + ' 板烧鸡腿堡'},
+           {label:'精选单人餐三件套', value: targetOf(LAST_QUERY) + ' 精选单人餐三件套'}]
+        : [], function(v){ run(v); });
+      return;
+    }
+    if(m.type === 'need_token'){
+      $('tokenBox').classList.add('show');
+      setMsg('new', m.msg || '探长需要你的 MCP Token 才能真出勤（Token 只用于这一次请求）。');
+      return;
+    }
+    if(m.type === 'error'){
+      setMsg('err', '巡查未完成：' + (m.msg || '未知错误'));
+      return;
+    }
+    if(m.type === 'result'){
+      addLine('ok', '✓', '结案', m.traceId + ' · ' + m.events + ' 条证据 · 服务端 ' + m.elapsed + 's');
+      // 注入实时案卷（与归档案卷同一套渲染）
+      var live = $('liveCase');
+      live.innerHTML = '<div class="livebar">实时巡查结果 · 案号 ' + m.traceId + '（' + m.events + ' 条证据，' + m.elapsed + ' 秒）</div>' + m.html;
+      live.style.display = '';
+      document.querySelectorAll('.caseview-wrap').forEach(function(w){ w.style.display = 'none'; });
+      setMsg('ok','结案！这份是<b>刚刚真跑</b>的：探长只读地巡查了麦当劳 MCP，全程可核验。');
+      window.scrollTo({top: $('liveCase').offsetTop - 20, behavior:'smooth'});
+      return;
+    }
+  }
+
+  function targetOf(q){
+    // 从原句里保留地点部分：去掉常见问句尾巴
+    return (q||'').replace(/(有什么.*|哪家.*|哪个.*|怎么.*|附近.*|吗[?？]?)$/,'').trim();
+  }
+
+  function offlineNotice(err){
+    // 本地打开（file://）或后端不在时，诚实说明并给出可行路径
+    setMsg('new','这一页的「真跑」需要办案服务在线（浏览器要经它转发麦当劳 MCP——麦当劳 MCP 不允许浏览器跨域直连）。'
+      + '你现在打开的是<b>离线归档版</b>：下面三册归档案卷都是真数据，随便看；'
+      + '要真查新案子，二选一：① 用 WorkBuddy 装 Skill 后说一句话；② 本地起服务：'
+      + '<code>python apps/detective/server.py</code>。');
+    clearFeed();
+  }
+
   document.getElementById('intakeForm').addEventListener('submit', function(ev){
     ev.preventDefault();
-    var raw = document.getElementById('fQ').value.trim();
-    if(!raw){ setMsg('new','先得说个案子，比如「中关村 精选单人餐三件套哪家便宜」。'); return; }
-    var p = parse(raw);
-    if (p.hit){
-      showCase(p.hit.key);
-      setMsg('ok','已调档：'+p.hit.label+'（探长理解为：'+p.city+' '+p.area+' · '+p.target+'）。');
-    } else {
-      var where = (p.city||'某城') + (p.area ? p.area : '');
-      var cityTxt = p.city || '<城市>';
-      var areaTxt = p.area || (p.city ? p.city : '<区域>');
-      setMsg('new','探长的理解：<b>'+where+'</b>附近 · <b>'+p.target+'</b>（默认方圆 3 km、最多 10 店）。'
-        +'这一页是案卷回放，不回放实时数据——探长出勤需要真实数据通道（MCP Token 按参赛规则不进页面）。'
-        +'装上 WorkBuddy Skill 后说一句话就真跑，或粘贴这条命令：<br/>'
-        +'<code>python skills/mctrace/scripts/run_trace.py --detective '+cityTxt+' '+areaTxt+' '+p.target+' 3 10</code><br/>'
-        +'跑完用 <code>python apps/detective/build_detective.py</code> 重新生成本页，新案卷自动归档。');
-    }
+    var q = $('fQ').value.trim();
+    if(!q){ setMsg('new','先得说个案子，比如「中关村 精选单人餐三件套哪家便宜」。'); return; }
+    run(q);
   });
+
+  // 页面打开时先探一下服务在不在
+  fetch('api/health').then(function(r){ return r.json(); }).then(function(h){
+    if(h && h.ok){ setMsg('ok','办案服务在线，报个案试试（真跑，全程只读）。Token 只在你贴了之后用于这一次请求。'); }
+    else { offlineNotice(); }
+  }).catch(offlineNotice);
 })();
 """
 
@@ -456,16 +380,25 @@ PAGE = f"""<!DOCTYPE html>
 
 <section class="card intake">
   <h2><span class="no">台</span>接案台 · 报个案</h2>
-  <div class="lead">说一句话就行——城市、地段、想查的餐品，探长自己领会；库里有的直接调档，没有的告诉你怎么让他真跑。</div>
+  <div class="lead">说一句话就行——城市、地段、想查的餐品，探长自己领会；缺什么他会问你，绝不瞎猜。</div>
   <form id="intakeForm" class="formrow">
     <div class="qbox"><input id="fQ" type="text" autocomplete="off"
       placeholder="比如：中关村 精选单人餐三件套哪家便宜？"/></div>
     <button class="gobtn" type="submit">探长出勤</button>
   </form>
   <div class="hint">默认方圆 3 km、最多 10 店（可在命令里改）· 例如：静安寺 麦香鱼 / 黄冈万达 巨无霸 / 深圳科技园 麦辣鸡腿堡</div>
-  <div class="archrow"><span class="lab">或调阅已归档案卷：</span>{chips_html}</div>
+  <div class="tokenbox" id="tokenBox">
+    <div class="th">② 贴上你的 MCP Token，探长才能真出勤</div>
+    <input id="fToken" type="password" autocomplete="off" placeholder="粘贴 open.mcd.cn/mcd 控制台申请的 Token"/>
+    <div class="note">Token 只活在这一次请求里：不写进页面、不进仓库、不保存。<a href="https://open.mcd.cn/mcp" target="_blank" style="color:#185FA5">去申请（免费，手机号登录）</a> · 探长全程只读，不下单不领券。</div>
+  </div>
   <div class="intake-msg" id="intakeMsg"></div>
+  <div class="picks" id="picks"></div>
+  <div class="livefeed" id="liveFeed"></div>
+  <div class="archrow"><span class="lab">没带 Token？先调阅已归档案卷：</span>{chips_html}</div>
 </section>
+
+<div id="liveCase"></div>
 
 {views_html}
 

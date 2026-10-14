@@ -1,31 +1,31 @@
 {
-  "traceId": "mcdetective-20261013-aafba506",
-  "generatedAt": "2026-10-13T21:02:38",
+  "traceId": "mcdetective-20261014-42918eba",
+  "generatedAt": "2026-10-14T09:44:17",
   "isMock": false,
-  "eventCount": 16,
+  "eventCount": 10,
   "events": [
     {
-      "traceId": "mcdetective-20261013-aafba506",
+      "traceId": "mcdetective-20261014-42918eba",
       "seq": 1,
       "kind": "info",
       "tool": "user-request",
       "title": "接报案",
       "status": "success",
-      "ts": "2026-10-13T21:02:26",
+      "ts": "2026-10-14T09:44:14",
       "facts": [
         {
           "key": "city",
-          "value": "北京市",
+          "value": "黄冈市",
           "source": "user-request"
         },
         {
           "key": "keyword",
-          "value": "中关村",
+          "value": "黄冈万达",
           "source": "user-request"
         },
         {
           "key": "target",
-          "value": "精选单人餐三件套",
+          "value": "火腿扒麦满分",
           "source": "user-request"
         },
         {
@@ -42,34 +42,34 @@
         }
       ],
       "entities": {
-        "精选单人餐三件套": "目标餐品 / target"
+        "火腿扒麦满分": "目标餐品 / target"
       },
       "rule": null,
       "say": {
-        "friendly": "接到报案：北京市中关村附近，有人想查「精选单人餐三件套」哪家卖得便宜。探长出动了，先按方圆 3 公里划定巡查范围。",
-        "pro": "解析报案：区域=北京市中关村；目标餐品=精选单人餐三件套；巡查半径=3km；门店上限=10。"
+        "friendly": "接到报案：黄冈市黄冈万达附近，有人想查「火腿扒麦满分」哪家卖得便宜。探长出动了，先按方圆 3 公里划定巡查范围。",
+        "pro": "解析报案：区域=黄冈市黄冈万达；目标餐品=火腿扒麦满分；巡查半径=3km；门店上限=10。"
       },
-      "evidenceRef": "trace://mcdetective-20261013-aafba506/events/1",
+      "evidenceRef": "trace://mcdetective-20261014-42918eba/events/1",
       "isMock": false,
       "request": {
-        "city": "北京市",
-        "keyword": "中关村",
-        "target": "精选单人餐三件套",
+        "city": "黄冈市",
+        "keyword": "黄冈万达",
+        "target": "火腿扒麦满分",
         "radiusKm": 3.0,
         "maxStores": 10
       },
       "response": {
-        "case": "北京市中关村 精选单人餐三件套"
+        "case": "黄冈市黄冈万达 火腿扒麦满分"
       }
     },
     {
-      "traceId": "mcdetective-20261013-aafba506",
+      "traceId": "mcdetective-20261014-42918eba",
       "seq": 2,
       "kind": "info",
       "tool": "query-nearby-stores",
       "title": "划定巡查范围",
       "status": "success",
-      "ts": "2026-10-13T21:02:27",
+      "ts": "2026-10-14T09:44:14",
       "facts": [
         {
           "key": "hitCount",
@@ -78,676 +78,370 @@
         },
         {
           "key": "withinRadius",
-          "value": 5,
+          "value": 2,
           "source": "mctrace",
           "note": "方圆 3 km 内的门店数"
         },
         {
           "key": "patrolCount",
-          "value": 5,
+          "value": 2,
           "source": "mctrace",
           "note": "上限 10 家后的实际巡查数"
         },
         {
           "key": "distanceRange",
-          "value": "183 m–807 m",
+          "value": "95 m–1.8 km",
           "sourcePath": "$.data[].distance",
           "note": "接口返回距离为米"
         },
         {
           "key": "patrolList",
-          "value": "麦当劳北京善缘街(中关村5号)餐厅、麦当劳北京中关村领展广场餐厅、麦当劳北京海淀镇餐厅、麦当劳北京海淀中街(巴比伦时尚酒店)餐厅、麦当劳北京海淀黄庄餐厅",
+          "value": "麦当劳黄冈万达餐厅、麦当劳黄冈居然之家餐厅",
           "sourcePath": "$.data[].storeName"
         }
       ],
       "entities": {
-        "麦当劳北京善缘街(中关村5号)餐厅": "巡查对象门店",
-        "麦当劳北京中关村领展广场餐厅": "巡查对象门店",
-        "麦当劳北京海淀镇餐厅": "巡查对象门店",
-        "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅": "巡查对象门店",
-        "麦当劳北京海淀黄庄餐厅": "巡查对象门店"
+        "麦当劳黄冈万达餐厅": "巡查对象门店",
+        "麦当劳黄冈居然之家餐厅": "巡查对象门店"
       },
       "rule": null,
       "say": {
-        "friendly": "范围划定：中关村方圆 3 公里命中 5 家（距离 183 m–807 m），逐家查，最多 10 家。",
-        "pro": "门店查询命中 5 家；方圆 3km 内 5 家（距离 183 m–807 m）；取前 5 家巡查。"
+        "friendly": "范围划定：黄冈万达方圆 3 公里命中 2 家（距离 95 m–1.8 km），逐家查，最多 10 家。",
+        "pro": "门店查询命中 5 家；方圆 3km 内 2 家（距离 95 m–1.8 km）；取前 2 家巡查。"
       },
-      "evidenceRef": "trace://mcdetective-20261013-aafba506/events/2",
+      "evidenceRef": "trace://mcdetective-20261014-42918eba/events/2",
       "isMock": false,
       "request": {
         "beType": 1,
         "searchType": 2,
-        "city": "北京市",
-        "keyword": "中关村"
+        "city": "黄冈市",
+        "keyword": "黄冈万达"
       },
       "response": {
         "success": true,
         "hitCount": 5,
-        "withinRadius": 5,
+        "withinRadius": 2,
         "distanceMissing": 0
       }
     },
     {
-      "traceId": "mcdetective-20261013-aafba506",
+      "traceId": "mcdetective-20261014-42918eba",
       "seq": 3,
       "kind": "info",
       "tool": "query-meals",
       "title": "巡查门店菜单",
       "status": "success",
-      "ts": "2026-10-13T21:02:28",
+      "ts": "2026-10-14T09:44:15",
       "facts": [
         {
           "key": "storeName",
-          "value": "麦当劳北京善缘街(中关村5号)餐厅",
+          "value": "麦当劳黄冈万达餐厅",
           "sourcePath": "$.data.meals"
         },
         {
           "key": "distance",
-          "value": "183 m",
+          "value": "95 m",
           "sourcePath": "$.data[].distance"
         },
         {
           "key": "mealCount",
-          "value": 109,
+          "value": 77,
           "source": "mctrace"
         },
         {
           "key": "targetHit",
-          "value": "发现目标「精选单人餐三件套」，标价 ¥34.5",
+          "value": "发现目标「火腿扒麦满分」，标价 ¥11",
           "source": "mctrace"
         }
       ],
       "entities": {
-        "麦当劳北京善缘街(中关村5号)餐厅": "巡查门店",
-        "精选单人餐三件套": "目标餐品"
+        "麦当劳黄冈万达餐厅": "巡查门店",
+        "火腿扒麦满分": "目标餐品"
       },
       "rule": null,
       "say": {
-        "friendly": "第 1 站（183 m）：麦当劳北京善缘街(中关村5号)餐厅，菜单 109 个单品，发现目标「精选单人餐三件套」，标价 ¥34.5。",
-        "pro": "门店「麦当劳北京善缘街(中关村5号)餐厅」（距离 183 m）菜单返回 109 个单品；目标餐品状态：发现目标「精选单人餐三件套」，标价 ¥34.5。"
+        "friendly": "第 1 站（95 m）：麦当劳黄冈万达餐厅，菜单 77 个单品，发现目标「火腿扒麦满分」，标价 ¥11。",
+        "pro": "门店「麦当劳黄冈万达餐厅」（距离 95 m）菜单返回 77 个单品；目标餐品状态：发现目标「火腿扒麦满分」，标价 ¥11。"
       },
-      "evidenceRef": "trace://mcdetective-20261013-aafba506/events/3",
+      "evidenceRef": "trace://mcdetective-20261014-42918eba/events/3",
       "isMock": false,
       "request": {
-        "storeCode": "1950640",
+        "storeCode": "1960134",
         "orderType": 1,
         "beType": 1
       },
       "response": {
         "success": true,
-        "mealCount": 109
+        "mealCount": 77
       }
     },
     {
-      "traceId": "mcdetective-20261013-aafba506",
+      "traceId": "mcdetective-20261014-42918eba",
       "seq": 4,
       "kind": "info",
       "tool": "query-store-coupons",
       "title": "核查门店券",
       "status": "success",
-      "ts": "2026-10-13T21:02:28",
+      "ts": "2026-10-14T09:44:15",
       "facts": [
         {
           "key": "storeName",
-          "value": "麦当劳北京善缘街(中关村5号)餐厅",
+          "value": "麦当劳黄冈万达餐厅",
           "sourcePath": "$.data"
         },
         {
           "key": "couponCount",
-          "value": 2,
+          "value": 1,
           "sourcePath": "$.data"
         },
         {
           "key": "coupons",
-          "value": "中薯条买一送一、王牌小食拼",
+          "value": "高达芝士蛋堡早餐两件套",
           "sourcePath": "$.data[].title"
         }
       ],
       "entities": {
-        "中薯条买一送一": "门店券 / coupon",
-        "王牌小食拼": "门店券 / coupon"
+        "高达芝士蛋堡早餐两件套": "门店券 / coupon"
       },
       "rule": null,
       "say": {
-        "friendly": "麦当劳北京善缘街(中关村5号)餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。",
-        "pro": "门店「麦当劳北京善缘街(中关村5号)餐厅」券查询返回 2 张。"
+        "friendly": "麦当劳黄冈万达餐厅 门店券 1 张：高达芝士蛋堡早餐两件套，记下。",
+        "pro": "门店「麦当劳黄冈万达餐厅」券查询返回 1 张。"
       },
-      "evidenceRef": "trace://mcdetective-20261013-aafba506/events/4",
+      "evidenceRef": "trace://mcdetective-20261014-42918eba/events/4",
       "isMock": false,
       "request": {
         "orderType": 1,
         "beType": 1,
-        "storeCode": "1950640"
+        "storeCode": "1960134"
       },
       "response": {
         "success": true,
-        "couponCount": 2
+        "couponCount": 1
       }
     },
     {
-      "traceId": "mcdetective-20261013-aafba506",
+      "traceId": "mcdetective-20261014-42918eba",
       "seq": 5,
       "kind": "info",
       "tool": "query-meals",
       "title": "巡查门店菜单",
       "status": "success",
-      "ts": "2026-10-13T21:02:29",
+      "ts": "2026-10-14T09:44:16",
       "facts": [
         {
           "key": "storeName",
-          "value": "麦当劳北京中关村领展广场餐厅",
+          "value": "麦当劳黄冈居然之家餐厅",
           "sourcePath": "$.data.meals"
         },
         {
           "key": "distance",
-          "value": "365 m",
+          "value": "1.8 km",
           "sourcePath": "$.data[].distance"
         },
         {
           "key": "mealCount",
-          "value": 99,
+          "value": 79,
           "source": "mctrace"
         },
         {
           "key": "targetHit",
-          "value": "发现目标「精选单人餐三件套」，标价 ¥34.5",
+          "value": "发现目标「火腿扒麦满分」，标价 ¥11",
           "source": "mctrace"
         }
       ],
       "entities": {
-        "麦当劳北京中关村领展广场餐厅": "巡查门店",
-        "精选单人餐三件套": "目标餐品"
+        "麦当劳黄冈居然之家餐厅": "巡查门店",
+        "火腿扒麦满分": "目标餐品"
       },
       "rule": null,
       "say": {
-        "friendly": "第 2 站（365 m）：麦当劳北京中关村领展广场餐厅，菜单 99 个单品，发现目标「精选单人餐三件套」，标价 ¥34.5。",
-        "pro": "门店「麦当劳北京中关村领展广场餐厅」（距离 365 m）菜单返回 99 个单品；目标餐品状态：发现目标「精选单人餐三件套」，标价 ¥34.5。"
+        "friendly": "第 2 站（1.8 km）：麦当劳黄冈居然之家餐厅，菜单 79 个单品，发现目标「火腿扒麦满分」，标价 ¥11。",
+        "pro": "门店「麦当劳黄冈居然之家餐厅」（距离 1.8 km）菜单返回 79 个单品；目标餐品状态：发现目标「火腿扒麦满分」，标价 ¥11。"
       },
-      "evidenceRef": "trace://mcdetective-20261013-aafba506/events/5",
+      "evidenceRef": "trace://mcdetective-20261014-42918eba/events/5",
       "isMock": false,
       "request": {
-        "storeCode": "1951000",
+        "storeCode": "1960179",
         "orderType": 1,
         "beType": 1
       },
       "response": {
         "success": true,
-        "mealCount": 99
+        "mealCount": 79
       }
     },
     {
-      "traceId": "mcdetective-20261013-aafba506",
+      "traceId": "mcdetective-20261014-42918eba",
       "seq": 6,
       "kind": "info",
       "tool": "query-store-coupons",
       "title": "核查门店券",
       "status": "success",
-      "ts": "2026-10-13T21:02:30",
+      "ts": "2026-10-14T09:44:17",
       "facts": [
         {
           "key": "storeName",
-          "value": "麦当劳北京中关村领展广场餐厅",
+          "value": "麦当劳黄冈居然之家餐厅",
           "sourcePath": "$.data"
         },
         {
           "key": "couponCount",
-          "value": 2,
+          "value": 1,
           "sourcePath": "$.data"
         },
         {
           "key": "coupons",
-          "value": "中薯条买一送一、王牌小食拼",
+          "value": "高达芝士蛋堡早餐两件套",
           "sourcePath": "$.data[].title"
         }
       ],
       "entities": {
-        "中薯条买一送一": "门店券 / coupon",
-        "王牌小食拼": "门店券 / coupon"
+        "高达芝士蛋堡早餐两件套": "门店券 / coupon"
       },
       "rule": null,
       "say": {
-        "friendly": "麦当劳北京中关村领展广场餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。",
-        "pro": "门店「麦当劳北京中关村领展广场餐厅」券查询返回 2 张。"
+        "friendly": "麦当劳黄冈居然之家餐厅 门店券 1 张：高达芝士蛋堡早餐两件套，记下。",
+        "pro": "门店「麦当劳黄冈居然之家餐厅」券查询返回 1 张。"
       },
-      "evidenceRef": "trace://mcdetective-20261013-aafba506/events/6",
+      "evidenceRef": "trace://mcdetective-20261014-42918eba/events/6",
       "isMock": false,
       "request": {
         "orderType": 1,
         "beType": 1,
-        "storeCode": "1951000"
+        "storeCode": "1960179"
       },
       "response": {
         "success": true,
-        "couponCount": 2
+        "couponCount": 1
       }
     },
     {
-      "traceId": "mcdetective-20261013-aafba506",
+      "traceId": "mcdetective-20261014-42918eba",
       "seq": 7,
       "kind": "info",
-      "tool": "query-meals",
-      "title": "巡查门店菜单",
-      "status": "success",
-      "ts": "2026-10-13T21:02:31",
-      "facts": [
-        {
-          "key": "storeName",
-          "value": "麦当劳北京海淀镇餐厅",
-          "sourcePath": "$.data.meals"
-        },
-        {
-          "key": "distance",
-          "value": "417 m",
-          "sourcePath": "$.data[].distance"
-        },
-        {
-          "key": "mealCount",
-          "value": 88,
-          "source": "mctrace"
-        },
-        {
-          "key": "targetHit",
-          "value": "发现目标「精选单人餐三件套」，标价 ¥33.5",
-          "source": "mctrace"
-        }
-      ],
-      "entities": {
-        "麦当劳北京海淀镇餐厅": "巡查门店",
-        "精选单人餐三件套": "目标餐品"
-      },
-      "rule": null,
-      "say": {
-        "friendly": "第 3 站（417 m）：麦当劳北京海淀镇餐厅，菜单 88 个单品，发现目标「精选单人餐三件套」，标价 ¥33.5。",
-        "pro": "门店「麦当劳北京海淀镇餐厅」（距离 417 m）菜单返回 88 个单品；目标餐品状态：发现目标「精选单人餐三件套」，标价 ¥33.5。"
-      },
-      "evidenceRef": "trace://mcdetective-20261013-aafba506/events/7",
-      "isMock": false,
-      "request": {
-        "storeCode": "1950013",
-        "orderType": 1,
-        "beType": 1
-      },
-      "response": {
-        "success": true,
-        "mealCount": 88
-      }
-    },
-    {
-      "traceId": "mcdetective-20261013-aafba506",
-      "seq": 8,
-      "kind": "info",
-      "tool": "query-store-coupons",
-      "title": "核查门店券",
-      "status": "success",
-      "ts": "2026-10-13T21:02:31",
-      "facts": [
-        {
-          "key": "storeName",
-          "value": "麦当劳北京海淀镇餐厅",
-          "sourcePath": "$.data"
-        },
-        {
-          "key": "couponCount",
-          "value": 2,
-          "sourcePath": "$.data"
-        },
-        {
-          "key": "coupons",
-          "value": "中薯条买一送一、王牌小食拼",
-          "sourcePath": "$.data[].title"
-        }
-      ],
-      "entities": {
-        "中薯条买一送一": "门店券 / coupon",
-        "王牌小食拼": "门店券 / coupon"
-      },
-      "rule": null,
-      "say": {
-        "friendly": "麦当劳北京海淀镇餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。",
-        "pro": "门店「麦当劳北京海淀镇餐厅」券查询返回 2 张。"
-      },
-      "evidenceRef": "trace://mcdetective-20261013-aafba506/events/8",
-      "isMock": false,
-      "request": {
-        "orderType": 1,
-        "beType": 1,
-        "storeCode": "1950013"
-      },
-      "response": {
-        "success": true,
-        "couponCount": 2
-      }
-    },
-    {
-      "traceId": "mcdetective-20261013-aafba506",
-      "seq": 9,
-      "kind": "info",
-      "tool": "query-meals",
-      "title": "巡查门店菜单",
-      "status": "success",
-      "ts": "2026-10-13T21:02:34",
-      "facts": [
-        {
-          "key": "storeName",
-          "value": "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅",
-          "sourcePath": "$.data.meals"
-        },
-        {
-          "key": "distance",
-          "value": "655 m",
-          "sourcePath": "$.data[].distance"
-        },
-        {
-          "key": "mealCount",
-          "value": 89,
-          "source": "mctrace"
-        },
-        {
-          "key": "targetHit",
-          "value": "发现目标「精选单人餐三件套」，标价 ¥36.5",
-          "source": "mctrace"
-        }
-      ],
-      "entities": {
-        "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅": "巡查门店",
-        "精选单人餐三件套": "目标餐品"
-      },
-      "rule": null,
-      "say": {
-        "friendly": "第 4 站（655 m）：麦当劳北京海淀中街(巴比伦时尚酒店)餐厅，菜单 89 个单品，发现目标「精选单人餐三件套」，标价 ¥36.5。",
-        "pro": "门店「麦当劳北京海淀中街(巴比伦时尚酒店)餐厅」（距离 655 m）菜单返回 89 个单品；目标餐品状态：发现目标「精选单人餐三件套」，标价 ¥36.5。"
-      },
-      "evidenceRef": "trace://mcdetective-20261013-aafba506/events/9",
-      "isMock": false,
-      "request": {
-        "storeCode": "1950822",
-        "orderType": 1,
-        "beType": 1
-      },
-      "response": {
-        "success": true,
-        "mealCount": 89
-      }
-    },
-    {
-      "traceId": "mcdetective-20261013-aafba506",
-      "seq": 10,
-      "kind": "info",
-      "tool": "query-store-coupons",
-      "title": "核查门店券",
-      "status": "success",
-      "ts": "2026-10-13T21:02:36",
-      "facts": [
-        {
-          "key": "storeName",
-          "value": "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅",
-          "sourcePath": "$.data"
-        },
-        {
-          "key": "couponCount",
-          "value": 2,
-          "sourcePath": "$.data"
-        },
-        {
-          "key": "coupons",
-          "value": "中薯条买一送一、王牌小食拼",
-          "sourcePath": "$.data[].title"
-        }
-      ],
-      "entities": {
-        "中薯条买一送一": "门店券 / coupon",
-        "王牌小食拼": "门店券 / coupon"
-      },
-      "rule": null,
-      "say": {
-        "friendly": "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。",
-        "pro": "门店「麦当劳北京海淀中街(巴比伦时尚酒店)餐厅」券查询返回 2 张。"
-      },
-      "evidenceRef": "trace://mcdetective-20261013-aafba506/events/10",
-      "isMock": false,
-      "request": {
-        "orderType": 1,
-        "beType": 1,
-        "storeCode": "1950822"
-      },
-      "response": {
-        "success": true,
-        "couponCount": 2
-      }
-    },
-    {
-      "traceId": "mcdetective-20261013-aafba506",
-      "seq": 11,
-      "kind": "info",
-      "tool": "query-meals",
-      "title": "巡查门店菜单",
-      "status": "success",
-      "ts": "2026-10-13T21:02:37",
-      "facts": [
-        {
-          "key": "storeName",
-          "value": "麦当劳北京海淀黄庄餐厅",
-          "sourcePath": "$.data.meals"
-        },
-        {
-          "key": "distance",
-          "value": "807 m",
-          "sourcePath": "$.data[].distance"
-        },
-        {
-          "key": "mealCount",
-          "value": 92,
-          "source": "mctrace"
-        },
-        {
-          "key": "targetHit",
-          "value": "发现目标「精选单人餐三件套」，标价 ¥34.5",
-          "source": "mctrace"
-        }
-      ],
-      "entities": {
-        "麦当劳北京海淀黄庄餐厅": "巡查门店",
-        "精选单人餐三件套": "目标餐品"
-      },
-      "rule": null,
-      "say": {
-        "friendly": "第 5 站（807 m）：麦当劳北京海淀黄庄餐厅，菜单 92 个单品，发现目标「精选单人餐三件套」，标价 ¥34.5。",
-        "pro": "门店「麦当劳北京海淀黄庄餐厅」（距离 807 m）菜单返回 92 个单品；目标餐品状态：发现目标「精选单人餐三件套」，标价 ¥34.5。"
-      },
-      "evidenceRef": "trace://mcdetective-20261013-aafba506/events/11",
-      "isMock": false,
-      "request": {
-        "storeCode": "1950027",
-        "orderType": 1,
-        "beType": 1
-      },
-      "response": {
-        "success": true,
-        "mealCount": 92
-      }
-    },
-    {
-      "traceId": "mcdetective-20261013-aafba506",
-      "seq": 12,
-      "kind": "info",
-      "tool": "query-store-coupons",
-      "title": "核查门店券",
-      "status": "success",
-      "ts": "2026-10-13T21:02:38",
-      "facts": [
-        {
-          "key": "storeName",
-          "value": "麦当劳北京海淀黄庄餐厅",
-          "sourcePath": "$.data"
-        },
-        {
-          "key": "couponCount",
-          "value": 2,
-          "sourcePath": "$.data"
-        },
-        {
-          "key": "coupons",
-          "value": "中薯条买一送一、王牌小食拼",
-          "sourcePath": "$.data[].title"
-        }
-      ],
-      "entities": {
-        "中薯条买一送一": "门店券 / coupon",
-        "王牌小食拼": "门店券 / coupon"
-      },
-      "rule": null,
-      "say": {
-        "friendly": "麦当劳北京海淀黄庄餐厅 门店券 2 张：中薯条买一送一、王牌小食拼，记下。",
-        "pro": "门店「麦当劳北京海淀黄庄餐厅」券查询返回 2 张。"
-      },
-      "evidenceRef": "trace://mcdetective-20261013-aafba506/events/12",
-      "isMock": false,
-      "request": {
-        "orderType": 1,
-        "beType": 1,
-        "storeCode": "1950027"
-      },
-      "response": {
-        "success": true,
-        "couponCount": 2
-      }
-    },
-    {
-      "traceId": "mcdetective-20261013-aafba506",
-      "seq": 13,
-      "kind": "success",
       "tool": "mctrace:rule",
       "title": "比对发现线索",
       "status": "success",
-      "ts": "2026-10-13T21:02:38",
+      "ts": "2026-10-14T09:44:17",
       "facts": [
         {
           "key": "comparedForm",
-          "value": "精选单人餐三件套",
+          "value": "火腿扒麦满分",
           "source": "mctrace",
           "note": "目标关键词可能命中多种形态（单品/套餐），只与同一形态比价"
         },
         {
           "key": "lowest",
-          "value": "麦当劳北京海淀镇餐厅 ¥33.5",
+          "value": "麦当劳黄冈万达餐厅 ¥11",
           "source": "menu"
         },
         {
           "key": "highest",
-          "value": "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅 ¥36.5",
+          "value": "麦当劳黄冈居然之家餐厅 ¥11",
           "source": "menu"
         },
         {
           "key": "deltaYuan",
-          "value": 3.0,
+          "value": 0.0,
           "source": "mctrace"
         },
         {
           "key": "comparedStores",
-          "value": 5,
+          "value": 2,
           "source": "mctrace"
         },
         {
           "key": "otherForms",
-          "value": "无",
+          "value": "「火腿扒麦满分套餐」各店同价；「火腿扒麦满分组合」各店同价",
           "source": "mctrace",
           "note": "其他命中形态的结论，单独列示，不混入主对比"
         }
       ],
       "entities": {
-        "麦当劳北京海淀镇餐厅": "价差榜门店",
-        "麦当劳北京善缘街(中关村5号)餐厅": "价差榜门店",
-        "麦当劳北京中关村领展广场餐厅": "价差榜门店",
-        "麦当劳北京海淀黄庄餐厅": "价差榜门店",
-        "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅": "价差榜门店"
+        "麦当劳黄冈万达餐厅": "价差榜门店",
+        "麦当劳黄冈居然之家餐厅": "价差榜门店"
       },
       "rule": {
         "id": "price.cross-store",
-        "pass": true,
-        "deltaYuan": 3.0
+        "pass": false,
+        "deltaYuan": 0.0
       },
       "say": {
-        "friendly": "线索比对完成：「精选单人餐三件套」5 家在售。最低 麦当劳北京海淀镇餐厅 ¥33.5，最高 麦当劳北京海淀中街(巴比伦时尚酒店)餐厅 ¥36.5。",
-        "pro": "目标餐品跨店比价（限定同形态「精选单人餐三件套」）：5 家门店在售；最低 麦当劳北京海淀镇餐厅 ¥33.5，最高 麦当劳北京海淀中街(巴比伦时尚酒店)餐厅 ¥36.5，价差 ¥3。其他命中形态：无。"
+        "friendly": "线索比对完成：「火腿扒麦满分」2 家在售。最低 麦当劳黄冈万达餐厅 ¥11，最高 麦当劳黄冈居然之家餐厅 ¥11。各店同价——本案无从比起，如实记录。另外还命中 2 种形态（「火腿扒麦满分套餐」各店同价；「火腿扒麦满分组合」各店同价），没混进来一起比。",
+        "pro": "目标餐品跨店比价（限定同形态「火腿扒麦满分」）：2 家门店在售；最低 麦当劳黄冈万达餐厅 ¥11，最高 麦当劳黄冈居然之家餐厅 ¥11，价差 ¥0。其他命中形态：「火腿扒麦满分套餐」各店同价；「火腿扒麦满分组合」各店同价。价差为 0，结论：各店同价。"
       },
-      "evidenceRef": "trace://mcdetective-20261013-aafba506/events/13",
+      "evidenceRef": "trace://mcdetective-20261014-42918eba/events/7",
       "isMock": false,
       "request": {
-        "target": "精选单人餐三件套",
-        "stores": 5
+        "target": "火腿扒麦满分",
+        "stores": 2
       },
       "response": {
         "rows": [
           {
-            "store": "麦当劳北京海淀镇餐厅",
+            "store": "麦当劳黄冈万达餐厅",
             "storeCode": "",
-            "price": 33.5,
+            "price": 11.0,
             "distM": null
           },
           {
-            "store": "麦当劳北京善缘街(中关村5号)餐厅",
+            "store": "麦当劳黄冈居然之家餐厅",
             "storeCode": "",
-            "price": 34.5,
-            "distM": null
-          },
-          {
-            "store": "麦当劳北京中关村领展广场餐厅",
-            "storeCode": "",
-            "price": 34.5,
-            "distM": null
-          },
-          {
-            "store": "麦当劳北京海淀黄庄餐厅",
-            "storeCode": "",
-            "price": 34.5,
-            "distM": null
-          },
-          {
-            "store": "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅",
-            "storeCode": "",
-            "price": 36.5,
+            "price": 11.0,
             "distM": null
           }
         ],
-        "deltaYuan": 3.0,
-        "primaryForm": "精选单人餐三件套",
+        "deltaYuan": 0.0,
+        "primaryForm": "火腿扒麦满分",
+        "targetOnSale": null,
         "groups": [
           {
-            "name": "精选单人餐三件套",
-            "delta": 3.0,
-            "stores": 5
+            "name": "火腿扒麦满分",
+            "delta": 0.0,
+            "stores": 2
+          },
+          {
+            "name": "火腿扒麦满分套餐",
+            "delta": 0.0,
+            "stores": 2
+          },
+          {
+            "name": "火腿扒麦满分组合",
+            "delta": 0.0,
+            "stores": 2
           }
         ]
       }
     },
     {
-      "traceId": "mcdetective-20261013-aafba506",
-      "seq": 14,
+      "traceId": "mcdetective-20261014-42918eba",
+      "seq": 8,
       "kind": "info",
       "tool": "mctrace:rule",
       "title": "比对发现线索",
       "status": "success",
-      "ts": "2026-10-13T21:02:38",
+      "ts": "2026-10-14T09:44:17",
       "facts": [
         {
           "key": "unionItems",
-          "value": 130,
+          "value": 83,
           "source": "mctrace"
         },
         {
           "key": "commonItems",
-          "value": 51,
+          "value": 73,
           "source": "mctrace"
         },
         {
           "key": "coveragePct",
-          "value": 39.2,
+          "value": 88.0,
           "source": "mctrace",
           "note": "全部门店都有售的单品占比；其余为部分门店限定"
         },
         {
           "key": "example",
-          "value": "「芝士安格斯厚牛堡三件套」仅善缘街(中关村5号)有售；此类非全部巡查门店共有的单品共 79 款",
+          "value": "「北非蛋风味麦满分套餐」仅黄冈万达有售；此类非全部巡查门店共有的单品共 10 款",
           "source": "mctrace"
         }
       ],
@@ -755,31 +449,31 @@
       "rule": {
         "id": "availability.coverage",
         "pass": true,
-        "coveragePct": 39.2
+        "coveragePct": 88.0
       },
       "say": {
-        "friendly": "顺手记一笔：5 家店合起来 130 款单品，家家都有的只有 51 款（39.2%）。想吃限定款的话，门店选址比几块钱更要命：「芝士安格斯厚牛堡三件套」仅善缘街(中关村5号)有售；此类非全部巡查门店共有的单品共 79 款。",
-        "pro": "餐品可得性：并集 130 款，交集 51 款（覆盖率 39.2%）。部分门店限定示例：「芝士安格斯厚牛堡三件套」仅善缘街(中关村5号)有售；此类非全部巡查门店共有的单品共 79 款。"
+        "friendly": "顺手记一笔：2 家店合起来 83 款单品，家家都有的只有 73 款（88.0%）。想吃限定款的话，门店选址比几块钱更要命：「北非蛋风味麦满分套餐」仅黄冈万达有售；此类非全部巡查门店共有的单品共 10 款。",
+        "pro": "餐品可得性：并集 83 款，交集 73 款（覆盖率 88.0%）。部分门店限定示例：「北非蛋风味麦满分套餐」仅黄冈万达有售；此类非全部巡查门店共有的单品共 10 款。"
       },
-      "evidenceRef": "trace://mcdetective-20261013-aafba506/events/14",
+      "evidenceRef": "trace://mcdetective-20261014-42918eba/events/8",
       "isMock": false,
       "request": {
-        "stores": 5
+        "stores": 2
       },
       "response": {
-        "union": 130,
-        "common": 51,
-        "coveragePct": 39.2
+        "union": 83,
+        "common": 73,
+        "coveragePct": 88.0
       }
     },
     {
-      "traceId": "mcdetective-20261013-aafba506",
-      "seq": 15,
+      "traceId": "mcdetective-20261014-42918eba",
+      "seq": 9,
       "kind": "info",
       "tool": "mctrace:rule",
       "title": "比对发现线索",
       "status": "success",
-      "ts": "2026-10-13T21:02:38",
+      "ts": "2026-10-14T09:44:17",
       "facts": [
         {
           "key": "uniqueCouponSets",
@@ -802,68 +496,68 @@
         "friendly": "券也核查完了：各家门店券完全一致——所以这单不比券，只比价和货。",
         "pro": "门店券跨店比对：所有巡查门店券集合完全一致，券维度不存在跨店差异。"
       },
-      "evidenceRef": "trace://mcdetective-20261013-aafba506/events/15",
+      "evidenceRef": "trace://mcdetective-20261014-42918eba/events/9",
       "isMock": false,
       "request": {
-        "stores": 5
+        "stores": 2
       },
       "response": {
         "uniqueSets": 1
       }
     },
     {
-      "traceId": "mcdetective-20261013-aafba506",
-      "seq": 16,
+      "traceId": "mcdetective-20261014-42918eba",
+      "seq": 10,
       "kind": "success",
       "tool": "summary-composer",
       "title": "结案报告",
       "status": "success",
-      "ts": "2026-10-13T21:02:38",
+      "ts": "2026-10-14T09:44:17",
       "facts": [
         {
           "key": "巡查门店",
-          "value": 5,
+          "value": 2,
           "source": "mctrace"
         },
         {
           "key": "巡查半径",
-          "value": "方圆 3 km（实际 183 m–807 m）",
+          "value": "方圆 3 km（实际 95 m–1.8 km）",
           "source": "mctrace"
         },
         {
           "key": "目标餐品",
-          "value": "精选单人餐三件套",
+          "value": "火腿扒麦满分",
           "source": "user-request"
         },
         {
           "key": "在售门店",
-          "value": 5,
+          "value": 2,
           "source": "mctrace"
         },
         {
           "key": "最低价",
-          "value": "麦当劳北京海淀镇餐厅 ¥33.5",
+          "value": "麦当劳黄冈万达餐厅 ¥11",
           "source": "menu"
         },
         {
           "key": "最高价",
-          "value": "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅 ¥36.5",
+          "value": "麦当劳黄冈居然之家餐厅 ¥11",
           "source": "menu"
         },
         {
           "key": "比对形态",
-          "value": "精选单人餐三件套",
+          "value": "火腿扒麦满分",
           "source": "mctrace",
           "note": "只与同一形态比价；其他命中形态见价差线索"
         },
         {
           "key": "结论",
-          "value": "差价 ¥3：麦当劳北京海淀镇餐厅 最便宜",
+          "value": "无从比起（各店同价）",
           "source": "mctrace"
         },
         {
           "key": "可得性覆盖率",
-          "value": "39.2%",
+          "value": "88.0%",
           "source": "mctrace"
         },
         {
@@ -873,29 +567,29 @@
         }
       ],
       "entities": {
-        "精选单人餐三件套": "目标餐品",
-        "麦当劳北京海淀镇餐厅": "结论门店"
+        "火腿扒麦满分": "目标餐品",
+        "麦当劳黄冈万达餐厅": "结论门店"
       },
       "rule": null,
       "say": {
-        "friendly": "结案！方圆 3 公里 5 家店巡查完毕：「精选单人餐三件套」差价 ¥3：麦当劳北京海淀镇餐厅 最便宜。每一步的原始调用都能点开核验。没下单，你定～",
-        "pro": "结案报告：巡查 5 家门店（半径 3km，实际覆盖 183 m–807 m）；目标「精选单人餐三件套」主比对形态「精选单人餐三件套」在售 5 家；结论：差价 ¥3：麦当劳北京海淀镇餐厅 最便宜；可得性覆盖率 39.2%；未创建订单。"
+        "friendly": "结案！方圆 3 公里 2 家店巡查完毕：「火腿扒麦满分」无从比起（各店同价）。每一步的原始调用都能点开核验。没下单，你定～",
+        "pro": "结案报告：巡查 2 家门店（半径 3km，实际覆盖 95 m–1.8 km）；目标「火腿扒麦满分」主比对形态「火腿扒麦满分」在售 2 家；结论：无从比起（各店同价）；可得性覆盖率 88.0%；未创建订单。"
       },
-      "evidenceRef": "trace://mcdetective-20261013-aafba506/events/16",
+      "evidenceRef": "trace://mcdetective-20261014-42918eba/events/10",
       "isMock": false,
       "request": {},
       "response": {
         "result": {
-          "patrolStores": 5,
-          "patrolRange": "183 m–807 m",
-          "target": "精选单人餐三件套",
-          "primaryForm": "精选单人餐三件套",
-          "inStockStores": 5,
-          "verdict": "差价 ¥3：麦当劳北京海淀镇餐厅 最便宜",
-          "lowest": "麦当劳北京海淀镇餐厅 ¥33.5",
-          "highest": "麦当劳北京海淀中街(巴比伦时尚酒店)餐厅 ¥36.5",
-          "deltaYuan": 3.0,
-          "coveragePct": 39.2,
+          "patrolStores": 2,
+          "patrolRange": "95 m–1.8 km",
+          "target": "火腿扒麦满分",
+          "primaryForm": "火腿扒麦满分",
+          "inStockStores": 2,
+          "verdict": "无从比起（各店同价）",
+          "lowest": "麦当劳黄冈万达餐厅 ¥11",
+          "highest": "麦当劳黄冈居然之家餐厅 ¥11",
+          "deltaYuan": 0.0,
+          "coveragePct": 88.0,
           "orderCreated": false
         }
       }

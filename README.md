@@ -2,7 +2,8 @@
 
 <p align="center"><img src="assets/mcdetective-badge.png" width="140" alt="麦探长警徽"/></p>
 <p align="center"><b>麦探长</b>（本仓库门面场景）· 麦当劳物价侦探 —— 跑遍方圆几公里的门店，把「哪家便宜、哪家有货」查个底掉，每条线索都可戳开核验。</p>
-<p align="center"><b>👉 在线试用（无需安装）：<a href="https://mcdetective.app.workbuddy.host/">https://mcdetective.app.workbuddy.host/</a></b>　|　仓库：<a href="https://github.com/StrawberryTreea/mcdetective">github.com/StrawberryTreea/mcdetective</a>（觉得探长称职，点个 Star ⭐）</p>
+<p align="center"><b>👉 在线试用（真能跑）：<a href="https://mcdetective.app.workbuddy.host/">https://mcdetective.app.workbuddy.host/</a></b>　|　仓库：<a href="https://github.com/StrawberryTreea/mcdetective">github.com/StrawberryTreea/mcdetective</a>（觉得探长称职，点个 Star ⭐）</p>
+<p align="center"><sub>在线试用怎么用：接案台里报一句个案（如「静安寺 麦香鱼」「中关村 精选单人餐三件套」）→ 贴上你的 MCP Token（<a href="https://open.mcd.cn/mcp" target="_blank">免费申请</a>，30 秒）→ 探长<b>实时</b>调麦当劳 MCP 巡查，全程办案直播、每条线索可核验。<b>Token 只用于你这一次请求：不写进页面、不进仓库、不保存；本服务自身不持有任何 Token。</b></sub></p>
 
 > 麦搭子，是你的 AI 点单搭子：你吩咐一句，它不闷头扔结果，而是把「怎么给你挑的」当场演出来——边做边说、会亮红灯、还会老实认怂。
 > 点单也好、盘积分也好，每一步都锚在真实麦当劳 MCP 调用上，点得开、看得见原始数据：过程全摊开，能随时戳、能挑刺。
@@ -190,7 +191,20 @@ python packages/mcp_app/build_app.py --live-demo examples/traces/real-jingan-bre
 界面轮询失败 3 次会停下并提示，不会空转。
 宿主兼容性到底验证到哪一步（哪些是实测、哪些还没验），全部写在 `docs/compatibility.md`，不假装。
 
-### 2. 独立 Studio 回放页（兼容后备 · 深度分析入口）
+### 2. 本地起办案服务（把在线试用页跑在自己机器上）
+
+办案页 = 静态页面 + 一个薄后端（转发麦当劳 MCP，因为麦当劳 MCP 不允许浏览器跨域直连）。
+后端纯标准库、无依赖，Token 从请求里取、当次用完即弃：
+
+```bash
+export MCD_TOKEN=<你的 Token>          # 可省略；省略时由访客在页面上贴
+python apps/detective/server.py       # 监听 $PORT（默认 8000），打开 http://127.0.0.1:8000
+```
+
+页面能力：接案台一句话报案 → 意图自解析（缺城市/餐品会反问，不瞎猜）→ 实时巡查 → 办案直播 → 案卷 + 证据附录。
+已有三册归档案卷（`examples/traces/real-detective-*.json`）可在页面上直接调阅，不需要 Token。
+
+### 3. 独立 Studio 回放页（兼容后备 · 深度分析入口）
 
 自包含 HTML，双击即开，**离线可用**，支持场景切换、播放控制、载入任意 `trace.json`：
 
@@ -199,7 +213,7 @@ python apps/studio/build_studio.py
 python ~/.workbuddy/skills/mctrace/scripts/run_trace.py --all   # 跑真实链路 + 生成回放页
 ```
 
-### 3. 配置麦当劳 MCP（拿一个 Token）
+### 4. 配置麦当劳 MCP（拿一个 Token）
 
 方式 A（推荐，命令行）：
 
@@ -212,7 +226,7 @@ python ~/.workbuddy/skills/mctrace/scripts/configure_connector.py --token-file <
 方式 B（图形界面）：WorkBuddy【专家·技能·连接器】→【连接器】→【自定义连接器】→【配置 MCP】，
 填入 `mcp-config.example.json` 的内容，把 `Authorization` 换成你自己的 Token（在麦当劳 MCP 控制台申请）。
 
-### 4. 跑一次真实场景 → 生成 Trace（直接的用法）
+### 5. 跑一次真实场景 → 生成 Trace（直接的用法）
 
 **场景① 点餐推荐**（静安寺附近、预算 ≤40 元、热量 ≤500kcal、有券就用）
 
@@ -241,7 +255,7 @@ Token 请放在环境变量或本地文件读取，**不要写进仓库**。
 > Token 读取优先级：环境变量 `MCD_TOKEN` > 环境变量 `MCD_TOKEN_FILE` 指定的文件 > 仓库根 `token.txt`（已 gitignore）。
 > `pipeline.py` 把目标 URL 作为命令行参数传入，方便在受限网络环境或沙箱中显式声明目标主机。
 
-### 5. 生成可视化回放页（离线可开）
+### 6. 生成可视化回放页（离线可开）
 
 ```bash
 python apps/studio/build_studio.py
