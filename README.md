@@ -11,6 +11,38 @@
 
 ---
 
+## 看得见的办案过程（真实运行截图 / 动图）
+
+下面是麦探长办北京中关村那宗案子的全过程，全部为**对麦当劳 MCP 的真实只读调用**（案号 `mcdetective-20261013-aafba506`，2026-10-13）。
+
+**办案直播（Live Story 回放，16 条证据逐条长出）**
+
+![办案直播](docs/demo/patrol-play.gif)
+
+**① 接案台 —— 你说一句话，他自己领会**
+
+<img src="docs/screenshots/01-intake.png" alt="接案台" width="820"/>
+
+**② 巡查路线 · 逐店取证 → 线索一 · 价差榜**
+
+<img src="docs/screenshots/02-patrol.png" alt="巡查路线与价差榜" width="820"/>
+
+**③ 线索二 · 餐品可得性（128 款并集，家家都有的只有 39%）**
+
+<img src="docs/screenshots/03-clues.png" alt="餐品可得性" width="820"/>
+
+**④ 结案报告 —— 差价 ¥3，海淀镇最便宜；一条命令可复现**
+
+<img src="docs/screenshots/04-verdict.png" alt="结案报告" width="820"/>
+
+**⑤ 案卷附录 —— 每条证据可展开原始请求与返回**
+
+<img src="docs/screenshots/05-evidence.png" alt="案卷附录" width="820"/>
+
+> 想自己动手：打开 [在线试用](https://mcdetective.app.workbuddy.host/)，在接案台里报个案（比如「静安寺 麦香鱼」「黄冈万达 巨无霸」），或按下方「快速开始」本地跑一次。
+
+---
+
 ## 它特别在哪
 
 别家 AI 帮你办事，只给你一个结果；McTrace 把「它怎么办的」全程摊开给你看：
