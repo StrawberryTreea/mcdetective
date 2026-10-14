@@ -526,10 +526,27 @@ def _finish(trace_id, events, quiet=False):
 
 
 if __name__ == "__main__":
-    u = sys.argv[1] if len(sys.argv) > 1 else "https://mcp.mcd.cn"
-    city = sys.argv[2] if len(sys.argv) > 2 else "北京市"
-    kw = sys.argv[3] if len(sys.argv) > 3 else "中关村"
-    target = sys.argv[4] if len(sys.argv) > 4 else "精选单人餐三件套"
-    radius = float(sys.argv[5]) if len(sys.argv) > 5 else DEFAULT_RADIUS_KM
-    n = int(sys.argv[6]) if len(sys.argv) > 6 else DEFAULT_MAX_STORES
-    run_scenario(url=u, city=city, keyword=kw, target=target, radius_km=radius, max_stores=n)
+    # 支持 --mode recommend（用户没点菜名：只报在售概览，不替他选）
+    argv = sys.argv[1:]
+    mode = "compare"
+    if "--mode" in argv:
+        i = argv.index("--mode")
+        mode = argv[i + 1] if i + 1 < len(argv) else "compare"
+        argv = argv[:i] + argv[i + 2:]
+    elif any(a.startswith("--mode=") for a in argv):
+        a = next(a for a in argv if a.startswith("--mode="))
+        mode = a.split("=", 1)[1]
+        argv = [x for x in argv if not x.startswith("--mode=")]
+    if mode == "recommend" and "--mode" not in sys.argv:
+        argv = [x for x in argv if x not in ("--mode", "recommend")]
+    u = argv[0] if len(argv) > 0 else "https://mcp.mcd.cn"
+    city = argv[1] if len(argv) > 1 else ""
+    kw = argv[2] if len(argv) > 2 else ""
+    target = argv[3] if len(argv) > 3 else ""
+    radius = float(argv[4]) if len(argv) > 4 and argv[4] else DEFAULT_RADIUS_KM
+    n = int(argv[5]) if len(argv) > 5 and argv[5] else DEFAULT_MAX_STORES
+    if not city or not kw:
+        print("缺城市或区域：python pipeline_stores.py <url> <城市> <区域> [餐品] [半径km] [店数] [--mode recommend]")
+    else:
+        run_scenario(url=u, city=city, keyword=kw, target=target, radius_km=radius,
+                     max_stores=n, mode=mode)
