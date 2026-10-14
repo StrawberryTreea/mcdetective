@@ -131,6 +131,15 @@ body{background:#F6F2EA;color:#2C2C2A;font:14px/1.7 -apple-system,"PingFang SC",
 .tokenbox .th{font-size:12.5px;font-weight:800;color:#185FA5;margin-bottom:6px}
 .tokenbox input{width:100%;font:12.5px ui-monospace,monospace;padding:8px 10px;border:1.5px solid #85B7EB;border-radius:8px;background:#fff}
 .tokenbox .note{margin-top:7px}
+.ovl{margin-top:4px;border:1px solid #E5DCC9;border-radius:10px;overflow:hidden;background:#fff}
+.ovh,.ovrow{display:flex;align-items:center;gap:10px;padding:7px 12px;font-size:12.5px}
+.ovh{background:#FAF7EF;font-weight:800;font-size:11.5px;color:#8a7f68;border-bottom:1px solid #E5DCC9}
+.ovh span:nth-child(2),.ovcov{flex:0 0 108px}
+.ovh span:nth-child(3),.ovprice{flex:0 0 108px;text-align:right;font-family:ui-monospace,monospace}
+.ovrow{border-bottom:1px dashed #EFE8D8}
+.ovrow:last-child{border-bottom:0}
+.ovname{flex:1;font-weight:600}
+.ovnote{padding:8px 12px;font-size:11.5px;color:#8a7f68;background:#FAF7EF;border-top:1px solid #E5DCC9}
 .warnbar{margin-top:10px;background:#FFF3D6;border:1px solid #F2A900;border-left:4px solid #DA291C;border-radius:9px;padding:9px 13px;font-size:12.5px;color:#7a5200;font-weight:600}
 .live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#E24B4A;vertical-align:2px;margin-left:6px;animation:pulse 1.2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}

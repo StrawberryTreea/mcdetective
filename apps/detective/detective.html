@@ -56,6 +56,15 @@ body{background:#F6F2EA;color:#2C2C2A;font:14px/1.7 -apple-system,"PingFang SC",
 .tokenbox .th{font-size:12.5px;font-weight:800;color:#185FA5;margin-bottom:6px}
 .tokenbox input{width:100%;font:12.5px ui-monospace,monospace;padding:8px 10px;border:1.5px solid #85B7EB;border-radius:8px;background:#fff}
 .tokenbox .note{margin-top:7px}
+.ovl{margin-top:4px;border:1px solid #E5DCC9;border-radius:10px;overflow:hidden;background:#fff}
+.ovh,.ovrow{display:flex;align-items:center;gap:10px;padding:7px 12px;font-size:12.5px}
+.ovh{background:#FAF7EF;font-weight:800;font-size:11.5px;color:#8a7f68;border-bottom:1px solid #E5DCC9}
+.ovh span:nth-child(2),.ovcov{flex:0 0 108px}
+.ovh span:nth-child(3),.ovprice{flex:0 0 108px;text-align:right;font-family:ui-monospace,monospace}
+.ovrow{border-bottom:1px dashed #EFE8D8}
+.ovrow:last-child{border-bottom:0}
+.ovname{flex:1;font-weight:600}
+.ovnote{padding:8px 12px;font-size:11.5px;color:#8a7f68;background:#FAF7EF;border-top:1px solid #E5DCC9}
 .warnbar{margin-top:10px;background:#FFF3D6;border:1px solid #F2A900;border-left:4px solid #DA291C;border-radius:9px;padding:9px 13px;font-size:12.5px;color:#7a5200;font-weight:600}
 .live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#E24B4A;vertical-align:2px;margin-left:6px;animation:pulse 1.2s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -155,40 +164,40 @@ footer{margin-top:22px;text-align:center;font-size:11.5px;color:#8a7f68;line-hei
 <div class="caseview-wrap" id="case-patrol">
 <section class="caseview">
 <section class="card">
-  <h2><span class="no">卷</span>案卷 · 黄冈市黄冈万达片区</h2>
+  <h2><span class="no">卷</span>案卷 · 天津市大学北洋园片区</h2>
   <div class="casefile">
-    <div class="cf"><div class="k">报案诉求</div><div class="v">「火腿扒麦满分」哪家卖得便宜？</div></div>
-    <div class="cf"><div class="k">巡查范围</div><div class="v">方圆 3.0 km · 命中 2 家</div></div>
-    <div class="cf"><div class="k">实际覆盖</div><div class="v">95 m–1.8 km · 巡查 2 家</div></div>
-    <div class="cf"><div class="k">立案时间</div><div class="v">2026-10-14T09:44:17</div></div>
-    <div class="cf"><div class="k">案号</div><div class="v" style="font-size:12px">mcdetective-20261014-42918eba</div></div>
+    <div class="cf"><div class="k">报案诉求</div><div class="v">「」哪家卖得便宜？</div></div>
+    <div class="cf"><div class="k">巡查范围</div><div class="v">方圆 3.0 km · 命中 3 家</div></div>
+    <div class="cf"><div class="k">实际覆盖</div><div class="v">184 m–2.8 km · 巡查 3 家</div></div>
+    <div class="cf"><div class="k">立案时间</div><div class="v">2026-10-14T10:01:34</div></div>
+    <div class="cf"><div class="k">案号</div><div class="v" style="font-size:12px">mcdetective-20261014-6726f87e</div></div>
     <div class="cf"><div class="k">状态</div><div class="v big">已结案 ✓</div></div>
   </div>
 </section>
 
 <section class="card">
   <h2><span class="no">1</span>巡查路线 · 逐店取证</h2>
-  <div class="station "><div class="sno">1</div><div class="sbody"><div class="sname">黄冈万达</div><div class="smeta">95 m · 菜单 77 款 · 门店券 高达芝士蛋堡早餐两件套</div></div><div class="sprice">¥11</div></div><div class="station "><div class="sno">2</div><div class="sbody"><div class="sname">黄冈居然之家</div><div class="smeta">1.8 km · 菜单 79 款 · 门店券 高达芝士蛋堡早餐两件套</div></div><div class="sprice">¥11</div></div>
+  <div class="station "><div class="sno">1</div><div class="sbody"><div class="sname">天津大学北洋园校区第三食堂</div><div class="smeta">184 m · 菜单 58 款 · 门店券 高达芝士蛋堡早餐两件套</div></div><div class="sprice">未在售</div></div><div class="station "><div class="sno">2</div><div class="sbody"><div class="sname">天津南开大学津南校区北生活区</div><div class="smeta">2.4 km · 菜单 64 款 · 门店券 高达芝士蛋堡早餐两件套</div></div><div class="sprice">未在售</div></div><div class="station "><div class="sno">3</div><div class="sbody"><div class="sname">天津新家园路得来速</div><div class="smeta">2.8 km · 菜单 88 款 · 门店券 高达芝士蛋堡早餐两件套</div></div><div class="sprice">未在售</div></div>
   <div class="note">站点按距离由近到远排列；距离取自 query-nearby-stores 的 distance 字段（米），标价取自各店 query-meals 的 currentPrice 字段，门店券数取自 query-store-coupons。</div>
 </section>
 
 <section class="card">
-  <h2><span class="no">2</span>线索一 · 价差榜（火腿扒麦满分）</h2>
-  <div class="brow "><div class="bname">黄冈万达</div><div class="btrack"><i style="width:94.3%"></i></div><div class="bval">¥11</div></div><div class="brow "><div class="bname">黄冈居然之家</div><div class="btrack"><i style="width:94.3%"></i></div><div class="bval">¥11</div></div>
-  <div class="delta">各店同价 <b>¥11</b>——本案无从比起，如实记录。</div>
+  <h2><span class="no">2</span>现在这几家在卖什么（用户没点菜名，探长不替他选）</h2>
+  
+  <div class="ovl"><div class="ovh"><span>在售单品</span><span>覆盖面</span><span>价格区间</span></div><div class="ovrow"><div class="ovname">双层原味板烧鸡腿麦满分</div><div class="ovcov">3 家有售</div><div class="ovprice">¥18.5–19</div></div><div class="ovrow"><div class="ovname">猪柳蛋麦满分</div><div class="ovcov">3 家有售</div><div class="ovprice">¥17–18</div></div><div class="ovrow"><div class="ovname">猪柳炒双蛋堡</div><div class="ovcov">3 家有售</div><div class="ovprice">¥18–18</div></div><div class="ovrow"><div class="ovname">双层原味板烧鸡腿麦满分套餐</div><div class="ovcov">3 家有售</div><div class="ovprice">¥16.2–16.5</div></div><div class="ovrow"><div class="ovname">猪柳炒双蛋堡套餐</div><div class="ovcov">3 家有售</div><div class="ovprice">¥15.9–15.9</div></div><div class="ovrow"><div class="ovname">精选麦满分套餐</div><div class="ovcov">3 家有售</div><div class="ovprice">¥15.3–15.9</div></div><div class="ovrow"><div class="ovname">猪柳蛋麦满分套餐</div><div class="ovcov">3 家有售</div><div class="ovprice">¥15.3–15.9</div></div><div class="ovrow"><div class="ovname">原味板烧鸡腿麦满分</div><div class="ovcov">3 家有售</div><div class="ovprice">¥14.5–15</div></div><div class="ovnote">只列覆盖面最广的前几款，完整菜单在案卷附录里；想比哪一款，指个名，探长再去比。</div></div>
   
   <div class="note">条形图自 ¥0 起按真实标价等比绘制，未做视觉放大；只与同一形态比价。</div>
-  <div class="note">目标关键词还命中其他形态，单独列示、不混入比价：「火腿扒麦满分套餐」各店同价；「火腿扒麦满分组合」各店同价。</div>
+  
 </section>
 
 <section class="card">
   <h2><span class="no">3</span>线索二 · 餐品可得性</h2>
   <div class="stats">
-    <div class="stat"><div class="n">83</div><div class="l">单品并集（款）</div></div>
-    <div class="stat"><div class="n">73</div><div class="l">全门店共有（款）</div></div>
-    <div class="stat"><div class="n">88.0%</div><div class="l">共有覆盖率</div></div>
+    <div class="stat"><div class="n">96</div><div class="l">单品并集（款）</div></div>
+    <div class="stat"><div class="n">44</div><div class="l">全门店共有（款）</div></div>
+    <div class="stat"><div class="n">45.8%</div><div class="l">共有覆盖率</div></div>
   </div>
-  <div class="note" style="margin-top:10px">「北非蛋风味麦满分套餐」仅黄冈万达有售；此类非全部巡查门店共有的单品共 10 款。想吃限定款，门店选址比几块钱更要命。</div>
+  <div class="note" style="margin-top:10px">「浓浓黑巧（冰/热）」仅天津大学北洋园校区第三食堂有售；此类非全部巡查门店共有的单品共 52 款。想吃限定款，门店选址比几块钱更要命。</div>
 </section>
 
 <section class="card">
@@ -203,123 +212,161 @@ footer{margin-top:22px;text-align:center;font-size:11.5px;color:#8a7f68;line-hei
 <section class="card">
   <h2><span class="no">5</span>结案报告</h2>
   <div class="verdict">
-    <div class="stamp">无从比起 · 各店同价 ¥11</div>
-    <div class="sub">无从比起（各店同价） · 可得性覆盖率 88.0% · 未创建任何订单</div>
+    <div class="stamp">在售 78 款 · 没替你选</div>
+    <div class="sub">现在在售 78 款，覆盖面最广的是「双层原味板烧鸡腿麦满分」 · 可得性覆盖率 45.8% · 未创建任何订单</div>
   </div>
-  <div class="repro">$ python skills/mctrace/scripts/run_trace.py --detective 黄冈市 黄冈万达 火腿扒麦满分 3.0 10</div>
+  <div class="repro">$ python skills/mctrace/scripts/run_trace.py --detective 天津市 大学北洋园  3.0 10</div>
 </section>
 
 <section class="card">
-  <h2><span class="no">附</span>案卷附录 · 10 条证据</h2>
-  <details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">01</span><span class="ttl">接报案</span><span class="tool">user-request</span></summary><div class="say">接到报案：黄冈市黄冈万达附近，有人想查「火腿扒麦满分」哪家卖得便宜。探长出动了，先按方圆 3 公里划定巡查范围。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;city&quot;: &quot;黄冈市&quot;,
- &quot;keyword&quot;: &quot;黄冈万达&quot;,
- &quot;target&quot;: &quot;火腿扒麦满分&quot;,
+  <h2><span class="no">附</span>案卷附录 · 12 条证据</h2>
+  <details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">01</span><span class="ttl">接报案</span><span class="tool">user-request</span></summary><div class="say">接到报案：天津市大学北洋园附近，有人想知道现在有什么好吃的。探长出动了——他不替用户决定吃什么，只把方圆 3 公里内这几家在卖什么报清楚。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;city&quot;: &quot;天津市&quot;,
+ &quot;keyword&quot;: &quot;大学北洋园&quot;,
+ &quot;target&quot;: &quot;&quot;,
  &quot;radiusKm&quot;: 3.0,
  &quot;maxStores&quot;: 10
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
- &quot;case&quot;: &quot;黄冈市黄冈万达 火腿扒麦满分&quot;
-}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/1</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">02</span><span class="ttl">划定巡查范围</span><span class="tool">query-nearby-stores</span></summary><div class="say">范围划定：黄冈万达方圆 3 公里命中 2 家（距离 95 m–1.8 km），逐家查，最多 10 家。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;case&quot;: &quot;天津市大学北洋园 &quot;
+}</pre></div><div class="ref">trace://mcdetective-20261014-6726f87e/events/1</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">02</span><span class="ttl">划定巡查范围</span><span class="tool">query-nearby-stores</span></summary><div class="say">范围划定：大学北洋园方圆 3 公里命中 3 家（距离 184 m–2.8 km），逐家查，最多 10 家。</div><div class="raw"><div class="rawt">请求</div><pre>{
  &quot;beType&quot;: 1,
  &quot;searchType&quot;: 2,
- &quot;city&quot;: &quot;黄冈市&quot;,
- &quot;keyword&quot;: &quot;黄冈万达&quot;
+ &quot;city&quot;: &quot;天津市&quot;,
+ &quot;keyword&quot;: &quot;大学北洋园&quot;
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
  &quot;success&quot;: true,
  &quot;hitCount&quot;: 5,
- &quot;withinRadius&quot;: 2,
+ &quot;withinRadius&quot;: 3,
  &quot;distanceMissing&quot;: 0
-}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/2</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">03</span><span class="ttl">巡查门店菜单</span><span class="tool">query-meals</span></summary><div class="say">第 1 站（95 m）：麦当劳黄冈万达餐厅，菜单 77 个单品，发现目标「火腿扒麦满分」，标价 ¥11。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;storeCode&quot;: &quot;1960134&quot;,
+}</pre></div><div class="ref">trace://mcdetective-20261014-6726f87e/events/2</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">03</span><span class="ttl">巡查门店菜单</span><span class="tool">query-meals</span></summary><div class="say">第 1 站（184 m）：麦当劳天津大学北洋园校区第三食堂餐厅，菜单 58 个单品，发现目标「大脆鸡扒麦满分组合」，标价 ¥8.1。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;storeCode&quot;: &quot;1980394&quot;,
  &quot;orderType&quot;: 1,
  &quot;beType&quot;: 1
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
  &quot;success&quot;: true,
- &quot;mealCount&quot;: 77
-}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/3</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">04</span><span class="ttl">核查门店券</span><span class="tool">query-store-coupons</span></summary><div class="say">麦当劳黄冈万达餐厅 门店券 1 张：高达芝士蛋堡早餐两件套，记下。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;mealCount&quot;: 58
+}</pre></div><div class="ref">trace://mcdetective-20261014-6726f87e/events/3</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">04</span><span class="ttl">核查门店券</span><span class="tool">query-store-coupons</span></summary><div class="say">麦当劳天津大学北洋园校区第三食堂餐厅 门店券 1 张：高达芝士蛋堡早餐两件套，记下。</div><div class="raw"><div class="rawt">请求</div><pre>{
  &quot;orderType&quot;: 1,
  &quot;beType&quot;: 1,
- &quot;storeCode&quot;: &quot;1960134&quot;
+ &quot;storeCode&quot;: &quot;1980394&quot;
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
  &quot;success&quot;: true,
  &quot;couponCount&quot;: 1
-}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/4</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">05</span><span class="ttl">巡查门店菜单</span><span class="tool">query-meals</span></summary><div class="say">第 2 站（1.8 km）：麦当劳黄冈居然之家餐厅，菜单 79 个单品，发现目标「火腿扒麦满分」，标价 ¥11。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;storeCode&quot;: &quot;1960179&quot;,
+}</pre></div><div class="ref">trace://mcdetective-20261014-6726f87e/events/4</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">05</span><span class="ttl">巡查门店菜单</span><span class="tool">query-meals</span></summary><div class="say">第 2 站（2.4 km）：麦当劳天津南开大学津南校区北生活区餐厅，菜单 64 个单品，发现目标「大脆鸡扒麦满分组合」，标价 ¥8.1。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;storeCode&quot;: &quot;1980461&quot;,
  &quot;orderType&quot;: 1,
  &quot;beType&quot;: 1
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
  &quot;success&quot;: true,
- &quot;mealCount&quot;: 79
-}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/5</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">06</span><span class="ttl">核查门店券</span><span class="tool">query-store-coupons</span></summary><div class="say">麦当劳黄冈居然之家餐厅 门店券 1 张：高达芝士蛋堡早餐两件套，记下。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;mealCount&quot;: 64
+}</pre></div><div class="ref">trace://mcdetective-20261014-6726f87e/events/5</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">06</span><span class="ttl">核查门店券</span><span class="tool">query-store-coupons</span></summary><div class="say">麦当劳天津南开大学津南校区北生活区餐厅 门店券 1 张：高达芝士蛋堡早餐两件套，记下。</div><div class="raw"><div class="rawt">请求</div><pre>{
  &quot;orderType&quot;: 1,
  &quot;beType&quot;: 1,
- &quot;storeCode&quot;: &quot;1960179&quot;
+ &quot;storeCode&quot;: &quot;1980461&quot;
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
  &quot;success&quot;: true,
  &quot;couponCount&quot;: 1
-}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/6</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">07</span><span class="ttl">比对发现线索</span><span class="tool">mctrace:rule</span></summary><div class="say">线索比对完成：「火腿扒麦满分」2 家在售。最低 麦当劳黄冈万达餐厅 ¥11，最高 麦当劳黄冈居然之家餐厅 ¥11。各店同价——本案无从比起，如实记录。另外还命中 2 种形态（「火腿扒麦满分套餐」各店同价；「火腿扒麦满分组合」各店同价），没混进来一起比。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;target&quot;: &quot;火腿扒麦满分&quot;,
- &quot;stores&quot;: 2
+}</pre></div><div class="ref">trace://mcdetective-20261014-6726f87e/events/6</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">07</span><span class="ttl">巡查门店菜单</span><span class="tool">query-meals</span></summary><div class="say">第 3 站（2.8 km）：麦当劳天津新家园路得来速餐厅，菜单 88 个单品，发现目标「大脆鸡扒麦满分组合」，标价 ¥8.1。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;storeCode&quot;: &quot;1980375&quot;,
+ &quot;orderType&quot;: 1,
+ &quot;beType&quot;: 1
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
- &quot;rows&quot;: [
+ &quot;success&quot;: true,
+ &quot;mealCount&quot;: 88
+}</pre></div><div class="ref">trace://mcdetective-20261014-6726f87e/events/7</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">08</span><span class="ttl">核查门店券</span><span class="tool">query-store-coupons</span></summary><div class="say">麦当劳天津新家园路得来速餐厅 门店券 1 张：高达芝士蛋堡早餐两件套，记下。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;orderType&quot;: 1,
+ &quot;beType&quot;: 1,
+ &quot;storeCode&quot;: &quot;1980375&quot;
+}</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
+ &quot;success&quot;: true,
+ &quot;couponCount&quot;: 1
+}</pre></div><div class="ref">trace://mcdetective-20261014-6726f87e/events/8</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">09</span><span class="ttl">比对发现线索</span><span class="tool">mctrace:rule</span></summary><div class="say">方圆 3 公里这 3 家店现在共在售 78 款（已剔除饮品与周边）。覆盖面最广的几款：「双层原味板烧鸡腿麦满分」3家 ¥18.5–¥19；「猪柳蛋麦满分」3家 ¥17–¥18；「猪柳炒双蛋堡」3家 ¥18–¥18；「双层原味板烧鸡腿麦满分套餐」3家 ¥16.2–¥16.5。探长不替你决定吃什么——想比哪一款，指个名就行。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;target&quot;: &quot;&quot;,
+ &quot;stores&quot;: 3
+}</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
+ &quot;rows&quot;: [],
+ &quot;deltaYuan&quot;: 0,
+ &quot;mode&quot;: &quot;recommend&quot;,
+ &quot;overview&quot;: [
   {
-   &quot;store&quot;: &quot;麦当劳黄冈万达餐厅&quot;,
-   &quot;storeCode&quot;: &quot;&quot;,
-   &quot;price&quot;: 11.0,
-   &quot;distM&quot;: null
+   &quot;name&quot;: &quot;双层原味板烧鸡腿麦满分&quot;,
+   &quot;stores&quot;: 3,
+   &quot;low&quot;: 18.5,
+   &quot;high&quot;: 19.0
   },
   {
-   &quot;store&quot;: &quot;麦当劳黄冈居然之家餐厅&quot;,
-   &quot;storeCode&quot;: &quot;&quot;,
-   &quot;price&quot;: 11.0,
-   &quot;distM&quot;: null
+   &quot;name&quot;: &quot;猪柳蛋麦满分&quot;,
+   &quot;stores&quot;: 3,
+   &quot;low&quot;: 17.0,
+   &quot;high&quot;: 18.0
+  },
+  {
+   &quot;name&quot;: &quot;猪柳炒双蛋堡&quot;,
+   &quot;stores&quot;: 3,
+   &quot;low&quot;: 18.0,
+   &quot;high&quot;: 18.0
+  },
+  {
+   &quot;name&quot;: &quot;双层原味板烧鸡腿麦满分套餐&quot;,
+   &quot;stores&quot;: 3,
+   &quot;low&quot;: 16.2,
+   &quot;high&quot;: 16.5
+  },
+  {
+   &quot;name&quot;: &quot;猪柳炒双蛋堡套餐&quot;,
+   &quot;stores&quot;: 3,
+   &quot;low&quot;: 15.9,
+   &quot;high&quot;: 15.9
+  },
+  {
+   &quot;name&quot;: &quot;精选麦满分套餐&quot;,
+   &quot;stores&quot;: 3,
+   &quot;low&quot;: 15.3,
+   &quot;high&quot;: 15.9
+  },
+  {
+   &quot;name&quot;: &quot;猪柳蛋麦满分套餐&quot;,
+   &quot;stores&quot;: 3,
+   &quot;low&quot;: 15.3,
+   &quot;high&quot;: 15.9
+  },
+  {
+   &quot;name&quot;: &quot;原味板烧鸡腿麦满分&quot;,
+   &quot;stores&quot;: 3,
+   &quot;low&quot;: 14.5,
+   &quot;high&quot;: 15.0
   }
  ],
- &quot;deltaYuan&quot;: 0.0,
- &quot;primaryForm&quot;: &quot;火腿扒麦满分&quot;,
+ &quot;primaryForm&quot;: null,
  &quot;targetOnSale&quot;: null,
- &quot;groups&quot;: [
-  {
-   &quot;name&quot;: &quot;火腿扒麦满分&quot;,
-   &quot;delta&quot;: 0.0,
-   &quot;stores&quot;: 2
-  },
-  {
-   &quot;name&quot;: &quot;火腿扒麦满分套餐&quot;,
-   &quot;delta&quot;: 0.0,
-   &quot;stores&quot;: 2
-  },
-  {
-   &quot;name&quot;: &quot;火腿扒麦满分组合&quot;,
-   &quot;delta&quot;: 0.0,
-   &quot;stores&quot;: 2
-  }
- ]
-}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/7</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">08</span><span class="ttl">比对发现线索</span><span class="tool">mctrace:rule</span></summary><div class="say">顺手记一笔：2 家店合起来 83 款单品，家家都有的只有 73 款（88.0%）。想吃限定款的话，门店选址比几块钱更要命：「北非蛋风味麦满分套餐」仅黄冈万达有售；此类非全部巡查门店共有的单品共 10 款。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;stores&quot;: 2
+ &quot;groups&quot;: []
+}</pre></div><div class="ref">trace://mcdetective-20261014-6726f87e/events/9</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">10</span><span class="ttl">比对发现线索</span><span class="tool">mctrace:rule</span></summary><div class="say">顺手记一笔：3 家店合起来 96 款单品，家家都有的只有 44 款（45.8%）。想吃限定款的话，门店选址比几块钱更要命：「浓浓黑巧（冰/热）」仅天津大学北洋园校区第三食堂有售；此类非全部巡查门店共有的单品共 52 款。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;stores&quot;: 3
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
- &quot;union&quot;: 83,
- &quot;common&quot;: 73,
- &quot;coveragePct&quot;: 88.0
-}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/8</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">09</span><span class="ttl">比对发现线索</span><span class="tool">mctrace:rule</span></summary><div class="say">券也核查完了：各家门店券完全一致——所以这单不比券，只比价和货。</div><div class="raw"><div class="rawt">请求</div><pre>{
- &quot;stores&quot;: 2
+ &quot;union&quot;: 96,
+ &quot;common&quot;: 44,
+ &quot;coveragePct&quot;: 45.8
+}</pre></div><div class="ref">trace://mcdetective-20261014-6726f87e/events/10</div></details><details class="ev"><summary><span class="kdot kdot-info">•</span><span class="seq">11</span><span class="ttl">比对发现线索</span><span class="tool">mctrace:rule</span></summary><div class="say">券也核查完了：各家门店券完全一致——所以这单不比券，只比价和货。</div><div class="raw"><div class="rawt">请求</div><pre>{
+ &quot;stores&quot;: 3
 }</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
  &quot;uniqueSets&quot;: 1
-}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/9</div></details><details class="ev"><summary><span class="kdot kdot-success">✓</span><span class="seq">10</span><span class="ttl">结案报告</span><span class="tool">summary-composer</span></summary><div class="say">结案！方圆 3 公里 2 家店巡查完毕：「火腿扒麦满分」无从比起（各店同价）。每一步的原始调用都能点开核验。没下单，你定～</div><div class="raw"><div class="rawt">请求</div><pre>{}</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
+}</pre></div><div class="ref">trace://mcdetective-20261014-6726f87e/events/11</div></details><details class="ev"><summary><span class="kdot kdot-success">✓</span><span class="seq">12</span><span class="ttl">结案报告</span><span class="tool">summary-composer</span></summary><div class="say">结案！方圆 3 公里 3 家店巡查完毕：现在在售 78 款，覆盖面最广的是「双层原味板烧鸡腿麦满分」。探长没替你选——想比哪款，指个名。每一步的原始调用都能点开核验。没下单，你定～</div><div class="raw"><div class="rawt">请求</div><pre>{}</pre></div><div class="raw"><div class="rawt">返回（节选）</div><pre>{
  &quot;result&quot;: {
-  &quot;patrolStores&quot;: 2,
-  &quot;patrolRange&quot;: &quot;95 m–1.8 km&quot;,
-  &quot;target&quot;: &quot;火腿扒麦满分&quot;,
-  &quot;primaryForm&quot;: &quot;火腿扒麦满分&quot;,
-  &quot;inStockStores&quot;: 2,
-  &quot;verdict&quot;: &quot;无从比起（各店同价）&quot;,
-  &quot;lowest&quot;: &quot;麦当劳黄冈万达餐厅 ¥11&quot;,
-  &quot;highest&quot;: &quot;麦当劳黄冈居然之家餐厅 ¥11&quot;,
-  &quot;deltaYuan&quot;: 0.0,
-  &quot;coveragePct&quot;: 88.0,
+  &quot;patrolStores&quot;: 3,
+  &quot;patrolRange&quot;: &quot;184 m–2.8 km&quot;,
+  &quot;target&quot;: &quot;&quot;,
+  &quot;mode&quot;: &quot;recommend&quot;,
+  &quot;soldItems&quot;: 78,
+  &quot;primaryForm&quot;: null,
+  &quot;inStockStores&quot;: 0,
+  &quot;verdict&quot;: &quot;现在在售 78 款，覆盖面最广的是「双层原味板烧鸡腿麦满分」&quot;,
+  &quot;lowest&quot;: null,
+  &quot;highest&quot;: null,
+  &quot;deltaYuan&quot;: 0,
+  &quot;coveragePct&quot;: 45.8,
   &quot;orderCreated&quot;: false
  }
-}</pre></div><div class="ref">trace://mcdetective-20261014-42918eba/events/10</div></details>
+}</pre></div><div class="ref">trace://mcdetective-20261014-6726f87e/events/12</div></details>
 </section>
 </section>
 </div>
@@ -731,7 +778,7 @@ footer{margin-top:22px;text-align:center;font-size:11.5px;color:#8a7f68;line-hei
 </div>
 <script>
 (function(){
-  var CASES = [{"key": "patrol", "label": "北京 · 中关村", "city": "黄冈市", "keyword": "黄冈万达", "target": "火腿扒麦满分"}, {"key": "jingan", "label": "上海 · 静安寺", "city": "上海市", "keyword": "静安寺", "target": "巨无霸三件套"}, {"key": "huanggang", "label": "黄冈 · 万达", "city": "黄冈市", "keyword": "黄冈万达", "target": "麦香鱼"}];
+  var CASES = [{"key": "patrol", "label": "北京 · 中关村", "city": "天津市", "keyword": "大学北洋园", "target": ""}, {"key": "jingan", "label": "上海 · 静安寺", "city": "上海市", "keyword": "静安寺", "target": "巨无霸三件套"}, {"key": "huanggang", "label": "黄冈 · 万达", "city": "黄冈市", "keyword": "黄冈万达", "target": "麦香鱼"}];
   var LAST_QUERY = '';
   var $ = function(id){ return document.getElementById(id); };
 

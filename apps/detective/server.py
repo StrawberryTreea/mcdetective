@@ -79,6 +79,9 @@ def load_archive():
 ARCHIVE = load_archive()
 
 
+RECOMMEND_PATTERNS = ("好吃", "推荐", "吃什么", "吃啥", "吃点", "能吃", "有什么吃的", "有什么可以吃")
+
+
 def parse_query(raw):
     """把一句白话报案解析成 (city, area, target, understood_note)。解析不出来就诚实说要澄清什么。"""
     s = re.sub(r"\s+", "", raw or "")
@@ -131,7 +134,12 @@ def parse_query(raw):
                 city, inferred = a["city"], f"按归档案卷「{a['city']}·{a['area']}」推断"
                 break
 
-    return {"city": city, "area": area, "target": target,
+    mode = "recommend" if (not target and any(p in s for p in RECOMMEND_PATTERNS)) else "compare"
+    if mode == "recommend":
+        target = ""                      # 绝不替用户填一个菜名
+        if city and not area:
+            area = city                  # 只说了城市就按全市范围查，不用反问
+    return {"city": city, "area": area, "target": target, "mode": mode,
             "inferred": inferred, "clean": rest if not area else ""}
 
 
@@ -211,10 +219,11 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"error": "empty", "msg": "先说个案子，比如「中关村 精选单人餐三件套 哪家便宜」"})
 
         # 缺信息就诚实澄清，不瞎猜城市和餐品
+        mode = parsed.get("mode", "compare")
         need = []
         if not parsed["city"]:
             need.append("city")
-        if not parsed["target"]:
+        if not parsed["target"] and mode != "recommend":
             need.append("target")
         if need and not token:
             return self._json({"error": "need_token", "need": need, "parsed": parsed,
@@ -243,8 +252,8 @@ class Handler(BaseHTTPRequestHandler):
         t0 = time.time()
         try:
             summary, _out = run_scenario(url=MCD_URL, city=parsed["city"], keyword=parsed["area"],
-                                         target=parsed["target"], radius_km=radius,
-                                         max_stores=max_stores, token=token,
+                                         target=parsed.get("target", ""), radius_km=radius,
+                                         max_stores=max_stores, token=token, mode=mode,
                                          trace_id=None, emit=emit, quiet=True)
         except Exception as e:
             msg = str(e)

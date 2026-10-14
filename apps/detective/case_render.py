@@ -31,6 +31,7 @@ def render_case(T):
                    if (e.get("response") or {}).get("result")), {})
     PRICE_EV = next((e for e in EVENTS if (e.get("rule") or {}).get("id") == "price.cross-store"), None)
     ROWS = (PRICE_EV["response"].get("rows") or []) if PRICE_EV else []
+    OVERVIEW = (PRICE_EV["response"].get("overview") or None) if PRICE_EV else None
     AVAIL_EV = next((e for e in EVENTS if (e.get("rule") or {}).get("id") == "availability.coverage"), None)
     COUPON_EV = next((e for e in EVENTS if (e.get("rule") or {}).get("id") == "coupon.cross-store"), None)
     STORES_EV = next((e for e in EVENTS if e["tool"] == "query-nearby-stores"), None)
@@ -78,7 +79,17 @@ def render_case(T):
             f'<div class="btrack"><i style="width:{w}%"></i></div>'
             f'<div class="bval">¥{r["price"]:g}</div></div>')
 
-    if not ROWS:
+    if OVERVIEW:
+        ovl_rows = "".join(
+            f'<div class="ovrow"><div class="ovname">{esc(r["name"])}</div>'
+            f'<div class="ovcov">{r["stores"]} 家有售</div>'
+            f'<div class="ovprice">¥{r["low"]:g}–{r["high"]:g}</div></div>'
+            for r in OVERVIEW)
+        delta_html = ('<div class="ovl"><div class="ovh"><span>在售单品</span><span>覆盖面</span>'
+                      '<span>价格区间</span></div>' + ovl_rows +
+                      '<div class="ovnote">只列覆盖面最广的前几款，完整菜单在案卷附录里；'
+                      '想比哪一款，指个名，探长再去比。</div></div>')
+    elif not ROWS:
         delta_html = '<div class="delta">巡查门店均未发现该餐品——此案无从比起。</div>'
     elif delta > 0:
         delta_html = (f'<div class="delta">差价 <b>¥{delta:g}</b>：{esc(short(high["store"]))} 比 '
@@ -86,7 +97,10 @@ def render_case(T):
     else:
         delta_html = (f'<div class="delta">各店同价 <b>¥{low["price"]:g}</b>——本案无从比起，如实记录。</div>')
 
-    if not ROWS:
+    if OVERVIEW:
+        stamp_html = ('<div class="stamp">在售 {n} 款 · 没替你选</div>'
+                      .format(n=esc(price_facts.get("soldItems", ""))))
+    elif not ROWS:
         stamp_html = '<div class="stamp">未发现目标餐品</div>'
     elif delta > 0:
         stamp_html = f'<div class="stamp">差价 ¥{delta:g} · {esc(short(low["store"]))}最便宜</div>'
@@ -155,7 +169,7 @@ def render_case(T):
 </section>
 
 <section class="card">
-  <h2><span class="no">2</span>线索一 · 价差榜（{esc(primary_form)}）</h2>
+  <h2><span class="no">2</span>{"现在这几家在卖什么（用户没点菜名，探长不替他选）" if OVERVIEW else f"线索一 · 价差榜（{esc(primary_form)}）"}</h2>
   {''.join(bars)}
   {delta_html}
   {fallback_note}
