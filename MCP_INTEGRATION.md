@@ -8,7 +8,6 @@
 | Server | 类型 | 地址 | 用途 |
 |---|---|---|---|
 | `mcd-mcp` | streamablehttp | `https://mcp.mcd.cn` | **数据通道**：麦当劳中国官方 MCP，提供门店/菜单/营养/券/积分/订单等只读查询 |
-| `mctrace-app` | stdio（本地） | `packages/mcp_app/server.py` | **界面通道**：本项目自带的 MCP App 服务器（MCP Apps / SEP-1865），把办案过程渲染进对话 |
 
 认证：`mcd-mcp` 请求头携带 `Authorization: Bearer <MCD_TOKEN>`（Token 在麦当劳 MCP 开放平台 open.mcd.cn/mcp 免费申请）。**本项目全程只读，绝不调用任何写操作工具**（create-order / auto-bind-coupons / draw-lottery / mall-create-order / party-order-create / cancel-order 均不在调用清单内）。
 
@@ -63,7 +62,6 @@
 
 ```bash
 # 装为 WorkBuddy Skill 后，一句话报案（或本地入口直跑）
-python skills/mctrace/scripts/run_trace.py --detective 北京市 中关村 精选单人餐三件套 3 10
+python skills/mcdetective/scripts/run_trace.py --detective 北京市 中关村 精选单人餐三件套 3 10
 python apps/detective/build_detective.py   # 重新生成办案页
-python packages/mcp_app/selftest.py        # 协议自检（44 项断言，可离线）
 ```

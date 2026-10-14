@@ -4,7 +4,7 @@
 > 麦探长就去调麦当劳 MCP 实跑一遭，把巡查过程、价差、可得性、证据全摆出来。
 > 查完给你一个能打开的办案页，每个数字都能戳开看它取自哪个接口的哪个字段。
 >
-> McTrace（麦搭子）是它的**证据链引擎**——负责把每次调用变成可核验的事实，不是门面。
+> 底层是一套证据链引擎：负责把每次麦当劳 MCP 调用变成可核验的事实——不编、不糊、每条都能戳开看。
 
 <p align="center"><img src="assets/mcdetective-badge.png" width="140" alt="麦探长警徽"/></p>
 <p align="center"><b>麦探长</b>（本仓库门面场景）· 麦当劳物价侦探 —— 跑遍方圆几公里的门店，把「哪家便宜、哪家有货」查个底掉，每条线索都可戳开核验。</p>
@@ -14,7 +14,7 @@
 > 他不闷头扔结果，而是把「怎么给你挑的」当场演出来——边做边说、会亮红灯、还会老实认怂。
 > 查价也好、盘积分也好，每一步都锚在真实麦当劳 MCP 调用上：过程全摊开，能随时戳、能挑刺。
 
-**McTrace 是一个真实产品**（以 WorkBuddy Skill 形态交付）：用户用自然语言说一句需求，模型就**自主配置连接器、自主运行、自主把结果呈现出来**。本次参赛只是它的公开亮相与拿奖励的载体。
+**麦探长是一个实际可用的产品**（以 WorkBuddy Skill 形态交付）：用户用自然语言说一句需求，模型就**自主配置连接器、自主运行、自主把结果呈现出来**。本次参赛只是它的公开亮相与拿奖励的载体。
 
 ---
 
@@ -92,7 +92,7 @@
 • [query-nearby-stores] 找到具体门店       → 麦当劳上海静安寺餐厅（storeCode 1450002）
 • [query-meals]         认真翻了菜单       → 117 个带价单品
 • [list-nutrition-foods] 核对候选热量       → 匹配 12 个正餐单体热量
-⚠ [mctrace:rule]         发现约束冲突       → 「培根安格斯厚牛堡」707kcal，超上限 207
+⚠ [detect:rule]         发现约束冲突       → 「培根安格斯厚牛堡」707kcal，超上限 207
 • [query-store-coupons] 查看门店券         → 麦旋风任选 / 薯薯任选（本单不适用）
 ⚠ [calculate-price]     核算价格           → 算价未返回明细 → 诚实降级用菜单标价 ¥23
 ✓ [summary-composer]    整理好结果与证据    → 推荐「麦香鱼」¥23 / 325kcal · 未下单
@@ -118,8 +118,7 @@ MCP Adapter + Trace  →  Event Normalizer  →  Fact & Rule Engine  →  Narrat
 | Fact & Rule / Narrative（积分盘点场景） | `packages/core/pipeline_points.py` |
 | 旁路探针（原始响应留存） | `packages/core/probe_scenario.py` |
 | Live Story UI + Evidence Lens（渲染内核） | `packages/studio_core.py` —— App 与 Studio **共用同一份** |
-| 交付形态①：对话内 MCP App | `packages/mcp_app/server.py` + `packages/mcp_app/build_app.py` |
-| 交付形态②：独立 Studio（后备 / 深度分析） | `apps/studio/live_story.html`（由 `apps/studio/build_studio.py` 生成）|
+| | 交付形态②：独立 Studio（后备 / 深度分析） | `apps/studio/live_story.html`（由 `apps/studio/build_studio.py` 生成）|
 | 真实 Trace 样本 | `examples/traces/*.json` |
 | Pages 落地页 | `docs/index.html` |
 
@@ -136,66 +135,18 @@ MCP Adapter + Trace  →  Event Normalizer  →  Fact & Rule Engine  →  Narrat
 ### 0. 装进 WorkBuddy（推荐 · 用户只说一句话）
 
 ```bash
-python skills/mctrace/scripts/install.py           # 安装 / 升级（幂等，可反复执行）
-python skills/mctrace/scripts/install.py --check   # 查看安装状态
-python skills/mctrace/scripts/install.py --uninstall  # 卸载（移入 ~/.workbuddy/trash/，不硬删）
+python skills/mcdetective/scripts/install.py           # 安装 / 升级（幂等，可反复执行）
+python skills/mcdetective/scripts/install.py --check   # 查看安装状态
+python skills/mcdetective/scripts/install.py --uninstall  # 卸载（移入 ~/.workbuddy/trash/，不硬删）
 ```
 
 安装器把产品放进两处，互不影响：
 
 | 位置 | 内容 |
 | --- | --- |
-| `~/.workbuddy/apps/mctrace/` | **运行时**：`packages/core`（流水线）、`packages/mcp_app`（App 服务器）、`apps/studio`（回放生成器）、`examples/traces`（Trace 产物）、`VERSION` |
-| `~/.workbuddy/skills/mctrace/` | **智能体入口**：`SKILL.md`、`scripts/`、`references/` |
-| `~/.workbuddy/mcp.json` | **连接器**：`mctrace-app`（应用本体，stdio）+ `mcd-mcp`（数据通道，含你的 Token） |
-
-### 1. 让界面直接出现在对话里（MCP App · 首选形态）
-
-装好后， McTrace 自带一个 MCP 服务器，遵循 **MCP Apps（SEP-1865，2026-01-26 稳定版）**：
-工具挂 `_meta.ui.resourceUri`，服务器提供 `ui://mctrace/live-story` 资源
-（mimeType `text/html;profile=mcp-app`），宿主把它渲染进对话里——**用户不用跳转，不用打开文件**。
-
-注册连接器（幂等，数据通道需要一次 Token）：
-
-```bash
-python ~/.workbuddy/skills/mctrace/scripts/configure_connector.py --check
-python ~/.workbuddy/skills/mctrace/scripts/configure_connector.py --token-file <Token文件>
-python ~/.workbuddy/skills/mctrace/scripts/configure_connector.py --server mctrace   # 只要 mcd-mcp 的 Token 已就绪，可只补应用本体
-```
-
-重启 WorkBuddy 后，对话里会多出带界面的工具：
-
-| 工具 | 作用 | 参数 |
-| --- | --- | --- |
-| **`mctrace_start`** | **首选**：立即返回 traceId 并渲染界面，后台真实调用，事件一条条往上长 | `scenario=order\|points`，`keyword` / `budget_yuan` / `max_kcal` / `city` |
-| `mctrace_scan_order` | 点餐推荐，一次把整条轨迹给全（不等轮询） | `keyword` / `budget_yuan` / `max_kcal` / `city` |
-| `mctrace_scan_points` | 积分资产盘点 | — |
-| `mctrace_get_summary` | 取某次追踪的文本结论（无界面宿主的兜底） | `traceId` |
-| `mctrace_open_studio` | 返回独立 Studio 回放页路径（深度分析入口） | — |
-
-**实时是怎么做到的**：`mctrace_start` 不等任务跑完（实测 0.01 秒返回，此时事件数为 0），
-后台线程再依次调麦当劳 MCP，每产生一条事件就写进 `TraceStore`；
-界面每隔约 900ms 读一次 `mctrace://runs/{traceId}` 快照，按 `seq` 增量追加、自动去重。
-后台跑完 → `status=completed` → 停轮询、固定结果卡。
-
-服务器侧协议是否都对，可以自检（44 项断言，不需要联网）：
-
-```bash
-python packages/mcp_app/selftest.py            # 离线样本
-python packages/mcp_app/selftest.py --live     # 真实调用麦当劳 MCP
-```
-
-**界面在浏览器里真的会边长吗？** 可以自己看 —— 下面这个页面把「模拟宿主 + 界面 + 一份真实 trace」
-打成一个文件，双击就能播放全过程：
-
-```bash
-python packages/mcp_app/build_app.py --live-demo examples/traces/real-jingan-breakfast.json
-# → docs/app-live-demo.html
-```
-
-向后兼容：工具**一定同时返回可读文本**，命令行等无界面的宿主照样能拿到结论；
-界面轮询失败 3 次会停下并提示，不会空转。
-宿主兼容性到底验证到哪一步（哪些是实测、哪些还没验），全部写在 `docs/compatibility.md`，不假装。
+| `~/.workbuddy/apps/mcdetective/` | **运行时**：`packages/core`（流水线）、`packages/mcp_app`（App 服务器）、`apps/studio`（回放生成器）、`examples/traces`（Trace 产物）、`VERSION` |
+| `~/.workbuddy/skills/mcdetective/` | **智能体入口**：`SKILL.md`、`scripts/`、`references/` |
+| `~/.workbuddy/mcp.json` | **连接器**：（无）（应用本体，stdio）+ `mcd-mcp`（数据通道，含你的 Token） |
 
 ### 2. 本地起办案服务（把在线试用页跑在自己机器上）
 
@@ -216,7 +167,7 @@ python apps/detective/server.py       # 监听 $PORT（默认 8000），打开 h
 
 ```bash
 python apps/studio/build_studio.py
-python ~/.workbuddy/skills/mctrace/scripts/run_trace.py --all   # 跑真实链路 + 生成回放页
+python ~/.workbuddy/skills/mcdetective/scripts/run_trace.py --all   # 跑真实链路 + 生成回放页
 ```
 
 ### 4. 配置麦当劳 MCP（拿一个 Token）
@@ -224,9 +175,9 @@ python ~/.workbuddy/skills/mctrace/scripts/run_trace.py --all   # 跑真实链�
 方式 A（推荐，命令行）：
 
 ```bash
-python ~/.workbuddy/skills/mctrace/scripts/configure_connector.py --check
-python ~/.workbuddy/skills/mctrace/scripts/configure_connector.py --token <你的Token>
-python ~/.workbuddy/skills/mctrace/scripts/configure_connector.py --token-file <文件>  # 避免 Token 出现在命令行历史
+python ~/.workbuddy/skills/mcdetective/scripts/configure_connector.py --check
+python ~/.workbuddy/skills/mcdetective/scripts/configure_connector.py --token <你的Token>
+python ~/.workbuddy/skills/mcdetective/scripts/configure_connector.py --token-file <文件>  # 避免 Token 出现在命令行历史
 ```
 
 方式 B（图形界面）：WorkBuddy【专家·技能·连接器】→【连接器】→【自定义连接器】→【配置 MCP】，
@@ -252,9 +203,9 @@ python packages/core/pipeline_points.py https://mcp.mcd.cn
 装成本地 Skill 后，推荐直接用入口脚本一次跑完（自动定位运行时目录，无需手动切路径）：
 
 ```bash
-python ~/.workbuddy/skills/mctrace/scripts/run_trace.py 静安寺 40 500 上海市  # 场景①
-python ~/.workbuddy/skills/mctrace/scripts/run_trace.py --points              # 场景②
-python ~/.workbuddy/skills/mctrace/scripts/run_trace.py --all                 # 两个都跑
+python ~/.workbuddy/skills/mcdetective/scripts/run_trace.py 静安寺 40 500 上海市  # 场景①
+python ~/.workbuddy/skills/mcdetective/scripts/run_trace.py --points              # 场景②
+python ~/.workbuddy/skills/mcdetective/scripts/run_trace.py --all                 # 两个都跑
 ```
 Token 请放在环境变量或本地文件读取，**不要写进仓库**。
 
@@ -295,7 +246,7 @@ python apps/studio/build_studio.py
 ## 目录结构
 
 ```
-mctrace/
+mcdetective/
 ├── README.md                  # 本文件
 ├── CONTEST_DECLARATION.md     # 参赛声明（官方原文）
 ├── MCP_INTEGRATION.md         # MCP 工具调用说明
@@ -308,7 +259,7 @@ mctrace/
 │   ├── app-live-demo.html     # 单文件实时演示（模拟宿主 + 界面 + trace，双击即播）
 │   └── tool-inventory.json    # 麦当劳 MCP 35 个工具的真实 schema 存档
 ├── skills/
-│   └── mctrace/
+│   └── mcdetective/
 │       ├── SKILL.md           # WorkBuddy Skill 定义（自主工作流）
 │       ├── scripts/
 │       │   ├── install.py     # 一键安装/升级/卸载（装进 ~/.workbuddy）
@@ -323,8 +274,6 @@ mctrace/
 │   ├── probe_scenario.py      # 只读联调探针
 │   └── probe_tools.py         # tools/list 探测：存档服务端真实工具与 schema
 ├── packages/studio_core.py    # 界面渲染内核（App 与 Studio 共用，样式 + 卡片 + 证据透镜）
-├── packages/mcp_app/          # MCP 应用界面（MCP Apps / SEP-1865）
-│   ├── server.py              # stdio MCP 服务器：带 UI 的工具 + ui:// 资源 + 运行快照
 │   ├── build_app.py           # 生成可嵌入对话的界面 HTML / 单文件实时演示页
 │   ├── selftest.py            # 协议自检（44 项断言，可离线）
 │   ├── tests/host_sim.html    # 模拟 MCP Apps 宿主（验证「边跑边长」）

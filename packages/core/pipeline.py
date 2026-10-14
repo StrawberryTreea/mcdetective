@@ -34,7 +34,7 @@ TITLE_MAP = {
     "query-meals": "认真翻了菜单",
     "list-nutrition-foods": "核对候选热量",
     "query-meal-detail": "拆开看它有什么",
-    "mctrace:rule": "发现约束冲突",
+    "detect:rule": "发现约束冲突",
     "query-store-coupons": "查看门店券",
     "calculate-price": "核算价格",
     "summary-composer": "整理好结果与证据",
@@ -139,7 +139,7 @@ def run_scenario(url, user_request, budget_yuan, max_kcal, city, keyword,
     tok = load_token()
     c = McdMCPClient(tok, url=url)
     c.initialize()
-    trace_id = trace_id or ("mctrace-" + time.strftime("%Y%m%d") + "-" + uuid.uuid4().hex[:8])
+    trace_id = trace_id or ("mcdetective-" + time.strftime("%Y%m%d") + "-" + uuid.uuid4().hex[:8])
     events = []
     seq = 0
 
@@ -258,7 +258,7 @@ def run_scenario(url, user_request, budget_yuan, max_kcal, city, keyword,
     add("info", "list-nutrition-foods", "success" if nut else "error",
         [{"key": "menuItems", "value": len(candidates), "sourcePath": "$.data.meals"},
          {"key": "nutritionMatched", "value": len(candidates_with_kcal), "source": "nutrition-table"},
-         {"key": "coveragePct", "value": coverage, "source": "mctrace",
+         {"key": "coveragePct", "value": coverage, "source": "探长",
           "note": "营养表只覆盖部分在售单品；未覆盖者无法判断热量，不参与推荐"},
          {"key": "sample", "value": "、".join(f"{c['name']} {c['kcal']}kcal" for c in matched[:3]), "source": "nutrition-table"}],
         {c["name"]: "营养餐品 / nutrition" for c in matched[:4]},
@@ -294,7 +294,7 @@ def run_scenario(url, user_request, budget_yuan, max_kcal, city, keyword,
     if initial and initial["kcal"] > max_kcal:
         rule_fail = {"id": "nutrition.max", "pass": False,
                      "deltaKcal": initial["kcal"] - max_kcal}
-        add("warning", "mctrace:rule", "success",
+        add("warning", "detect:rule", "success",
             [{"key": "item", "value": initial["name"], "source": "menu+nutrition"},
              {"key": "kcal", "value": initial["kcal"], "sourcePath": "$.nutrition"},
              {"key": "maxKcal", "value": max_kcal, "source": "user-request"},
@@ -318,7 +318,7 @@ def run_scenario(url, user_request, budget_yuan, max_kcal, city, keyword,
               {"key": "composition", "value": "、".join(parts), "sourcePath": "$.data"}]
              if parts else
              [{"key": "item", "value": recommended["name"], "sourcePath": "$.request.code"},
-              {"key": "composition", "value": "未解析出构成字段", "source": "mctrace"}]),
+              {"key": "composition", "value": "未解析出构成字段", "source": "探长"}]),
             {recommended["name"]: "餐品构成 / meal-detail"},
             None,
             (f"顺手拆开看了一眼「{recommended['name']}」：{'、'.join(parts)}。"
@@ -366,7 +366,7 @@ def run_scenario(url, user_request, budget_yuan, max_kcal, city, keyword,
          {"key": "usableCoupons", "value": len(av_usable), "source": "markdown-parse"},
          {"key": "usableList", "value": "、".join(x["title"] for x in av_usable) or "无",
           "source": "markdown-parse"},
-         {"key": "format", "value": "markdown（非 JSON）", "source": "mctrace",
+         {"key": "format", "value": "markdown（非 JSON）", "source": "探长",
           "note": "该工具返回 Markdown 文本，通用 JSON 解析器会读不出"}],
         {x["title"]: "可领取优惠券 / coupon" for x in av_usable[:3]},
         {"id": "coupon.available", "pass": bool(av_usable), "usable": len(av_usable)},
@@ -393,7 +393,7 @@ def run_scenario(url, user_request, budget_yuan, max_kcal, city, keyword,
             "success" if price_src == "calculate-price" else "degraded",
             [{"key": "payableYuan", "value": payable, "sourcePath": "$.data.price" if price_src == "calculate-price" else "$.data.meals"},
              {"key": "budgetYuan", "value": budget_yuan, "source": "user-request"},
-             {"key": "priceSource", "value": price_src, "source": "mctrace"}],
+             {"key": "priceSource", "value": price_src, "source": "探长"}],
             {recommended["name"]: "算价餐品 / item.name", str(payable): "应付金额 / payableYuan"},
             ({"id": "budget.max", "pass": payable <= budget_yuan, "deltaYuan": round(payable - budget_yuan, 2)}
              if payable is not None else None),
@@ -418,11 +418,11 @@ def run_scenario(url, user_request, budget_yuan, max_kcal, city, keyword,
              {"key": "推荐单品", "value": recommended["name"], "source": "menu+nutrition"},
              {"key": "总价", "value": payable, "source": price_src},
              {"key": "热量", "value": recommended["kcal"], "source": "nutrition-table"},
-             {"key": "选品规则", "value": rule_text, "source": "mctrace"},
+             {"key": "选品规则", "value": rule_text, "source": "探长"},
              {"key": "备选", "value": alt_txt or "（无）", "source": "menu+nutrition"},
              {"key": "营养覆盖率", "value": "%s%%（菜单 %s 个在售单品中 %s 个有热量数据）"
-              % (coverage, len(candidates), len(candidates_with_kcal)), "source": "mctrace"},
-             {"key": "是否下单", "value": False, "source": "mctrace"}],
+              % (coverage, len(candidates), len(candidates_with_kcal)), "source": "探长"},
+             {"key": "是否下单", "value": False, "source": "探长"}],
             {store_name: "最终门店", recommended["name"]: "最终餐品"},
             None,
             "搞定！「%s」的%s：%s。%s 元、%s 千卡 —— %s。%s没下单，你定～"

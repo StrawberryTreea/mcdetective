@@ -172,7 +172,7 @@ class McdMCPClient:
             "params": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {},
-                "clientInfo": {"name": "mctrace", "version": "0.1"},
+                "clientInfo": {"name": "mcdetective", "version": "0.1"},
             },
         })
         # initialized 通知可能返回 202 空体，忽略

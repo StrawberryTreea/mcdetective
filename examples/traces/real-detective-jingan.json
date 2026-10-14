@@ -79,13 +79,13 @@
         {
           "key": "withinRadius",
           "value": 5,
-          "source": "mctrace",
+          "source": "探长",
           "note": "方圆 3 km 内的门店数"
         },
         {
           "key": "patrolCount",
           "value": 5,
-          "source": "mctrace",
+          "source": "探长",
           "note": "上限 10 家后的实际巡查数"
         },
         {
@@ -149,12 +149,12 @@
         {
           "key": "mealCount",
           "value": 113,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "targetHit",
           "value": "发现目标「巨无霸三件套」，标价 ¥37",
-          "source": "mctrace"
+          "source": "探长"
         }
       ],
       "entities": {
@@ -246,12 +246,12 @@
         {
           "key": "mealCount",
           "value": 116,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "targetHit",
           "value": "发现目标「巨无霸三件套」，标价 ¥36.5",
-          "source": "mctrace"
+          "source": "探长"
         }
       ],
       "entities": {
@@ -343,12 +343,12 @@
         {
           "key": "mealCount",
           "value": 117,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "targetHit",
           "value": "发现目标「巨无霸三件套」，标价 ¥36.5",
-          "source": "mctrace"
+          "source": "探长"
         }
       ],
       "entities": {
@@ -440,12 +440,12 @@
         {
           "key": "mealCount",
           "value": 110,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "targetHit",
           "value": "发现目标「巨无霸三件套」，标价 ¥36.5",
-          "source": "mctrace"
+          "source": "探长"
         }
       ],
       "entities": {
@@ -537,12 +537,12 @@
         {
           "key": "mealCount",
           "value": 105,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "targetHit",
           "value": "发现目标「巨无霸三件套」，标价 ¥36.5",
-          "source": "mctrace"
+          "source": "探长"
         }
       ],
       "entities": {
@@ -616,7 +616,7 @@
       "traceId": "mcdetective-20261013-f6d7e7ce",
       "seq": 13,
       "kind": "success",
-      "tool": "mctrace:rule",
+      "tool": "detect:rule",
       "title": "比对发现线索",
       "status": "success",
       "ts": "2026-10-13T21:02:47",
@@ -624,7 +624,7 @@
         {
           "key": "comparedForm",
           "value": "巨无霸三件套",
-          "source": "mctrace",
+          "source": "探长",
           "note": "目标关键词可能命中多种形态（单品/套餐），只与同一形态比价"
         },
         {
@@ -640,17 +640,17 @@
         {
           "key": "deltaYuan",
           "value": 0.5,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "comparedStores",
           "value": 5,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "otherForms",
           "value": "无",
-          "source": "mctrace",
+          "source": "探长",
           "note": "其他命中形态的结论，单独列示，不混入主对比"
         }
       ],
@@ -724,7 +724,7 @@
       "traceId": "mcdetective-20261013-f6d7e7ce",
       "seq": 14,
       "kind": "info",
-      "tool": "mctrace:rule",
+      "tool": "detect:rule",
       "title": "比对发现线索",
       "status": "success",
       "ts": "2026-10-13T21:02:47",
@@ -732,23 +732,23 @@
         {
           "key": "unionItems",
           "value": 136,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "commonItems",
           "value": 89,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "coveragePct",
           "value": 65.4,
-          "source": "mctrace",
+          "source": "探长",
           "note": "全部门店都有售的单品占比；其余为部分门店限定"
         },
         {
           "key": "example",
           "value": "「鱼排堡开心乐园餐」仅上海静安寺有售；此类非全部巡查门店共有的单品共 47 款",
-          "source": "mctrace"
+          "source": "探长"
         }
       ],
       "entities": {},
@@ -776,7 +776,7 @@
       "traceId": "mcdetective-20261013-f6d7e7ce",
       "seq": 15,
       "kind": "info",
-      "tool": "mctrace:rule",
+      "tool": "detect:rule",
       "title": "比对发现线索",
       "status": "success",
       "ts": "2026-10-13T21:02:47",
@@ -784,12 +784,12 @@
         {
           "key": "uniqueCouponSets",
           "value": 1,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "verdict",
           "value": "完全一致",
-          "source": "mctrace"
+          "source": "探长"
         }
       ],
       "entities": {},
@@ -823,12 +823,12 @@
         {
           "key": "巡查门店",
           "value": 5,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "巡查半径",
           "value": "方圆 3 km（实际 134 m–791 m）",
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "目标餐品",
@@ -838,7 +838,7 @@
         {
           "key": "在售门店",
           "value": 5,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "最低价",
@@ -853,23 +853,23 @@
         {
           "key": "比对形态",
           "value": "巨无霸三件套",
-          "source": "mctrace",
+          "source": "探长",
           "note": "只与同一形态比价；其他命中形态见价差线索"
         },
         {
           "key": "结论",
           "value": "差价 ¥0.5：麦当劳上海越洋广场餐厅 最便宜",
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "可得性覆盖率",
           "value": "65.4%",
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "是否下单",
           "value": false,
-          "source": "mctrace"
+          "source": "探长"
         }
       ],
       "entities": {

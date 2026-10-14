@@ -202,7 +202,7 @@ def render_case(T):
     {stamp_html}
     <div class="sub">{esc(RESULT.get("verdict",""))} · 可得性覆盖率 {esc(RESULT.get("coveragePct",""))}% · 未创建任何订单</div>
   </div>
-  <div class="repro">$ python skills/mctrace/scripts/run_trace.py --detective {esc(case_facts.get("city",""))} {esc(case_facts.get("keyword",""))} {esc(case_facts.get("target",""))} {esc(case_facts.get("radiusKm","3"))} 10</div>
+  <div class="repro">$ python skills/mcdetective/scripts/run_trace.py --detective {esc(case_facts.get("city",""))} {esc(case_facts.get("keyword",""))} {esc(case_facts.get("target",""))} {esc(case_facts.get("radiusKm","3"))} 10</div>
 </section>
 
 <section class="card">

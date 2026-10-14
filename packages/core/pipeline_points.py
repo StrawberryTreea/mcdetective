@@ -37,7 +37,7 @@ TITLE_MAP = {
     "order-list": "翻历史订单",
     "query-survey-coupon": "唤醒沉睡奖券",
     "mall-points-products": "找积分商城最值",
-    "mctrace:rule": "发现资产流失",
+    "detect:rule": "发现资产流失",
     "available-coupons": "查可领券",
     "campaign-calendar": "查活动日历",
     "summary-composer": "整理好结果与证据",
@@ -89,7 +89,7 @@ def run_scenario(url, trace_id=None, emit=None, quiet=False):
     tok = load_token()
     c = McdMCPClient(tok, url=url)
     c.initialize()
-    trace_id = trace_id or ("mctrace-" + time.strftime("%Y%m%d") + "-" + uuid.uuid4().hex[:8])
+    trace_id = trace_id or ("mcdetective-" + time.strftime("%Y%m%d") + "-" + uuid.uuid4().hex[:8])
     events = []
     seq = [0, trace_id]
 
@@ -122,7 +122,7 @@ def run_scenario(url, trace_id=None, emit=None, quiet=False):
 
     # 1b) 规则：临期 / 历史过期
     if expired and expired > 0:
-        add(events, seq, "warning", "mctrace:rule", "success",
+        add(events, seq, "warning", "detect:rule", "success",
             [{"key": "expiredPoint", "value": expired, "sourcePath": "$.data.expiredPoint"},
              {"key": "meaning", "value": "历史上已白白过期的积分", "source": "rule"}],
             {}, None,
@@ -130,7 +130,7 @@ def run_scenario(url, trace_id=None, emit=None, quiet=False):
             f"历史已过期积分={expired}，构成资产流失，约束未通过。",
             {"expiredPoint": expired}, {"rule": "points.expired"})
     if cur_exp and cur_exp > 0:
-        add(events, seq, "warning", "mctrace:rule", "success",
+        add(events, seq, "warning", "detect:rule", "success",
             [{"key": "currentMouthExpirePoint", "value": cur_exp, "sourcePath": "$.data.currentMouthExpirePoint"},
              {"key": "action", "value": "建议本月用掉", "source": "rule"}],
             {}, None,
@@ -260,7 +260,7 @@ def run_scenario(url, trace_id=None, emit=None, quiet=False):
          {"key": "sleepingCoupons", "value": len(sleeping), "source": "survey-coupon"},
          {"key": "bestRedeem", "value": (reco_name + "（约 " + str(reco_pt) + " 分）") if reco_name else "—",
           "sourcePath": "$.data[].point"},
-         {"key": "orderCreated", "value": False, "source": "mctrace"}],
+         {"key": "orderCreated", "value": False, "source": "探长"}],
         {}, None,
         f"搞定！可用 {avail} 分、历史已过期 {expired} 分、本月将过期 {cur_exp} 分；沉睡奖券 {len(sleeping)} 张；"
         f"商城最值换「{reco_name}」约 {reco_pt} 分。全部只读盘点，没动你账户～",

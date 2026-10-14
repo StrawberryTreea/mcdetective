@@ -17,7 +17,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 TOOL_META = {
     "user-request":      {"cn": "用户需求", "internal": True,
                           "desc": "把你的自然语言请求变成这条轨迹的起点"},
-    "mctrace:rule":      {"cn": "规则校验", "internal": True,
+    "detect:rule":      {"cn": "规则校验", "internal": True,
                           "desc": "本机规则引擎对预算 / 热量 / 临期积分等约束做硬校验"},
     "summary-composer":  {"cn": "结果汇总", "internal": True,
                           "desc": "把这条轨迹里的事实汇总成一句结论"},
@@ -449,7 +449,7 @@ CORE_JS = r"""
   };
 
   /* 实时模式：只把「新到」的事件追加进来（按 seq 去重），已有节点不动。
-     用于 mctrace_start 的轮询场景 —— 事件是后台跑出来的，界面边跑边长。 */
+     用于 （已移除的 MCP 工具） 的轮询场景 —— 事件是后台跑出来的，界面边跑边长。 */
   UI.prototype.appendEvents = function(trace){
     if(!trace) return 0;
     var tl = this._q(this.ids.timeline);

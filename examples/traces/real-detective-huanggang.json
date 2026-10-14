@@ -79,13 +79,13 @@
         {
           "key": "withinRadius",
           "value": 2,
-          "source": "mctrace",
+          "source": "探长",
           "note": "方圆 3 km 内的门店数"
         },
         {
           "key": "patrolCount",
           "value": 2,
-          "source": "mctrace",
+          "source": "探长",
           "note": "上限 10 家后的实际巡查数"
         },
         {
@@ -146,12 +146,12 @@
         {
           "key": "mealCount",
           "value": 94,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "targetHit",
           "value": "发现目标「麦香鱼套餐」，标价 ¥33",
-          "source": "mctrace"
+          "source": "探长"
         }
       ],
       "entities": {
@@ -243,12 +243,12 @@
         {
           "key": "mealCount",
           "value": 107,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "targetHit",
           "value": "发现目标「麦香鱼套餐」，标价 ¥33",
-          "source": "mctrace"
+          "source": "探长"
         }
       ],
       "entities": {
@@ -322,7 +322,7 @@
       "traceId": "mcdetective-20261013-9e6ef1fe",
       "seq": 7,
       "kind": "info",
-      "tool": "mctrace:rule",
+      "tool": "detect:rule",
       "title": "比对发现线索",
       "status": "success",
       "ts": "2026-10-13T21:02:52",
@@ -330,7 +330,7 @@
         {
           "key": "comparedForm",
           "value": "麦香鱼",
-          "source": "mctrace",
+          "source": "探长",
           "note": "目标关键词可能命中多种形态（单品/套餐），只与同一形态比价"
         },
         {
@@ -346,17 +346,17 @@
         {
           "key": "deltaYuan",
           "value": 0.0,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "comparedStores",
           "value": 2,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "otherForms",
           "value": "「麦香鱼套餐」各店同价",
-          "source": "mctrace",
+          "source": "探长",
           "note": "其他命中形态的结论，单独列示，不混入主对比"
         }
       ],
@@ -414,7 +414,7 @@
       "traceId": "mcdetective-20261013-9e6ef1fe",
       "seq": 8,
       "kind": "info",
-      "tool": "mctrace:rule",
+      "tool": "detect:rule",
       "title": "比对发现线索",
       "status": "success",
       "ts": "2026-10-13T21:02:52",
@@ -422,23 +422,23 @@
         {
           "key": "unionItems",
           "value": 111,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "commonItems",
           "value": 90,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "coveragePct",
           "value": 81.1,
-          "source": "mctrace",
+          "source": "探长",
           "note": "全部门店都有售的单品占比；其余为部分门店限定"
         },
         {
           "key": "example",
           "value": "「泷泷星愿四件套」仅黄冈万达有售；此类非全部巡查门店共有的单品共 21 款",
-          "source": "mctrace"
+          "source": "探长"
         }
       ],
       "entities": {},
@@ -466,7 +466,7 @@
       "traceId": "mcdetective-20261013-9e6ef1fe",
       "seq": 9,
       "kind": "info",
-      "tool": "mctrace:rule",
+      "tool": "detect:rule",
       "title": "比对发现线索",
       "status": "success",
       "ts": "2026-10-13T21:02:52",
@@ -474,12 +474,12 @@
         {
           "key": "uniqueCouponSets",
           "value": 1,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "verdict",
           "value": "完全一致",
-          "source": "mctrace"
+          "source": "探长"
         }
       ],
       "entities": {},
@@ -513,12 +513,12 @@
         {
           "key": "巡查门店",
           "value": 2,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "巡查半径",
           "value": "方圆 3 km（实际 95 m–1.8 km）",
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "目标餐品",
@@ -528,7 +528,7 @@
         {
           "key": "在售门店",
           "value": 2,
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "最低价",
@@ -543,23 +543,23 @@
         {
           "key": "比对形态",
           "value": "麦香鱼",
-          "source": "mctrace",
+          "source": "探长",
           "note": "只与同一形态比价；其他命中形态见价差线索"
         },
         {
           "key": "结论",
           "value": "无从比起（各店同价）",
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "可得性覆盖率",
           "value": "81.1%",
-          "source": "mctrace"
+          "source": "探长"
         },
         {
           "key": "是否下单",
           "value": false,
-          "source": "mctrace"
+          "source": "探长"
         }
       ],
       "entities": {

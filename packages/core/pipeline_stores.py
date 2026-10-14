@@ -35,7 +35,7 @@ TITLE_MAP = {
     "query-nearby-stores": "划定巡查范围",
     "query-meals": "巡查门店菜单",
     "query-store-coupons": "核查门店券",
-    "mctrace:rule": "比对发现线索",
+    "detect:rule": "比对发现线索",
     "summary-composer": "结案报告",
 }
 
@@ -158,13 +158,13 @@ def run_scenario(url, city, keyword, target,
     add("info" if stores else "error", "query-nearby-stores",
         "success" if stores else ("degraded" if near_ok else "error"),
         [{"key": "hitCount", "value": len(all_stores), "sourcePath": "$.data"},
-         {"key": "withinRadius", "value": len(within), "source": "mctrace",
+         {"key": "withinRadius", "value": len(within), "source": "探长",
           "note": f"方圆 {radius_km:g} km 内的门店数"},
-         {"key": "patrolCount", "value": len(stores), "source": "mctrace",
+         {"key": "patrolCount", "value": len(stores), "source": "探长",
           "note": f"上限 {max_stores} 家后的实际巡查数"},
          ({"key": "distanceRange", "value": range_txt, "sourcePath": "$.data[].distance",
            "note": "接口返回距离为米"} if range_txt != "未知" else
-          {"key": "distanceRange", "value": "接口未返回距离", "source": "mctrace",
+          {"key": "distanceRange", "value": "接口未返回距离", "source": "探长",
            "note": "按接口返回顺序取前 N 家，不做距离承诺"}),
          {"key": "patrolList", "value": "、".join(s.get("storeName", "") for s in stores),
           "sourcePath": "$.data[].storeName"}],
@@ -209,8 +209,8 @@ def run_scenario(url, city, keyword, target,
         add("info", "query-meals", "success" if meals_ok else "error",
             [{"key": "storeName", "value": name, "sourcePath": "$.data.meals"},
              {"key": "distance", "value": fmt_km(dist_m), "sourcePath": "$.data[].distance"},
-             {"key": "mealCount", "value": len(info["meals"]), "source": "mctrace"},
-             {"key": "targetHit", "value": hit_txt, "source": "mctrace"}],
+             {"key": "mealCount", "value": len(info["meals"]), "source": "探长"},
+             {"key": "targetHit", "value": hit_txt, "source": "探长"}],
             {name: "巡查门店", target: "目标餐品"},
             None,
             f"第 {i} 站（{fmt_km(dist_m)}）：{name}，菜单 {len(info['meals'])} 个单品，{hit_txt}。",
@@ -273,13 +273,13 @@ def run_scenario(url, city, keyword, target,
         forms_note = ("；".join(
             f"「{g['name']}」" + (f"差价 ¥{g['delta']:g}" if g["delta"] > 0.001 else "各店同价")
             for g in other_forms)) or "无"
-        price_facts = [{"key": "comparedForm", "value": primary["name"], "source": "mctrace",
+        price_facts = [{"key": "comparedForm", "value": primary["name"], "source": "探长",
                         "note": "目标关键词可能命中多种形态（单品/套餐），只与同一形态比价"},
                        {"key": "lowest", "value": f"{low['store']} ¥{low['price']:g}", "source": "menu"},
                        {"key": "highest", "value": f"{high['store']} ¥{high['price']:g}", "source": "menu"},
-                       {"key": "deltaYuan", "value": delta, "source": "mctrace"},
-                       {"key": "comparedStores", "value": len(price_rows), "source": "mctrace"},
-                       {"key": "otherForms", "value": forms_note, "source": "mctrace",
+                       {"key": "deltaYuan", "value": delta, "source": "探长"},
+                       {"key": "comparedStores", "value": len(price_rows), "source": "探长"},
+                       {"key": "otherForms", "value": forms_note, "source": "探长",
                         "note": "其他命中形态的结论，单独列示，不混入主对比"}]
         price_friendly = (f"线索比对完成：「{primary['name']}」{len(price_rows)} 家在售。"
                           f"最低 {low['store']} ¥{low['price']:g}，最高 {high['store']} ¥{high['price']:g}。")
@@ -316,13 +316,13 @@ def run_scenario(url, city, keyword, target,
         low = high = None
         delta = 0
         price_facts = [
-            {"key": "mode", "value": "recommend（用户没点菜名，只问有什么好吃）", "source": "mctrace"},
-            {"key": "patrolStores", "value": len(stores), "source": "mctrace"},
+            {"key": "mode", "value": "recommend（用户没点菜名，只问有什么好吃）", "source": "探长"},
+            {"key": "patrolStores", "value": len(stores), "source": "探长"},
             {"key": "soldItems", "value": total_items, "source": "menu",
              "note": "剔除饮品与周边后的在售单品数（以本次巡查时点为准）"},
             {"key": "topItem", "value": (f"{top['name']}（{top['stores']} 家都有，¥{top['low']:g}–¥{top['high']:g})"
                                           if top else "无"), "source": "menu"},
-            {"key": "noPick", "value": "探长不替用户决定吃什么", "source": "mctrace"},
+            {"key": "noPick", "value": "探长不替用户决定吃什么", "source": "探长"},
         ]
         menu_txt = "；".join(f"「{r['name']}」{r['stores']}家 ¥{r['low']:g}–¥{r['high']:g}" for r in overview[:4])
         price_friendly = (f"方圆 {radius_km:g} 公里这 {len(stores)} 家店现在共在售 {total_items} 款（已剔除饮品与周边）。"
@@ -359,15 +359,15 @@ def run_scenario(url, city, keyword, target,
             same = delta <= 0.001
             price_facts = [{"key": "targetForm", "value": target, "source": "user-request"},
                            {"key": "targetOnSale", "value": "否——该形态当前不在这些店的菜单上",
-                            "source": "mctrace", "note": "多为时段下架；如实记录，不冒充"},
+                            "source": "探长", "note": "多为时段下架；如实记录，不冒充"},
                            {"key": "fallbackForm", "value": aname, "source": "menu",
                             "note": f"这几家店卖得最齐的在售主食（{len(asp)} 家都有），作为替代案比价"},
-                           {"key": "comparedForm", "value": aname, "source": "mctrace",
+                           {"key": "comparedForm", "value": aname, "source": "探长",
                             "note": "价差榜比对的是替代案形态，不是报案要的那个形态"},
                            {"key": "lowest", "value": f"{low['store']} ¥{low['price']:g}", "source": "menu"},
                            {"key": "highest", "value": f"{high['store']} ¥{high['price']:g}", "source": "menu"},
-                           {"key": "deltaYuan", "value": delta, "source": "mctrace"},
-                           {"key": "comparedStores", "value": len(price_rows), "source": "mctrace"}]
+                           {"key": "deltaYuan", "value": delta, "source": "探长"},
+                           {"key": "comparedStores", "value": len(price_rows), "source": "探长"}]
             price_friendly = (f"翻遍 {len(stores)} 家店，「{target}」现在都不在菜单上——时段问题，"
                               f"探长不拿别的形态冒充它。这几家现在卖得最齐的是「{aname}」"
                               f"（{len(asp)} 家都有）：最低 {low['store']} ¥{low['price']:g}，"
@@ -379,14 +379,14 @@ def run_scenario(url, city, keyword, target,
         else:
             price_rows = []
             price_facts = [{"key": "target", "value": target, "source": "user-request"},
-                           {"key": "found", "value": "巡查门店均未发现该餐品", "source": "mctrace"}]
+                           {"key": "found", "value": "巡查门店均未发现该餐品", "source": "探长"}]
             price_friendly = f"翻遍 {len(stores)} 家店，都没找到「{target}」——换个时段或换个餐品再来。"
             price_pro = f"目标餐品「{target}」在 {len(stores)} 家巡查门店中均未出现。"
             price_kind = "warning"
     def _pfact(key, default=None):
         return next((f["value"] for f in price_facts if f["key"] == key), default)
     alt_form = str(_pfact("targetOnSale") or "").startswith("否")
-    add(price_kind, "mctrace:rule", "success",
+    add(price_kind, "detect:rule", "success",
         price_facts,
         {r["store"]: "价差榜门店" for r in price_rows[:6]},
         {"id": "price.cross-store", "pass": bool(price_rows) and delta > 0.001,
@@ -417,12 +417,12 @@ def run_scenario(url, city, keyword, target,
                                f"此类非全部巡查门店共有的单品共 {len(partial)} 款")
                 break
     coverage = round(len(common) * 100.0 / len(union), 1) if union else 0.0
-    add("info", "mctrace:rule", "success",
-        [{"key": "unionItems", "value": len(union), "source": "mctrace"},
-         {"key": "commonItems", "value": len(common), "source": "mctrace"},
-         {"key": "coveragePct", "value": coverage, "source": "mctrace",
+    add("info", "detect:rule", "success",
+        [{"key": "unionItems", "value": len(union), "source": "探长"},
+         {"key": "commonItems", "value": len(common), "source": "探长"},
+         {"key": "coveragePct", "value": coverage, "source": "探长",
           "note": "全部门店都有售的单品占比；其余为部分门店限定"},
-         {"key": "example", "value": example_txt, "source": "mctrace"}],
+         {"key": "example", "value": example_txt, "source": "探长"}],
         {},
         {"id": "availability.coverage", "pass": True, "coveragePct": coverage},
         (f"顺手记一笔：{len(stores)} 家店合起来 {len(union)} 款单品，家家都有的只有 {len(common)} 款（{coverage}%）。"
@@ -442,9 +442,9 @@ def run_scenario(url, city, keyword, target,
         coupon_friendly = (f"券核查完毕：{len(stores)} 家店出现了 {len(unique_sets)} 种不同券集合，"
                            f"差异已记录在案。")
         coupon_pro = (f"门店券跨店比对：发现 {len(unique_sets)} 种不同券集合，逐店明细见上方各事件证据。")
-    add("info", "mctrace:rule", "success",
-        [{"key": "uniqueCouponSets", "value": len(unique_sets), "source": "mctrace"},
-         {"key": "verdict", "value": "完全一致" if len(unique_sets) == 1 else "存在差异", "source": "mctrace"}],
+    add("info", "detect:rule", "success",
+        [{"key": "uniqueCouponSets", "value": len(unique_sets), "source": "探长"},
+         {"key": "verdict", "value": "完全一致" if len(unique_sets) == 1 else "存在差异", "source": "探长"}],
         {},
         {"id": "coupon.cross-store", "pass": True, "uniqueSets": len(unique_sets)},
         coupon_friendly, coupon_pro,
@@ -464,19 +464,19 @@ def run_scenario(url, city, keyword, target,
     dists = [info["distM"] for info in store_data.values() if info["distM"] is not None]
     patrol_range = f"{fmt_km(min(dists))}–{fmt_km(max(dists))}" if dists else "未知"
     result_facts = [
-        {"key": "巡查门店", "value": len(stores), "source": "mctrace"},
-        {"key": "巡查半径", "value": f"方圆 {radius_km:g} km（实际 {patrol_range}）", "source": "mctrace"},
+        {"key": "巡查门店", "value": len(stores), "source": "探长"},
+        {"key": "巡查半径", "value": f"方圆 {radius_km:g} km（实际 {patrol_range}）", "source": "探长"},
         {"key": "目标餐品", "value": target, "source": "user-request"},
         ({"key": "在售款数", "value": total_items, "source": "menu"} if mode == "recommend"
-         else {"key": "在售门店", "value": len(price_rows), "source": "mctrace"}),
-        {"key": "结论", "value": verdict, "source": "mctrace"},
-        {"key": "可得性覆盖率", "value": f"{coverage}%", "source": "mctrace"},
-        {"key": "是否下单", "value": False, "source": "mctrace"},
+         else {"key": "在售门店", "value": len(price_rows), "source": "探长"}),
+        {"key": "结论", "value": verdict, "source": "探长"},
+        {"key": "可得性覆盖率", "value": f"{coverage}%", "source": "探长"},
+        {"key": "是否下单", "value": False, "source": "探长"},
     ]
     if price_rows:
         result_facts.insert(4, {"key": "最低价", "value": f"{low['store']} ¥{low['price']:g}", "source": "menu"})
         result_facts.insert(5, {"key": "最高价", "value": f"{high['store']} ¥{high['price']:g}", "source": "menu"})
-        result_facts.insert(6, {"key": "比对形态", "value": primary["name"], "source": "mctrace",
+        result_facts.insert(6, {"key": "比对形态", "value": primary["name"], "source": "探长",
                                 "note": "只与同一形态比价；其他命中形态见价差线索"})
     add("success", "summary-composer", "success",
         result_facts,
