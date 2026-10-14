@@ -1,5 +1,5 @@
 """
-McTrace · 积分资产盘点场景流水线（只读）
+麦探长 · 积分资产盘点场景流水线（只读）
 
 串联麦当劳 MCP 的「个人资产」只读工具：
   query-my-account → query-lottery-info → query-my-prizes
@@ -27,7 +27,7 @@ from mcp_client import McdMCPClient, load_token
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
 OUT_DIR = os.path.join(REPO, "examples", "traces")
-OUT_NAME = os.environ.get("MCTRACE_OUT") or "points-steward"
+OUT_NAME = os.environ.get("MCDETECTIVE_OUT") or "points-steward"
 
 TITLE_MAP = {
     "user-request": "先把要求记下来",

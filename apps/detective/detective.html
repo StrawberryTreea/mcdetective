@@ -751,7 +751,7 @@ footer{margin-top:22px;text-align:center;font-size:11.5px;color:#8a7f68;line-hei
 
 <footer>
   麦探长 · 麦当劳程序员创意开发大赛参赛作品 · 独立开发，非麦当劳官方产品<br/>
-  证据链引擎：McTrace（事实是一等公民，拟人化 ≠ 编造）· 餐品信息、价格及供应状态以麦当劳官方渠道实时结果为准<br/>
+  证据链引擎：麦探长（事实是一等公民，拟人化 ≠ 编造）· 餐品信息、价格及供应状态以麦当劳官方渠道实时结果为准<br/>
   <a href="https://github.com/StrawberryTreea/mcdetective" style="color:#185FA5">GitHub 仓库 · 源码与案卷全公开</a> ·
   <span style="color:#DA291C;font-weight:700">这场比赛按 Star 排名——探长称职的话，上去点个 Star</span>
 </footer>
@@ -904,6 +904,19 @@ footer{margin-top:22px;text-align:center;font-size:11.5px;color:#8a7f68;line-hei
     if(h && h.ok){ setMsg('ok','办案服务在线，报个案试试（真跑，全程只读）。Token 只在你贴了之后用于这一次请求。'); }
     else { offlineNotice(); }
   }).catch(offlineNotice);
+
+  // —— 深链：?q= 预填并自动出勤（用户一句话带需求时开箱即用）——
+  try {
+    var sp = new URLSearchParams(location.search);
+    var dq = (sp.get('q') || '').trim();
+    if (dq) {
+      $('fQ').value = dq;
+      var dtk = (sp.get('token') || '').trim();
+      if (dtk) { $('fToken').value = dtk; }
+      // 略延迟，让健康检查提示先渲染，再自动出勤
+      setTimeout(function(){ run(dq); }, 500);
+    }
+  } catch (e) {}
 })();
 </script>
 </body>

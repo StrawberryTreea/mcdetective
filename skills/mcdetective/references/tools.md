@@ -1,7 +1,7 @@
-# 工具与真实返回结构（McTrace 用到的 5 个只读工具）
+# 工具与真实返回结构（麦探长 用到的 5 个只读工具）
 
 > 以下均为对 `https://mcp.mcd.cn` 的**真实调用**观察所得，非推测。
-> 该平台共 35 个工具，McTrace 仅使用下列 5 个查询类工具。
+> 该平台共 35 个工具，麦探长 仅使用下列 5 个查询类工具。
 
 ---
 
@@ -25,7 +25,7 @@
   ] }
 ```
 
-- `data` 为数组；McTrace 取 `data[0]` 作为目标门店。
+- `data` 为数组；麦探长 取 `data[0]` 作为目标门店。
 - **脱敏**：`address` 门牌号以 `**` 打码（`mask_address()`）后才进入 Trace。
 
 ---
@@ -51,7 +51,7 @@
 ```
 
 - **`currentPrice` 是字符串**（元），归一化时 `to_yuan()` 转 float。
-- McTrace 从 `data.meals` 取 `{code, name, currentPrice}` 作为候选；某门店样本约 117 个带价单品。
+- 麦探长 从 `data.meals` 取 `{code, name, currentPrice}` 作为候选；某门店样本约 117 个带价单品。
 
 ---
 
@@ -67,7 +67,7 @@
   培根安格斯厚牛堡,某描述,2956,707,...
 ```
 
-- 第 4 列为 **kcal**；McTrace `parse_nutrition()` 解析为 `{名称: kcal}`。
+- 第 4 列为 **kcal**；麦探长 `parse_nutrition()` 解析为 `{名称: kcal}`。
 - 与菜单候选**按名称精确匹配**；匹配不到**不补造**。
 
 ---
@@ -88,7 +88,7 @@
             { "title": "薯薯任选",   "products": [ { "productName": "..." } ] } ] }
 ```
 
-- McTrace 记录 `couponCount / coupons`，并按 `products[].productName` 判断**是否适用于推荐单品**。
+- 麦探长 记录 `couponCount / coupons`，并按 `products[].productName` 判断**是否适用于推荐单品**。
 
 ---
 
@@ -107,9 +107,9 @@
   `{ "success": true, "data": { "price": "23.00", "productList": [ ... ], "takeWayList": [ ... ] } }`
 - 只传 `{code, quantity}`：`{ "success": true, "data": { "price": 0, "productList": [] } }` —— **空明细**。
 
-### McTrace 的处理：诚实降级
+### 麦探长 的处理：诚实降级
 
-当出现空明细时，McTrace **不假装算价成功**，而是：
+当出现空明细时，麦探长 **不假装算价成功**，而是：
 
 - 事件 `kind = warning`、`status = degraded`；
 - 事实里加 `priceSource = menu`；

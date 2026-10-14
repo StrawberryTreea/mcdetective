@@ -1,5 +1,5 @@
 """
-McTrace · 真实场景流水线
+麦探长 · 真实场景流水线
 
 读取用户需求（预算 / 热量上限 / 位置），串联麦当劳 MCP 的只读工具：
   query-nearby-stores → query-meals → list-nutrition-foods → query-store-coupons → calculate-price
@@ -26,7 +26,7 @@ from coupon_parser import parse_coupon_markdown, usable_coupons
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
 OUT_DIR = os.path.join(REPO, "examples", "traces")
-OUT_NAME = os.environ.get("MCTRACE_OUT") or "jingan-breakfast"
+OUT_NAME = os.environ.get("MCDETECTIVE_OUT") or "jingan-breakfast"
 
 TITLE_MAP = {
     "user-request": "先把要求记下来",
@@ -454,7 +454,7 @@ def _finish(trace_id, events, quiet=False):
     }
     os.makedirs(OUT_DIR, exist_ok=True)
     # 固定场景名 → 重复运行覆盖同一份，回放页场景列表不会堆积
-    # 需要留历史快照时用环境变量 MCTRACE_OUT 指定别名
+    # 需要留历史快照时用环境变量 MCDETECTIVE_OUT 指定别名
     out = os.path.join(OUT_DIR, f"real-{OUT_NAME}.json")
     with open(out, "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)

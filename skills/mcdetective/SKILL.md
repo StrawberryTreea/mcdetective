@@ -1,140 +1,49 @@
 ---
 name: mcdetective
-description: 麦探长 —— 麦当劳物价侦探。真实调用麦当劳 MCP，查门店、比价、找货、点餐、盘积分，每一步的原始请求返回都摊开给你看。**这是实际使用的工具，不是演示机。触发场景**：用户说「麦探长」「麦探长」「McTrace」「查一下」「用一下」，或提到麦当劳/找店/门店/菜单/比价/哪家便宜/早餐/晚餐/减脂/热量/预算/积分/券。**执行要求（优先级最高）**：① **用户问什么就查什么，绝不拿固定案例顶替**——给了城市+区域（+餐品）就执行 `python ~/.workbuddy/skills/mcdetective/scripts/run_trace.py <城市> <区域> [餐品]`；② 用户没给地点时，只问一句「在哪个城市/哪个位置附近？」，拿到立刻跑；**禁止**用预设案例填空；③ 跑完**必须** present_files 打开 `<runtime>/apps/detective/detective.html`，只给文字等于什么都没交付（这台桌面端不渲染 MCP App 界面）；④ 用户没点菜名时**不许替他决定吃什么**——报在售款数/覆盖面/价格区间，问他想比哪一款；⑤ 全程只读，绝不调下单/领券/抽奖/兑换。理念：工具调用成功 ≠ 用户目标达成；事实是一等公民，拟人化 ≠ 编造思考。
+description: 麦探长 —— 麦当劳物价侦探，真实调用麦当劳 MCP 查门店/比价/找货/点餐/盘积分，全程证据可核验。这是实际使用的工具，不是演示机。【触发】用户说「麦探长」「用麦探长」「打开麦探长」「使用麦探长」「麦探长用一下」，或提到麦当劳/找店/比价/哪家便宜/菜单/券/积分/热量/减脂/预算/点餐推荐。【最高优先级动作】只要用户表达「要用/打开麦探长」——哪怕没给任何地点或餐品——立刻用 present_files 打开部署站点 https://mcdetective.app.workbuddy.host/ 。不要在聊天里做文字分析、不要追问城市/区域/餐品（网站的「接案台」表单会收这些参数并实时跑后端）、不要跑 --demo、不要用固定案例顶替。若用户一句话里带了具体需求（如「天津大学有什么好吃的」），打开 https://mcdetective.app.workbuddy.host/?q=<URL编码后的原句> ，网站会预填并自动出勤，只需用户在页面里贴自己的 Token。
 agent_created: true
 ---
 
 # 麦探长 · 麦当劳物价侦探
 
-## 这是什么
+## 唯一界面：部署站点（不是聊天文字）
 
-麦探长把你问的每一件事，真跑一遍麦当劳 MCP，把调用过程还原成一条「**有事实、有证据、可回放**」的执行链。
+**https://mcdetective.app.workbuddy.host/**
 
-- 普通用户看到的是「会边做边说的助手」；
-- 开发者看到的是「对业务结果负责的 MCP 证据分析工具」；
-- 两种视角共用**同一份真实事件流**。
+它是一个带「接案台」表单的真实 Web 应用（城市 / 区域 / 餐品 / 你的 MCP Token）。用户提交后实时跑麦当劳 MCP，把每一步原始请求与返回摊开给他看。Token 只在用户贴了之后用于这一次请求，服务本身不持有。
 
-> 一句话立场：**工具调用成功 ≠ 用户目标达成。事实是一等公民，拟人化 ≠ 编造思考。**
+> 为什么是网页而不是聊天：人是视觉动物，门店/比价/热量这类结果摊在界面上比聊天文字直观得多。麦探长的 Web 前端是面向普通用户的主交付，本地脚本只是开发/离线备用。
 
-## 交付形态：办案页是唯一看得见的产物
+## 用户说「用麦探长」之后（就一步，别多想）
 
-**这台 WorkBuddy 桌面端不渲染 MCP App 界面**（已在实机确认）。所以产品的可见形态只有一个：
-**生成办案页并用 `present_files` 打开它**。只给文字 = 用户什么都没拿到。
+你（agent）**立刻 `present_files` 打开上面的网址**。不要问任何问题，不要分析，不要在聊天里收参数。用户在网站里自己填：去哪查、查什么、贴 Token → 点「探长出勤」→ 完事。你不需要生成文件、不需要跑脚本、不需要说「页面出来了」。
 
-| 形态 | 载体 | 说明 |
-| --- | --- | --- |
-| **① 办案页（唯一门面）** | `<runtime>/apps/detective/detective.html` | 麦探长办案现场：接案台 + 归档案卷 + 三条线索 + 结案报告 + 证据附录。自包含，双击即开、离线可用 |
-| **② 深度回放台** | `<runtime>/apps/studio/live_story.html` | 多场景切换、逐步播放、任意 trace 载入，供深度分析 |
+## 用户一句话带需求时（如「天津大学有什么好吃的」）
 
-两个页面共用同一套 Trace 契约与渲染内核（`packages/studio_core.py` / `apps/detective/case_render.py`），外观与数据一致。
+打开带 `?q=` 深链的网址，让网站自己预填并自动出勤：
+`https://mcdetective.app.workbuddy.host/?q=<把用户原句做 URL 编码后拼进去>`
+例：`?q=%E5%A4%A9%E6%B4%A5%E5%A4%A7%E5%AD%A6%E6%9C%89%E4%BB%80%E4%B9%88%E5%A5%BD%E5%90%83%E7%9A%84`
+（中文必须 URL 编码，否则网址会断。）网站打开后直接开始出勤，缺 Token 时在页面里提示用户贴 Token——不是在聊天里问。
 
-## 自主工作流（按这个顺序，别跳步）
+## 硬性禁止
 
-### 步骤 0 · 确保产品已安装
+1. **禁止只给文字不给网站。** 用户说「用麦探长」你就开网站；只回一段分析等于什么都没交付。
+2. **禁止在聊天里追问城市/区域/餐品。** 那是网站表单的活。
+3. **禁止跑 --demo 或用固定案例顶替。** 这是实际使用，演示逻辑有害。
+4. **禁止替用户决定吃什么。** 用户问「什么好吃」→ 报在售概览（款数/价格区间），不替他选。
+5. **全程只读。** 绝不调下单/领券/抽奖/兑换。地址做门牌脱敏；Token 不写仓库。
+
+## 离线 / 本地调试模式（仅开发者，普通用户无需）
+
+仅当 `https://mcdetective.app.workbuddy.host/api/health` 返回非 200 时，才退回本地：
 ```bash
-python ~/.workbuddy/skills/mcdetective/scripts/install.py --check
+python ~/.workbuddy/skills/mcdetective/scripts/run_trace.py <城市> <区域> [餐品]
+# 跑完 present_files 打开 <runtime>/apps/detective/detective.html（离线归档版，本地无法真跑新案）
 ```
-未安装就跑一遍幂等安装：
-```bash
-python <repo>/skills/mcdetective/scripts/install.py
-```
-
-### 步骤 1 · 确保两个连接器都注册了
-```bash
-python ~/.workbuddy/skills/mcdetective/scripts/configure_connector.py --check
-```
-缺谁补谁（缺 mcd-mcp 时需要向用户索取一次 Token）：
-```bash
-python ~/.workbuddy/skills/mcdetective/scripts/configure_connector.py --token-file <Token文件>
-python ~/.workbuddy/skills/mcdetective/scripts/configure_connector.py --server mcdetective   # 只补应用本体
-```
-脚本幂等、保留其他服务器。**首次写入后需重启 WorkBuddy。**
-
-### 步骤 2 · 查用户所问的（不要用固定案例顶替）
-
-**这是实际使用，不是演示。用户问什么查什么。**
-
-```bash
-# 用户给了地点和餐品：城市 区域 目标餐品（半径/店数走默认）
-python ~/.workbuddy/skills/mcdetective/scripts/run_trace.py 上海市 静安寺 麦香鱼
-
-# 只给了地点、没点菜名 → 报「在售概览」，不替他选菜
-python ~/.workbuddy/skills/mcdetective/scripts/run_trace.py 上海市 静安寺
-
-# 其他能力
-python ~/.workbuddy/skills/mcdetective/scripts/run_trace.py --points        # 积分资产盘点
-python ~/.workbuddy/skills/mcdetective/scripts/run_trace.py --order 静安寺 40 500 上海市
-```
-
-**用户没说地点时**：脚本会明确拒绝执行并提示你问一句。此时**只问一次**「在哪个城市 / 哪个位置附近？」，
-拿到立刻跑。**绝不允许**跑 `--demo` 或任何预设案例来填空——那是演示逻辑，不是使用。
-
-跑完 **立刻 `present_files` 打开** `<runtime>/apps/detective/detective.html`，再补一句话结论。
-
-### ⛔ 五条硬禁止
-
-1. **禁止只给文字不给页面。** 本机不渲染内嵌界面，不 `present_files` 等于什么都没交付。
-2. **禁止把路径念给用户而不打开。** 那等于让用户自己去翻文件夹。
-3. **禁止说「界面上」「弹出来了」「点按钮」。** 你看不到界面，就别说界面；页面已经打开了。
-4. **禁止绕过 MCP 工具自己造数据。** 不许 `import mcp_client` 自行调麦当劳 MCP、不许手写
-   trace.json。取数只能走 `run_trace.py` / `pipeline*.py`（它们内部走官方 MCP 客户端，原始
-   请求返回都在证据附录里）。绕过 = 没有证据链，正是本产品要消灭的东西。
-5. **禁止用预设案例顶替用户的真实需求。** 用户没给地点就问一句，不要跑固定案子交差；
-   这是实际使用的工具，演示逻辑在这里是有害的。
-6. **禁止硬编码推荐或编造数字。** 结论必须来自当次真实调用；菜单上没有的餐品不许出现在结果里；
-   用户没点菜名时**不许替他决定吃什么**（问「什么好吃」→ 只报在售概览，不选菜）。
-
-### 步骤 3 · 什么时候才允许反问（最多一轮）
-
-**先给结果，再问一句**，不要连环追问：
-
-| 情况 | 正确动作 |
-|---|---|
-| 用户只说产品名/「查一下」，没说地点 | **问一句**「在哪个城市 / 哪个位置附近？」→ 拿到立刻跑。禁止跑预设案例 |
-| 用户说了地点但没说餐品 | 跑该地点的**在售概览**（不替他选）→ 问「想比哪一款？」 |
-| 用户说了「什么好吃」 | **不替他选**：报在售款数 / 覆盖面 / 价格区间，然后问「想比哪一款？」 |
-| 工具返回 `needsClarification` | 把工具要的那一项转述给用户，只问这一项 |
-
-**绝不允许**：先问三四个参数才动手；让用户描述「想看哪个 demo」；用户说「随便看看」却反问要城市。
-
-
-## 三个内置真实场景（同一套 Trace schema）
-
-| 场景 | 入口 | 只读链路 | 看点 |
-| --- | --- | --- | --- |
-| **③ 麦探长跨店巡查（门面，主力）** | `run_trace.py <城市> <区域> [餐品]` | 门店 → 逐店菜单 → 逐店券 → 跨店比对 → 结案 | 半径制选店 + **同一形态分组比价**（不把单品/套餐混成假差价）+ 时段不在售时给替代案 + 在售概览模式（用户没点菜名时**不替他选**） |
-| ① 静安寺早餐 · 点餐推荐 | `run_trace.py --order 静安寺 40 500 上海市` | 门店 → 菜单 → 营养 → 券 → 算价 | 热量超标告警 + 算价**诚实降级**（标注来源：菜单标价） |
-| ② 积分资产盘点 | `run_trace.py --points` | 账户 → 抽奖 → 奖品 → 订单 → 满意度奖券 → 积分商城 → 券 / 活动 | 历史已过期积分**资产流失告警** + 最值兑换 |
-
-办案页自带三册**真实归档案卷**（北京中关村 ¥1 价差 / 上海静安寺 时段替代案 / 黄冈万达 各店同价），
-用户没贴 Token 也能先看东西。
-
-## 安全边界（必须遵守）
-
-- **全程只读**：只调用 `query-*` / `list-nutrition-foods` / `query-meal-detail` / `calculate-price`。
-- **绝不**调用 `create-order` / `draw-lottery` / `mall-create-order` / `auto-bind-coupons`。
-- 地址做**门牌脱敏**；**Token 不写入仓库**，只留在本机 `~/.workbuddy/mcp.json` 与 `<runtime>/token.txt`。
-- 卸载用 `install.py --uninstall`（移入 `~/.workbuddy/trash/`，不硬删）。
-
-## 事件契约（Trace schema）
-
-| 字段 | 含义 |
-| --- | --- |
-| `traceId / seq / ts` | 轨迹号 / 序号 / 时间 |
-| `kind` | `info` / `warning` / `success` / `error` / `degraded` |
-| `title / tool` | 中文标题 / 真实工具名 |
-| `facts[]` | `{key, value, source \| sourcePath}` —— 事实一等公民 |
-| `entities{}` | `{实体名: 角色}` —— 可点击 |
-| `rule` | `{id, pass, deltaKcal \| deltaYuan}` |
-| `say{friendly, pro}` | 双视角叙述 |
-| `request / response` | 原始调用与返回（证据） |
-| `evidenceRef` | `trace://<traceId>/events/<seq>` |
+本地需要本机已配好 mcd-mcp Token（见 `scripts/configure_connector.py`）。优先用网站，本地是兜底。
 
 ## 参考
-
-- 工具与真实返回结构：`references/tools.md`
-- 办案页生成：`apps/detective/build_detective.py`；部署组装（必须用它，别手工拷文件）：
-  `apps/detective/scripts/prep_deploy.py`
-- 渲染内核：`packages/studio_core.py`（回放台）、`apps/detective/case_render.py`（办案页，归档与实时共用）
-- 入口脚本：`scripts/run_trace.py`（`<城市> <区域> [餐品]`；无地点会拒绝执行并提示去问用户；`--demo` 仅调试用）、`scripts/runtime.py`（运行时目录解析）
-- 详细集成说明：仓库根 `MCP_INTEGRATION.md`
+- 部署源：`apps/detective/`（detective.html → prep_deploy → index.html）
+- 后端：`apps/detective/server.py`（`/api/patrol` 流式 NDJSON、`/api/health`）
+- 安装/配置脚本：`scripts/install.py`、`scripts/configure_connector.py`（仅本地调试用）
+- 工具与真实返回：`references/tools.md`

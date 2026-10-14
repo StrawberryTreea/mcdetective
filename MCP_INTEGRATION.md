@@ -1,6 +1,6 @@
 # MCP 集成说明（MCP_INTEGRATION.md）
 
-> 本文说明麦探长 / McTrace 实际使用的麦当劳 MCP Server、Tool、调用流程与业务价值。
+> 本文说明麦探长（mcdetective） 实际使用的麦当劳 MCP Server、Tool、调用流程与业务价值。
 > 所有工具名与返回结构均来自对 `https://mcp.mcd.cn` 的真实调用观察（2026-10），非推测。
 
 ## 一、接入的 MCP Server

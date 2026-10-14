@@ -1,12 +1,12 @@
 """
-McTrace · 纯标准库麦当劳 MCP 客户端（带 Trace 捕获）
+麦探长 · 纯标准库麦当劳 MCP 客户端（带 Trace 捕获）
 
 设计原则（来自产品蓝图）：
 - 语言模型/文案模板负责「怎么说」，MCP 数据与规则引擎负责「能说什么」。
 - 本客户端只负责「抓到真实数据」：封装 initialize / tools/call，并原样记录
   每一次工具调用的 request / response / 时间戳 / 状态，供上层 normalizer 抽取事实。
 - 仅调用只读工具；任何写操作（create-order / draw-lottery / mall-create-order /
-  auto-bind-coupons / cancel-order 等）都必须在 McTrace 之外经用户明确确认后执行。
+  auto-bind-coupons / cancel-order 等）都必须在 麦探长 之外经用户明确确认后执行。
 """
 import urllib.request
 import urllib.error

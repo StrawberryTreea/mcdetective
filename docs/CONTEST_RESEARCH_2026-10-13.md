@@ -89,11 +89,11 @@
 
 ## 三、我们自己的位置（必须先说清的三件事）
 
-1. **尚未报名。** 官方仓库 Issues 检索 `mctrace` 无结果，RANKING.md 无本项目（截至 2026-10-13 18:30）。若已在别处报名，以实际为准——**待人工确认**。
-2. **仓库材料不齐。** 本地 `mctrace/` 目录目前只有 `CONTEST_DECLARATION.md`、`README.md`、`skills/mctrace/SKILL.md`；报名必须的 `MCP_INTEGRATION.md`、`mcp-config.example.json`、**源代码**（packages/ apps/ examples/ 等，完整资产在 `~/.workbuddy/apps/mctrace/`）、`workbuddy.md` 均未进仓库。
+1. **尚未报名。** 官方仓库 Issues 检索 `mcdetective` 无结果，RANKING.md 无本项目（截至 2026-10-13 18:30）。若已在别处报名，以实际为准——**待人工确认**。
+2. **仓库材料不齐。** 本地 `mcdetective/` 目录目前只有 `CONTEST_DECLARATION.md`、`README.md`、`skills/mcdetective/SKILL.md`；报名必须的 `MCP_INTEGRATION.md`、`mcp-config.example.json`、**源代码**（packages/ apps/ examples/ 等，完整资产在 `~/.workbuddy/apps/mcdetective/`）、`workbuddy.md` 均未进仓库。
 3. **时间只剩 12 天**（今天 10-13，截止 10-25 23:59）。报名材料齐备 + 至少 1 个 Star 即可保底拿周边，门槛很低；但 Star 增长需要传播动作，越早开始越好。
 
-另有一个**安全隐患**：`~/.workbuddy/apps/mctrace/token.txt` 持有真实 MCP Token，整理仓库进 GitHub 前必须确认 .gitignore 覆盖它，并全局搜一遍无 Token 字符串再推送。
+另有一个**安全隐患**：`~/.workbuddy/apps/mcdetective/token.txt` 持有真实 MCP Token，整理仓库进 GitHub 前必须确认 .gitignore 覆盖它，并全局搜一遍无 Token 字符串再推送。
 
 ---
 
@@ -101,7 +101,7 @@
 
 评判维度：**机制具体度**（落到调哪些工具、算什么、验什么）、**榜单差异化**（避开 118 个存量项目）、**Star 传播逻辑**（这个比赛按 Star 排名，传播力和技术力同样重要）、**资产复用度**（现成的 trace / Studio / App / 双视角叙事能直接用多少）。
 
-### 方向 1 · 「麦麦不装」——AI 点单直播间（McTrace 正统方向）
+### 方向 1 · 「麦麦不装」——AI 点单直播间（麦探长 正统方向）
 
 **一句话**：所有项目都在回答「买什么」，只有它在回答「凭什么信它」。
 
@@ -188,11 +188,11 @@
 
 理由：
 1. **先解决报名**：方向 1 资产最全，12 天内把仓库材料补齐、Issue 报名，先拿「进榜保底」（Star > 0 即可进前 100，门槛仅 6）
-2. **传播上借力**：方向 2 复用最大流量赛道（省钱）+ 唯一空白（证据链），README 首屏放「无证据链 AI vs 麦搭子」对照实验做传播素材；「47 → 21.9」式数字天然吸 Star
+2. **传播上借力**：方向 2 复用最大流量赛道（省钱）+ 唯一空白（证据链），README 首屏放「无证据链 AI vs 麦探长」对照实验做传播素材；「47 → 21.9」式数字天然吸 Star
 3. **Roadmap 展示**：方向 3/4/5 写进 README  roadmap，向 Star 用户和官方展示方向感，也留好后续迭代空间
 4. **合规红线**：全程只读为主；写操作（create-order 等）如做必须用户确认；Token 绝不进仓库；健康/营养结论只做数据呈现不做医疗断言
 
 **立即可做的三件事**（按优先级）：
-1. 整理仓库：把 `~/.workbuddy/apps/mctrace/` 的 packages / apps / examples / skills 复制进 `mctrace/`，补齐 `MCP_INTEGRATION.md`、`mcp-config.example.json`、`workbuddy.md`；确认 .gitignore 覆盖 token.txt 后推送 GitHub
+1. 整理仓库：把 `~/.workbuddy/apps/mcdetective/` 的 packages / apps / examples / skills 复制进 `mcdetective/`，补齐 `MCP_INTEGRATION.md`、`mcp-config.example.json`、`workbuddy.md`；确认 .gitignore 覆盖 token.txt 后推送 GitHub
 2. 发报名 Issue（注意格式：标题与正文间无换行、项目地址不用 Markdown）
 3. README 首屏加「AI 吹牛对照实验」模块 + 求 Star 话术；同步发掘金/技术社区引流

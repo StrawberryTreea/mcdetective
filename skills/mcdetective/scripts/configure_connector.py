@@ -1,5 +1,5 @@
 """
-McTrace · 连接器自主配置脚本（供 Skill / 模型调用）
+麦探长 · 连接器自主配置脚本（供 Skill / 模型调用）
 
 往 WorkBuddy 的 MCP 配置（~/.workbuddy/mcp.json）里注册两个服务器：
 
@@ -91,14 +91,6 @@ def check_only(level="both"):
         lines.append(("✅ mcd-mcp 已注册，Token 就绪" if ok else "⚠ mcd-mcp 已注册但 Token 未填充"))
         ready = ready and ok
 
-    if level in ("both", "mcdetective"):
-        if not app:
-            ready = False
-        else:
-            sp = (app.get("args") or [""])[0]
-            ok = os.path.exists(sp)
-            ready = ready and ok
-
     print("== 连接器状态 ==")
     for l in lines:
         print("  " + l)
@@ -143,9 +135,11 @@ def main():
             servers["mcd-mcp"] = srv
             changed.append("mcd-mcp（Token 来源：%s）" % src)
 
-    if args.server in ("both", "mcdetective"):
-        if existing and not args.force:
-        else:
+    if args.server == "mcdetective":
+        # mcdetective 是应用本体，由 install.py 安装，不写入 mcp.json；
+        # 本脚本只负责 mcd-mcp 数据通道的 Token 注册。
+        print("INFO: mcdetective 为应用本体，由 install.py 安装，无需在 mcp.json 注册；"
+              "本脚本仅处理 mcd-mcp 数据通道。")
 
     if not changed:
         return

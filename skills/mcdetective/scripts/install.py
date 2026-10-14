@@ -1,5 +1,5 @@
 """
-McTrace · 一键安装器（把产品装进 WorkBuddy 智能体）
+麦探长 · 一键安装器（把产品装进 WorkBuddy 智能体）
 
 安装两处，互不干扰：
   ~/.workbuddy/apps/mcdetective/    产品运行时（packages / apps / examples / VERSION）
@@ -56,7 +56,7 @@ def sync_dir(src, dst):
 
 
 def check_status():
-    print("== McTrace 安装状态 ==")
+    print("== 麦探长 安装状态 ==")
     print(f"  运行时  {INSTALLED_RUNTIME}  {'✅ 已安装' if os.path.isdir(INSTALLED_RUNTIME) else '❌ 未安装'}")
     print(f"  技能    {INSTALLED_SKILL}  {'✅ 已安装' if os.path.isdir(INSTALLED_SKILL) else '❌ 未安装'}")
     mcp = os.path.join(WB_HOME, "mcp.json")
@@ -92,7 +92,7 @@ def do_uninstall():
             shutil.move(path, dst)
             moved.append(f"{path}  →  {dst}")
     if not moved:
-        print("本机没有安装 McTrace，无需卸载。")
+        print("本机没有安装 麦探长，无需卸载。")
         return
     print("已卸载（未删除任何文件，全部移入回收目录）：")
     for m in moved:

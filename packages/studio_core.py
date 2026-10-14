@@ -1,5 +1,5 @@
 """
-McTrace · Live Story UI 内核（Studio 页面与 MCP App 片段共用）
+麦探长 · Live Story UI 内核（Studio 页面与 MCP App 片段共用）
 
 Studio（独立回放页，带场景下拉 / 文件载入）与 MCP App（嵌在对话里的 iframe）
 长得不一样，但**卡片渲染、工具按钮、证据透镜必须完全相同**——否则两处会各自漂移。
@@ -295,7 +295,7 @@ CORE_JS = r"""
     var b = this._lensBody("本机步骤：" + m.cn);
     this._lensLine(b, "这一步做什么", m.desc || "—");
     this._lensLine(b, "状态", STATUS_TXT[ev.status] || ev.status);
-    this._hint(b, "这一步由 McTrace 本机引擎生成，不对应任何 MCP 调用，因此没有 request/response。它基于上一步的真实返回做处理：");
+    this._hint(b, "这一步由 麦探长 本机引擎生成，不对应任何 MCP 调用，因此没有 request/response。它基于上一步的真实返回做处理：");
     if(ev.facts && ev.facts.length){
       ev.facts.forEach(function(f){
         if(f.sourcePath || f.source){ self._lensLine(b, f.key, fmt(f.value) + "  ← " + (f.sourcePath||f.source)); }
@@ -590,8 +590,8 @@ CORE_JS = r"""
     return (last && last.say && last.say.friendly) || "";
   };
 
-  global.McTraceUI = UI;
-  global.McTraceUI.TOOL_META_FALLBACK = {};
+  global.麦探长UI = UI;
+  global.麦探长UI.TOOL_META_FALLBACK = {};
 })(window);
 """
 

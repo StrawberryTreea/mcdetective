@@ -1,5 +1,5 @@
 """
-McTrace · Live Story Studio 生成器（独立回放页）
+麦探长 · Live Story Studio 生成器（独立回放页）
 
 读取 examples/traces 下所有真实 trace，内联进一个自包含的 live_story.html
 （双击即可离线回放）。页面顶部带「场景」下拉，可在多个真实场景间切换。
@@ -117,14 +117,14 @@ TEMPLATE = r"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>McTrace · Live Story Studio</title>
+<title>麦探长 · Live Story Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
 <style>__ALL_CSS__</style>
 </head>
 <body class="mctr">
 <div class="wrap">
   <header class="top">
-    <div class="brand"><span class="mlogo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#DA291C"/><path d="M17.243 3.006c2.066 0 3.742 8.714 3.742 19.478H24c0-11.588-3.042-20.968-6.766-20.968-2.127 0-4.007 2.81-5.248 7.227-1.241-4.416-3.121-7.227-5.231-7.227C3.031 1.516 0 10.888 0 22.476h3.014c0-10.763 1.658-19.47 3.724-19.47 2.066 0 3.741 8.05 3.741 17.98h2.997c0-9.93 1.684-17.98 3.75-17.98Z" fill="#FFC72C"/></svg></span>McTrace <small>Live Story Studio</small></div>
+    <div class="brand"><span class="mlogo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#DA291C"/><path d="M17.243 3.006c2.066 0 3.742 8.714 3.742 19.478H24c0-11.588-3.042-20.968-6.766-20.968-2.127 0-4.007 2.81-5.248 7.227-1.241-4.416-3.121-7.227-5.231-7.227C3.031 1.516 0 10.888 0 22.476h3.014c0-10.763 1.658-19.47 3.724-19.47 2.066 0 3.741 8.05 3.741 17.98h2.997c0-9.93 1.684-17.98 3.75-17.98Z" fill="#FFC72C"/></svg></span>麦探长 <small>Live Story Studio</small></div>
     <span class="chip" id="tid">trace…</span>
     <span class="chip real" id="mockchip">真实数据</span>
     <div class="spacer"></div>
@@ -157,7 +157,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   </div>
 
   <div class="stat" id="stat"></div>
-  <footer>McTrace · 把「工具调用成功」还原成「用户目标是否真的达成」。事实是一等公民，拟人化 ≠ 编造。</footer>
+  <footer>麦探长 · 把「工具调用成功」还原成「用户目标是否真的达成」。事实是一等公民，拟人化 ≠ 编造。</footer>
 </div>
 
 <div class="overlay" id="overlay"></div>
@@ -178,7 +178,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   var SCN_ORDER = EMBED.order || Object.keys(SCENARIOS);
   var SCN_LABELS = EMBED.labels || {};
 
-  var ui = new McTraceUI({
+  var ui = new 麦探长UI({
     tools: TOOLS,
     ids: {timeline:"timeline", result:"result", resultGrid:"resultGrid", resultNote:"resultNote",
           stat:"stat", bar:"bar"},
@@ -289,7 +289,7 @@ INTRO = """
   .tag.red{background:var(--amber);border-color:var(--amber);color:#5a3a00}
 </style>
 <section class="hero">
-  <h1>McTrace · 让每一次麦当劳 MCP 调用都可被验证</h1>
+  <h1>麦探长 · 让每一次麦当劳 MCP 调用都可被验证</h1>
   <div class="sub">一个把「工具调用成功」还原成「<b>用户目标是否真的达成</b>」的 MCP Trace 与证据分析工具。面向普通用户，它是会边做边说的助手；面向开发者，它是一份对业务结果负责的证据链。</div>
   <div class="cards">
     <div class="pcard"><h4><span class="picon">①</span>事实归一化</h4><p>每次调用抽取为「事实」，并标注来源路径（如 <code>$.data.availablePoint</code>），可回溯、可点开。</p></div>

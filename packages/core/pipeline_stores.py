@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-McTrace · 麦探长场景流水线（多门店巡查比价）
+麦探长 · 麦探长场景流水线（多门店巡查比价）
 
 用户报案「想吃 X，哪家便宜」→ 探长按距离划定巡查范围，逐店取证：
   query-nearby-stores →（按方圆 radius_km 过滤 + max_stores 封顶）→
@@ -28,7 +28,7 @@ from mcp_client import McdMCPClient, load_token
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.normpath(os.path.join(HERE, "..", ".."))
 OUT_DIR = os.path.join(REPO, "examples", "traces")
-OUT_NAME = os.environ.get("MCTRACE_OUT") or "detective-patrol"
+OUT_NAME = os.environ.get("MCDETECTIVE_OUT") or "detective-patrol"
 
 TITLE_MAP = {
     "user-request": "接报案",

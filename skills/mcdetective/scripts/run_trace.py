@@ -68,14 +68,17 @@ def main():
             print("拿到后执行：python scripts/run_trace.py <城市> <区域> [目标餐品]")
             return
         else:
-            case = (rest + ["3", "10"])[:5]
-            case[2] = case[2] or ""          # 没点菜名 → 走「在售概览」，不替他选菜
-            if case[2]:
-                run(f"步骤 1 · 麦探长巡查：{case[0]}{case[1]} {case[2]} 方圆{case[3]}km",
-                    [PIPELINE_STORES, URL] + case)
+            # rest: [城市, 区域, (餐品), (半径km), (店数)]；缺省项按位置补，绝不把默认半径错填进餐品位
+            city, area = rest[0], rest[1]
+            target = rest[2] if len(rest) > 2 else ""   # 没点菜名 → 走「在售概览」，不替他选菜
+            radius = rest[3] if len(rest) > 3 else "3"
+            max_stores = rest[4] if len(rest) > 4 else "10"
+            if target:
+                run(f"步骤 1 · 麦探长巡查：{city}{area} {target} 方圆{radius}km",
+                    [PIPELINE_STORES, URL, city, area, target, radius, max_stores])
             else:
-                run(f"步骤 1 · 麦探长巡查（用户未点菜名，报在售概览）：{case[0]}{case[1]} 方圆{case[3]}km",
-                    [PIPELINE_STORES, URL, case[0], case[1], "", case[3], case[4], "--mode", "recommend"])
+                run(f"步骤 1 · 麦探长巡查（用户未点菜名，报在售概览）：{city}{area} 方圆{radius}km",
+                    [PIPELINE_STORES, URL, city, area, "", radius, max_stores, "--mode", "recommend"])
         # 办案页：本机唯一用户可见的产物，必须生成
         run("步骤 2 · 生成麦探长办案页（接案台 + 案卷 + 证据附录）", [DETECTIVE])
 
